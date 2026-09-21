@@ -1,36 +1,259 @@
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
+function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+    return {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra,
+    }
+}
+
+// Auth
+export async function login(email: string, password: string) {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+    })
+    return res.json() as Promise<{ token?: string; email?: string; error?: string }>
+}
+
+export async function register(email: string, password: string) {
+    const res = await fetch(`${API_URL}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+    })
+    return res.json() as Promise<{ token?: string; email?: string; error?: string }>
+}
+
+export function logout() {
+    localStorage.removeItem("token")
+    document.cookie = "token=; max-age=0; path=/"
+}
+
+export function saveToken(token: string) {
+    localStorage.setItem("token", token)
+    document.cookie = `token=${token}; max-age=${60 * 60 * 24 * 30}; path=/`
+}
+
 // Account
-export async function getAccounts(){
-    const res = await fetch(`${API_URL}/api/accounts`)
+export async function getAccounts() {
+    const res = await fetch(`${API_URL}/api/accounts`, { headers: authHeaders() })
     return res.json()
 }
 
-export async function createAccount(data: {name :string; type: string; bankName?:string}){
+export async function createAccount(data: { name: string; type: string; bankName?: string }) {
     const res = await fetch(`${API_URL}/api/accounts`, {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: authHeaders(),
         body: JSON.stringify(data),
     })
     return res.json()
+}
+
+export async function updateAccount(id: number, data: { name: string; type: string; bankName?: string; currency?: string }) {
+    const res = await fetch(`${API_URL}/api/accounts/${id}`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    })
+    return res.json()
+}
+
+export async function deleteAccount(id: number) {
+    await fetch(`${API_URL}/api/accounts/${id}`, { method: "DELETE", headers: authHeaders() })
 }
 
 // Transaction
-export async function getTransactions(accountId?: number){
+export async function getTransactions(accountId?: number) {
     const url = accountId
-        ?`${API_URL}/api/transactions?accountId=${accountId}`
+        ? `${API_URL}/api/transactions?accountId=${accountId}`
         : `${API_URL}/api/transactions`
-    const res = await fetch(url)
+    const res = await fetch(url, { headers: authHeaders() })
     return res.json()
 }
 
-export async function createTransaction(data: { amount: number; type: string; date: string; accountId: number; categoryId?: number; description?: string }
-) {
-    const res = await fetch(`${API_URL}/api/transactions`,{
-        method:"POST",
-        headers: {"Content-Type": "application/json"},
+export async function createTransaction(data: { amount: number; type: string; date: string; accountId: number; categoryId?: number; description?: string }) {
+    const res = await fetch(`${API_URL}/api/transactions`, {
+        method: "POST",
+        headers: authHeaders(),
         body: JSON.stringify(data),
     })
     return res.json()
+}
+
+export async function updateTransaction(id: number, data: { amount: number; type: string; date: string; accountId: number; categoryId?: number; description?: string }) {
+    const res = await fetch(`${API_URL}/api/transactions/${id}`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    })
+    return res.json()
+}
+
+export async function deleteTransaction(id: number) {
+    await fetch(`${API_URL}/api/transactions/${id}`, { method: "DELETE", headers: authHeaders() })
+}
+
+// Category
+export async function getCategories() {
+    const res = await fetch(`${API_URL}/api/categories`, { headers: authHeaders() })
+    return res.json()
+}
+
+export async function createCategory(data: { name: string; color?: string; type?: string }) {
+    const res = await fetch(`${API_URL}/api/categories`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    })
+    return res.json()
+}
+
+export async function updateCategory(id: number, data: { name: string; color?: string; type?: string; budget?: number | null }) {
+    const res = await fetch(`${API_URL}/api/categories/${id}`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    })
+    return res.json()
+}
+
+export async function deleteCategory(id: number) {
+    await fetch(`${API_URL}/api/categories/${id}`, { method: "DELETE", headers: authHeaders() })
+}
+
+// Portfolio
+export async function getPortfolio() {
+    const res = await fetch(`${API_URL}/api/portfolio`, { headers: authHeaders() })
+    return res.json()
+}
+
+export async function getLots() {
+    const res = await fetch(`${API_URL}/api/portfolio/lots`, { headers: authHeaders() })
+    return res.json()
+}
+
+export async function getAssetPrice(symbol: string): Promise<{ symbol: string; name: string; price: number; currency: string; usdthb: number }> {
+    const res = await fetch(`${API_URL}/api/portfolio/price/${symbol}`, { headers: authHeaders() })
+    if (!res.ok) throw new Error("Symbol not found")
+    return res.json()
+}
+
+export async function createAsset(data: { symbol: string; name: string; type: string; quantity: number; price: number }) {
+    const res = await fetch(`${API_URL}/api/portfolio`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    })
+    return res.json()
+}
+
+export async function sellAsset(data: { symbol: string; quantity: number; price: number }) {
+    const res = await fetch(`${API_URL}/api/portfolio/sell`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    })
+    return res.json()
+}
+
+export async function updateLot(id: number, data: { quantity: number; price: number; date?: string }) {
+    const res = await fetch(`${API_URL}/api/portfolio/lots/${id}`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    })
+    return res.json()
+}
+
+export async function deleteLot(id: number) {
+    await fetch(`${API_URL}/api/portfolio/lots/${id}`, { method: "DELETE", headers: authHeaders() })
+}
+
+// Transaction evidence
+export async function uploadEvidence(transactionId: number, file: File) {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+    const form = new FormData()
+    form.append("image", file)
+    const res = await fetch(`${API_URL}/api/transactions/${transactionId}/evidence`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: form,
+    })
+    return res.json()
+}
+
+// Auth extras
+export async function changePassword(currentPassword: string, newPassword: string) {
+    const res = await fetch(`${API_URL}/api/auth/password`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify({ currentPassword, newPassword }),
+    })
+    return res.json() as Promise<{ success?: boolean; error?: string }>
+}
+
+// Recurring transactions
+export async function getRecurring() {
+    const res = await fetch(`${API_URL}/api/recurring`, { headers: authHeaders() })
+    return res.json()
+}
+
+export async function createRecurring(data: {
+    amount: number; type: string; description?: string
+    accountId: number; categoryId?: number
+    frequency: string; nextDate: string
+}) {
+    const res = await fetch(`${API_URL}/api/recurring`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    })
+    return res.json()
+}
+
+export async function updateRecurring(id: number, data: {
+    amount?: number; type?: string; description?: string
+    accountId?: number; categoryId?: number
+    frequency?: string; nextDate?: string; active?: boolean
+}) {
+    const res = await fetch(`${API_URL}/api/recurring/${id}`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    })
+    return res.json()
+}
+
+export async function deleteRecurring(id: number) {
+    await fetch(`${API_URL}/api/recurring/${id}`, { method: "DELETE", headers: authHeaders() })
+}
+
+export async function recordRecurring(id: number) {
+    const res = await fetch(`${API_URL}/api/recurring/${id}/record`, {
+        method: "POST",
+        headers: authHeaders(),
+    })
+    return res.json()
+}
+
+// E-slip import
+export async function extractSlips(files: File[]) {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+    const form = new FormData()
+    files.forEach(f => form.append("images", f))
+    const res = await fetch(`${API_URL}/api/slips/extract`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: form,
+    })
+    return res.json() as Promise<Array<{
+        filename: string
+        success: boolean
+        data?: { amount: number | null; type: string | null; date: string | null; description: string | null }
+        error?: string
+    }>>
 }

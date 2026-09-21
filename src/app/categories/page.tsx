@@ -1,0 +1,97 @@
+import { getCategories, getTransactions } from "@/lib/serverApi"
+import AddCategoryForm from "@/components/AddCategoryForm"
+import CategoryActions from "@/components/CategoryActions"
+
+type Category = { id: number; name: string; color?: string | null; type?: string; budget?: number | null }
+
+export default async function CategoriesPage() {
+  const now = new Date()
+  const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
+
+  const [categories, transactions]: [Category[], any[]] = await Promise.all([
+    getCategories(),
+    getTransactions(undefined, monthStr),
+  ])
+
+  // Spending this month per category
+  const spent: Record<number, number> = {}
+  for (const t of transactions) {
+    if (t.type === "expense" && t.categoryId) {
+      spent[t.categoryId] = (spent[t.categoryId] ?? 0) + t.amount
+    }
+  }
+
+  const income  = categories.filter(c => c.type === "income")
+  const expense = categories.filter(c => c.type === "expense" || !c.type)
+
+  function CategoryList({ items, showBudget }: { items: Category[]; showBudget?: boolean }) {
+    return (
+      <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
+        {items.map(c => {
+          const catSpent = spent[c.id] ?? 0
+          const hasBudget = showBudget && c.budget != null && c.budget > 0
+          const pct = hasBudget ? Math.min(100, Math.round((catSpent / c.budget!) * 100)) : 0
+          const over = hasBudget && catSpent > c.budget!
+
+          return (
+            <li key={c.id}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{
+                  width: "12px", height: "12px", borderRadius: "50%", flexShrink: 0,
+                  backgroundColor: c.color ?? "#888", display: "inline-block",
+                }} />
+                <span style={{ flex: 1, fontWeight: 500 }}>{c.name}</span>
+                {hasBudget && (
+                  <span style={{
+                    fontSize: "12px", fontVariantNumeric: "tabular-nums", fontFamily: "var(--font-mono)",
+                    color: over ? "var(--expense)" : "var(--text-secondary)",
+                  }}>
+                    ฿{catSpent.toLocaleString()} / ฿{c.budget!.toLocaleString()}
+                  </span>
+                )}
+                <CategoryActions category={c} />
+              </div>
+              {hasBudget && (
+                <div style={{ marginTop: "5px", marginLeft: "22px", height: "4px", borderRadius: "2px", background: "var(--border)" }}>
+                  <div style={{
+                    height: "100%", borderRadius: "2px",
+                    width: `${pct}%`,
+                    background: over ? "var(--expense)" : (c.color ?? "var(--accent)"),
+                    transition: "width 0.3s",
+                  }} />
+                </div>
+              )}
+            </li>
+          )
+        })}
+        {items.length === 0 && (
+          <li style={{ color: "var(--text-muted)", padding: "8px 0" }}>None yet.</li>
+        )}
+      </ul>
+    )
+  }
+
+  return (
+    <main>
+      <h1>Categories</h1>
+
+      <div className="two-col-grid" style={{ marginBottom: "40px" }}>
+        <section>
+          <h2 style={{ fontSize: "14px", fontWeight: 600, color: "var(--expense)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px" }}>
+            Expense
+          </h2>
+          <CategoryList items={expense} showBudget />
+        </section>
+        <section>
+          <h2 style={{ fontSize: "14px", fontWeight: 600, color: "var(--income)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px" }}>
+            Income
+          </h2>
+          <CategoryList items={income} />
+        </section>
+      </div>
+
+      <h2>Add Category</h2>
+      <AddCategoryForm />
+    </main>
+  )
+}
