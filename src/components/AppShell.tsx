@@ -9,7 +9,7 @@ import ThemeToggle from "@/components/ThemeToggle"
 const NAV = [
   { href: "/", label: "Dashboard" },
   { href: "/accounts", label: "Accounts" },
-  { href: "/transactions", label: "Transactions" },
+  { href: "/transactions/new", label: "Transactions" },
   { href: "/categories", label: "Categories" },
   { href: "/recurring", label: "Recurring" },
   { href: "/reports", label: "Reports" },
@@ -24,6 +24,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
 
   if (pathname === "/login") return <>{children}</>
+
+  // "Transactions" now links straight to the add-form; keep it highlighted
+  // whether you're there or on the list itself (/transactions).
+  function isActive(href: string) {
+    if (href === "/transactions/new") return pathname.startsWith("/transactions")
+    return pathname === href
+  }
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
@@ -55,9 +62,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             onClick={() => setOpen(false)}
             style={{
               padding: "8px 10px", borderRadius: "6px", textDecoration: "none",
-              fontWeight: pathname === n.href ? 600 : 400,
-              background: pathname === n.href ? "var(--bg)" : "transparent",
-              color: pathname === n.href ? "var(--accent)" : "var(--text-primary)",
+              fontWeight: isActive(n.href) ? 600 : 400,
+              background: isActive(n.href) ? "var(--bg)" : "transparent",
+              color: isActive(n.href) ? "var(--accent)" : "var(--text-primary)",
               transition: "background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >

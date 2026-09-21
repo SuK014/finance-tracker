@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { updateAccount, deleteAccount } from "@/lib/api"
 import DeleteButton from "@/components/DeleteButton"
 import RowActionsMenu from "@/components/RowActionsMenu"
+import { CURRENCIES } from "@/lib/currency"
 
 type Account = { id: number; name: string; type: string; bankName?: string | null; currency: string }
 
@@ -39,6 +40,11 @@ export default function AccountActions({ account }: { account: Account }) {
           <option value="bank">Bank</option>
           <option value="wallet">Wallet</option>
           <option value="credit_card">Credit Card</option>
+        </select>
+        <select value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })}>
+          {CURRENCIES.map(c => (
+            <option key={c.code} value={c.code}>{c.symbol} {c.code}</option>
+          ))}
         </select>
         <input type="text" placeholder="Bank name" value={form.bankName} onChange={e => setForm({ ...form, bankName: e.target.value })} style={{ width: "100px" }} />
         {error && <span style={{ color: "var(--expense)", fontSize: "12px" }}>{error}</span>}

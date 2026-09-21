@@ -44,7 +44,7 @@ export async function getAccounts() {
     return res.json()
 }
 
-export async function createAccount(data: { name: string; type: string; bankName?: string }) {
+export async function createAccount(data: { name: string; type: string; bankName?: string; currency?: string }) {
     const res = await fetch(`${API_URL}/api/accounts`, {
         method: "POST",
         headers: authHeaders(),

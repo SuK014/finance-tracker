@@ -4,8 +4,18 @@ import { useState, useRef } from "react"
 import { createTransaction, uploadEvidence } from "@/lib/api"
 import { useRouter } from "next/navigation"
 import CategorySelect from "@/components/CategorySelect"
+import { currencySymbol } from "@/lib/currency"
 
 type Category = { id: number; name: string; color?: string; type?: string }
+
+function now() {
+  const d = new Date()
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return {
+    date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+    time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+  }
+}
 
 export default function AddTransactionForm({
   accounts,
@@ -18,15 +28,15 @@ export default function AddTransactionForm({
 }) {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
-  const [form, setForm] = useState({
+  const [form, setForm] = useState(() => ({
     amount: "",
     type: "expense",
-    date: "",
-    time: "",
+    ...now(),
     description: "",
     accountId: defaultAccountId ?? "",
     categoryId: "",
-  })
+  }))
+  const selectedAccount = accounts.find(a => String(a.id) === form.accountId)
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -84,11 +94,17 @@ export default function AddTransactionForm({
         onChange={categoryId => setForm({ ...form, categoryId })}
       />
 
-      <input
-        type="number" placeholder="Amount" min="0.01" step="any" required
-        value={form.amount}
-        onChange={e => setForm({ ...form, amount: e.target.value })}
-      />
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <span className="num" style={{ color: "var(--text-secondary)", fontSize: "14px", flexShrink: 0 }}>
+          {currencySymbol(selectedAccount?.currency)}
+        </span>
+        <input
+          type="number" placeholder="Amount" min="0.01" step="any" required
+          value={form.amount}
+          onChange={e => setForm({ ...form, amount: e.target.value })}
+          style={{ flex: 1 }}
+        />
+      </div>
       <input
         type="date" required
         value={form.date}

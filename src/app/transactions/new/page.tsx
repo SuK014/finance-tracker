@@ -16,14 +16,22 @@ export default async function NewTransactionPage({
 
   return (
     <main>
-      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px", flexWrap: "wrap" }}>
+        <h1 style={{ margin: 0 }}>Add Transaction</h1>
         <Link
           href={accountId ? `/transactions?accountId=${accountId}` : "/transactions"}
-          style={{ color: "var(--text-muted)", fontSize: "13px" }}
+          style={{
+            marginLeft: "auto",
+            padding: "6px 14px",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius)",
+            color: "var(--text-primary)",
+            fontSize: "13px",
+            textDecoration: "none",
+          }}
         >
-          ← Back
+          View all transactions →
         </Link>
-        <h1 style={{ margin: 0 }}>Add Transaction</h1>
       </div>
       <AddTransactionForm accounts={accounts} categories={categories} defaultAccountId={accountId} />
     </main>

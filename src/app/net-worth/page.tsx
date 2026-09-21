@@ -1,19 +1,19 @@
 import { getAccounts, getPortfolio } from "@/lib/serverApi"
-
-function sym(currency: string) {
-  const map: Record<string, string> = { THB: "฿", USD: "$", EUR: "€", GBP: "£", JPY: "¥" }
-  return map[currency] ?? currency + " "
-}
+import { currencySymbol as sym } from "@/lib/currency"
 
 export default async function NetWorthPage() {
   const [accounts, holdings] = await Promise.all([getAccounts(), getPortfolio()])
 
-  // Group accounts by currency
-  const byCurrency: Record<string, { accounts: typeof accounts; total: number }> = {}
+  // Group accounts by currency, splitting credit cards out as liabilities
+  // (debt) rather than folding them silently into the same "Accounts" list —
+  // their balance already goes negative from expense transactions, but that
+  // was easy to miss without a dedicated, clearly-labeled section.
+  const byCurrency: Record<string, { assetAccounts: typeof accounts; liabilityAccounts: typeof accounts; total: number }> = {}
   for (const acc of accounts) {
     const cur = acc.currency ?? "THB"
-    if (!byCurrency[cur]) byCurrency[cur] = { accounts: [], total: 0 }
-    byCurrency[cur].accounts.push(acc)
+    if (!byCurrency[cur]) byCurrency[cur] = { assetAccounts: [], liabilityAccounts: [], total: 0 }
+    if (acc.type === "credit_card") byCurrency[cur].liabilityAccounts.push(acc)
+    else byCurrency[cur].assetAccounts.push(acc)
     byCurrency[cur].total += acc.balance ?? 0
   }
 
@@ -72,16 +72,15 @@ export default async function NetWorthPage() {
           <div key={cur} style={sectionStyle}>
             <h2 style={{ margin: 0, fontSize: "15px", color: "var(--text-secondary)" }}>{cur}</h2>
 
-            {accountGroup && (
+            {accountGroup && accountGroup.assetAccounts.length > 0 && (
               <>
                 <h3 style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   Accounts
                 </h3>
-                {accountGroup.accounts.map((acc: any) => (
+                {accountGroup.assetAccounts.map((acc: any) => (
                   <div key={acc.id} style={rowStyle}>
                     <span>{acc.name}</span>
-                    <span style={{
-                      fontVariantNumeric: "tabular-nums", fontFamily: "var(--font-mono)",
+                    <span className="num" style={{
                       color: (acc.balance ?? 0) >= 0 ? "var(--income)" : "var(--expense)",
                     }}>
                       {sym(cur)}{(acc.balance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -99,8 +98,24 @@ export default async function NetWorthPage() {
                 {holdings.filter((h: any) => (h.currency ?? "USD") === cur).map((h: any) => (
                   <div key={h.symbol} style={rowStyle}>
                     <span>{h.symbol} <span style={{ color: "var(--text-secondary)", fontSize: "12px" }}>×{h.quantity}</span></span>
-                    <span style={{ fontVariantNumeric: "tabular-nums", fontFamily: "var(--font-mono)" }}>
+                    <span className="num">
                       {sym(cur)}{((h.price ?? 0) * h.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {accountGroup && accountGroup.liabilityAccounts.length > 0 && (
+              <>
+                <h3 style={{ margin: 0, fontSize: "13px", color: "var(--expense)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  Debt
+                </h3>
+                {accountGroup.liabilityAccounts.map((acc: any) => (
+                  <div key={acc.id} style={rowStyle}>
+                    <span>{acc.name}</span>
+                    <span className="num" style={{ color: "var(--expense)" }}>
+                      {(acc.balance ?? 0) < 0 ? "-" : ""}{sym(cur)}{Math.abs(acc.balance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 ))}
@@ -109,7 +124,7 @@ export default async function NetWorthPage() {
 
             <div style={totalRowStyle}>
               <span>Total {cur}</span>
-              <span style={{ color: grandTotal >= 0 ? "var(--income)" : "var(--expense)", fontVariantNumeric: "tabular-nums", fontFamily: "var(--font-mono)" }}>
+              <span className="num" style={{ color: grandTotal >= 0 ? "var(--income)" : "var(--expense)" }}>
                 {sym(cur)}{grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>

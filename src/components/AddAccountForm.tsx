@@ -3,10 +3,11 @@
 import { useState } from "react"
 import { createAccount } from "@/lib/api"
 import { useRouter } from "next/navigation"
+import { CURRENCIES } from "@/lib/currency"
 
 export default function AddAccountForm() {
   const router = useRouter()
-  const [form, setForm] = useState({ name: "", type: "bank", bankName: "" })
+  const [form, setForm] = useState({ name: "", type: "bank", bankName: "", currency: "THB" })
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -15,9 +16,9 @@ export default function AddAccountForm() {
     setError(null)
     setSubmitting(true)
     try {
-      const result = await createAccount({ name: form.name, type: form.type, bankName: form.bankName })
+      const result = await createAccount({ name: form.name, type: form.type, bankName: form.bankName, currency: form.currency })
       if (result?.error) { setError(result.error); return }
-      setForm({ name: "", type: "bank", bankName: "" })
+      setForm({ name: "", type: "bank", bankName: "", currency: "THB" })
       router.refresh()
     } catch {
       setError("Failed to create account. Is the server running?")
@@ -37,6 +38,11 @@ export default function AddAccountForm() {
         <option value="bank">Bank</option>
         <option value="wallet">Wallet</option>
         <option value="credit_card">Credit Card</option>
+      </select>
+      <select value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })}>
+        {CURRENCIES.map(c => (
+          <option key={c.code} value={c.code}>{c.symbol} {c.label}</option>
+        ))}
       </select>
       <input
         type="text" placeholder="Bank name (optional)"

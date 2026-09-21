@@ -4,8 +4,9 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { createRecurring } from "@/lib/api"
 import CategorySelect from "@/components/CategorySelect"
+import { currencySymbol } from "@/lib/currency"
 
-type Account = { id: number; name: string }
+type Account = { id: number; name: string; currency?: string }
 type Category = { id: number; name: string; type?: string }
 
 export default function RecurringForm({ accounts, categories }: { accounts: Account[]; categories: Category[] }) {
@@ -22,6 +23,7 @@ export default function RecurringForm({ accounts, categories }: { accounts: Acco
   })
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const selectedAccount = accounts.find(a => String(a.id) === form.accountId)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -64,10 +66,16 @@ export default function RecurringForm({ accounts, categories }: { accounts: Acco
         ))}
       </div>
 
-      <input
-        type="number" step="any" min="0.01" required placeholder="Amount"
-        value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })}
-      />
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <span className="num" style={{ color: "var(--text-secondary)", fontSize: "14px", flexShrink: 0 }}>
+          {currencySymbol(selectedAccount?.currency)}
+        </span>
+        <input
+          type="number" step="any" min="0.01" required placeholder="Amount"
+          value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })}
+          style={{ flex: 1 }}
+        />
+      </div>
       <input
         type="text" placeholder="Description (optional)"
         value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
