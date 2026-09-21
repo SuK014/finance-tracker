@@ -107,6 +107,34 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
+/* Selects — replace the native OS chevron (raw system chrome that clashes
+   with the custom theme, especially in dark mode) with one that matches the
+   app's own visual language and reacts to the light/dark tokens. */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 34px;
+  cursor: pointer;
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 10px 6px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%236b6862' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+select:disabled {
+  cursor: not-allowed;
+}
+:root[data-theme="dark"] select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%239c9a94' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+/* The <select>'s own option list is native UI Prisma/the browser controls —
+   not stylable cross-browser — but a dark background at least keeps it from
+   flashing bright white against a dark page while it's open. */
+:root[data-theme="dark"] select option {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
 /* Buttons */
 button {
   border: 1px solid var(--border);
