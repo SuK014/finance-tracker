@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { createRecurring } from "@/lib/api"
+import CategorySelect from "@/components/CategorySelect"
 
 type Account = { id: number; name: string }
 type Category = { id: number; name: string; type?: string }
@@ -46,8 +47,6 @@ export default function RecurringForm({ accounts, categories }: { accounts: Acco
     }
   }
 
-  const filteredCats = categories.filter(c => !c.type || c.type === form.type)
-
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "400px" }}>
       <h3 style={{ margin: 0 }}>Add Recurring</h3>
@@ -76,10 +75,12 @@ export default function RecurringForm({ accounts, categories }: { accounts: Acco
       <select required value={form.accountId} onChange={e => setForm({ ...form, accountId: e.target.value })}>
         {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
       </select>
-      <select value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}>
-        <option value="">No category</option>
-        {filteredCats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-      </select>
+      <CategorySelect
+        categories={categories}
+        type={form.type}
+        value={form.categoryId}
+        onChange={categoryId => setForm({ ...form, categoryId })}
+      />
       <select value={form.frequency} onChange={e => setForm({ ...form, frequency: e.target.value })}>
         <option value="daily">Daily</option>
         <option value="weekly">Weekly</option>

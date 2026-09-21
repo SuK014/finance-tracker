@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { updateTransaction, uploadEvidence, deleteTransaction } from "@/lib/api"
 import DeleteButton from "@/components/DeleteButton"
 import RowActionsMenu from "@/components/RowActionsMenu"
+import CategorySelect from "@/components/CategorySelect"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -87,10 +88,12 @@ export default function TransactionActions({
           <option value="expense">Expense</option>
           <option value="income">Income</option>
         </select>
-        <select value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}>
-          <option value="">No category</option>
-          {categories.filter(c => c.type === form.type).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
+        <CategorySelect
+          categories={categories}
+          type={form.type}
+          value={form.categoryId}
+          onChange={categoryId => setForm({ ...form, categoryId })}
+        />
         <input
           type="number" step="any" min="0.01" required
           value={form.amount}

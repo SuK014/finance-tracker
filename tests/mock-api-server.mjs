@@ -14,15 +14,51 @@ const transaction = {
   account: { name: account.name }, category: { name: category.name, color: category.color },
 }
 
+// Categories are mutable in-memory state (not a static fixture) so a
+// category created via POST actually shows up in a later GET — needed to
+// test the quick-add-category flow's auto-select + refresh behavior.
+const categories = [category]
+let nextCategoryId = 100
+
 const FIXTURES = {
   "/api/accounts": [account],
   "/api/transactions": [transaction],
-  "/api/categories": [category],
 }
 
 const server = createServer((req, res) => {
+  // Real client-side fetches (not just the server-side ones in serverApi.ts)
+  // hit this mock directly from the browser, so it needs real CORS headers
+  // — without them the browser silently blocks the request.
+  res.setHeader("Access-Control-Allow-Origin", "*")
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
+  if (req.method === "OPTIONS") {
+    res.writeHead(204)
+    res.end()
+    return
+  }
+
   res.setHeader("Content-Type", "application/json")
   const path = (req.url ?? "").split("?")[0]
+
+  if (path === "/api/categories") {
+    if (req.method === "POST") {
+      let body = ""
+      req.on("data", chunk => { body += chunk })
+      req.on("end", () => {
+        const parsed = JSON.parse(body || "{}")
+        const created = { id: nextCategoryId++, name: parsed.name, color: parsed.color, type: parsed.type ?? "expense" }
+        categories.push(created)
+        res.writeHead(201)
+        res.end(JSON.stringify(created))
+      })
+      return
+    }
+    res.writeHead(200)
+    res.end(JSON.stringify(categories))
+    return
+  }
+
   if (path in FIXTURES) {
     res.writeHead(200)
     res.end(JSON.stringify(FIXTURES[path]))
