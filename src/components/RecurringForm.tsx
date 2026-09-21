@@ -4,6 +4,8 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { createRecurring } from "@/lib/api"
 import CategorySelect from "@/components/CategorySelect"
+import Select from "@/components/Select"
+import DatePicker from "@/components/DatePicker"
 import { currencySymbol } from "@/lib/currency"
 
 type Account = { id: number; name: string; currency?: string }
@@ -28,6 +30,8 @@ export default function RecurringForm({ accounts, categories }: { accounts: Acco
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
+    if (!form.accountId) { setError("Please select an account."); return }
+    if (!form.nextDate) { setError("Please select a next date."); return }
     setSaving(true)
     try {
       const result = await createRecurring({
@@ -80,23 +84,31 @@ export default function RecurringForm({ accounts, categories }: { accounts: Acco
         type="text" placeholder="Description (optional)"
         value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
       />
-      <select required value={form.accountId} onChange={e => setForm({ ...form, accountId: e.target.value })}>
-        {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-      </select>
+      <Select
+        ariaLabel="Account"
+        value={form.accountId}
+        onChange={accountId => setForm({ ...form, accountId })}
+        options={accounts.map(a => ({ value: String(a.id), label: a.name }))}
+      />
       <CategorySelect
         categories={categories}
         type={form.type}
         value={form.categoryId}
         onChange={categoryId => setForm({ ...form, categoryId })}
       />
-      <select value={form.frequency} onChange={e => setForm({ ...form, frequency: e.target.value })}>
-        <option value="daily">Daily</option>
-        <option value="weekly">Weekly</option>
-        <option value="monthly">Monthly</option>
-      </select>
+      <Select
+        ariaLabel="Frequency"
+        value={form.frequency}
+        onChange={frequency => setForm({ ...form, frequency })}
+        options={[
+          { value: "daily", label: "Daily" },
+          { value: "weekly", label: "Weekly" },
+          { value: "monthly", label: "Monthly" },
+        ]}
+      />
       <div>
         <label style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Next date</label>
-        <input type="date" required value={form.nextDate} onChange={e => setForm({ ...form, nextDate: e.target.value })} />
+        <DatePicker value={form.nextDate} onChange={nextDate => setForm({ ...form, nextDate })} />
       </div>
 
       {error && <p style={{ color: "var(--expense)", fontSize: "13px", margin: 0 }}>{error}</p>}

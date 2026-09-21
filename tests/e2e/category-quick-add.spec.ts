@@ -21,17 +21,19 @@ test.describe("quick-add category from the transaction form", () => {
     await page.goto("/transactions/new");
 
     await expect(page.getByRole("heading", { name: "Add Transaction" })).toBeVisible();
-    const categorySelect = page.locator("select").filter({ has: page.locator('option[value="__add_new__"]') });
-    await expect(categorySelect.locator("option", { hasText: "Groceries" })).toHaveCount(1);
-    await expect(categorySelect.locator("option", { hasText: "+ Add new category" })).toHaveCount(1);
+    const categoryTrigger = page.getByRole("button", { name: "Category" });
+    await expect(categoryTrigger).toBeVisible();
+    await categoryTrigger.click();
+    await expect(page.getByRole("option", { name: "Groceries" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "+ Add new category…" })).toBeVisible();
     expect(errors).toEqual([]);
   });
 
   test("selecting + Add new category reveals an inline form, not a nested <form>", async ({ page }) => {
     await page.goto("/transactions/new");
 
-    const categorySelect = page.locator("select").filter({ has: page.locator('option[value="__add_new__"]') });
-    await categorySelect.selectOption("__add_new__");
+    await page.getByRole("button", { name: "Category" }).click();
+    await page.getByRole("option", { name: "+ Add new category…" }).click();
 
     const nameInput = page.getByPlaceholder("New category name");
     await expect(nameInput).toBeVisible();
@@ -47,28 +49,29 @@ test.describe("quick-add category from the transaction form", () => {
   test("creating a category auto-selects it and collapses back to the dropdown", async ({ page }) => {
     await page.goto("/transactions/new");
 
-    const categorySelect = page.locator("select").filter({ has: page.locator('option[value="__add_new__"]') });
-    await categorySelect.selectOption("__add_new__");
+    await page.getByRole("button", { name: "Category" }).click();
+    await page.getByRole("option", { name: "+ Add new category…" }).click();
     await page.getByPlaceholder("New category name").fill("Coffee");
     await page.getByRole("button", { name: "Add category" }).click();
 
-    // Back to a plain <select>, now showing the newly created category
-    // selected by name — not just "some numeric value".
-    await expect(categorySelect).toBeVisible();
+    // Back to the custom select trigger, now showing the newly created
+    // category selected by name — not just "some numeric value".
+    const categoryTrigger = page.getByRole("button", { name: "Category" });
+    await expect(categoryTrigger).toBeVisible();
     await expect(page.getByPlaceholder("New category name")).toHaveCount(0);
-    await expect(categorySelect.locator("option:checked")).toHaveText("Coffee");
+    await expect(categoryTrigger).toContainText("Coffee");
   });
 
   test("Escape cancels back to the dropdown without creating anything", async ({ page }) => {
     await page.goto("/transactions/new");
 
-    const categorySelect = page.locator("select").filter({ has: page.locator('option[value="__add_new__"]') });
-    await categorySelect.selectOption("__add_new__");
+    await page.getByRole("button", { name: "Category" }).click();
+    await page.getByRole("option", { name: "+ Add new category…" }).click();
     const nameInput = page.getByPlaceholder("New category name");
     await nameInput.fill("Should not be created");
     await nameInput.press("Escape");
 
     await expect(nameInput).toBeHidden();
-    await expect(categorySelect).toBeVisible();
+    await expect(page.getByRole("button", { name: "Category" })).toBeVisible();
   });
 });

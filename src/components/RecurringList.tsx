@@ -4,6 +4,8 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { recordRecurring, deleteRecurring, updateRecurring } from "@/lib/api"
 import RowActionsMenu from "@/components/RowActionsMenu"
+import Select from "@/components/Select"
+import DatePicker from "@/components/DatePicker"
 
 type RecurringItem = {
   id: number
@@ -104,6 +106,8 @@ function RecurringRow({
   async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
+    if (!form.amount || Number(form.amount) <= 0) { setError("Please enter an amount."); return }
+    if (!form.nextDate) { setError("Please select a next date."); return }
     setSaving(true)
     try {
       const res = await updateRecurring(item.id, {
@@ -133,25 +137,50 @@ function RecurringRow({
         padding: "12px", border: "1px solid var(--border)", borderRadius: "var(--radius)",
         background: "var(--surface)",
       }}>
-        <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value, categoryId: "" })}>
-          <option value="expense">Expense</option>
-          <option value="income">Income</option>
-        </select>
+        <div style={{ width: "110px" }}>
+          <Select
+            ariaLabel="Transaction type"
+            value={form.type}
+            onChange={type => setForm({ ...form, type, categoryId: "" })}
+            options={[
+              { value: "expense", label: "Expense" },
+              { value: "income", label: "Income" },
+            ]}
+          />
+        </div>
         <input type="number" step="any" min="0.01" required value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} style={{ width: "80px" }} />
         <input type="text" placeholder="Description" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} style={{ width: "130px" }} />
-        <select value={form.accountId} onChange={e => setForm({ ...form, accountId: e.target.value })}>
-          {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-        </select>
-        <select value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}>
-          <option value="">No category</option>
-          {filteredCats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        <select value={form.frequency} onChange={e => setForm({ ...form, frequency: e.target.value })}>
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
-        </select>
-        <input type="date" required value={form.nextDate} onChange={e => setForm({ ...form, nextDate: e.target.value })} />
+        <div style={{ width: "130px" }}>
+          <Select
+            ariaLabel="Account"
+            value={form.accountId}
+            onChange={accountId => setForm({ ...form, accountId })}
+            options={accounts.map(a => ({ value: String(a.id), label: a.name }))}
+          />
+        </div>
+        <div style={{ width: "150px" }}>
+          <Select
+            ariaLabel="Category"
+            value={form.categoryId}
+            onChange={categoryId => setForm({ ...form, categoryId })}
+            options={[{ value: "", label: "No category" }, ...filteredCats.map(c => ({ value: String(c.id), label: c.name }))]}
+          />
+        </div>
+        <div style={{ width: "130px" }}>
+          <Select
+            ariaLabel="Frequency"
+            value={form.frequency}
+            onChange={frequency => setForm({ ...form, frequency })}
+            options={[
+              { value: "daily", label: "Daily" },
+              { value: "weekly", label: "Weekly" },
+              { value: "monthly", label: "Monthly" },
+            ]}
+          />
+        </div>
+        <div style={{ width: "150px" }}>
+          <DatePicker value={form.nextDate} onChange={nextDate => setForm({ ...form, nextDate })} />
+        </div>
         {error && <span style={{ color: "var(--expense)", fontSize: "12px" }}>{error}</span>}
         <button type="submit" disabled={saving}>{saving ? "Saving…" : "Save"}</button>
         <button type="button" onClick={() => { setEditing(false); setError(null) }}>Cancel</button>

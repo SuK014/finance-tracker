@@ -3,6 +3,9 @@
 import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { extractSlips, getAccounts, getCategories, createTransaction } from "@/lib/api"
+import Select from "@/components/Select"
+import DatePicker from "@/components/DatePicker"
+import TimePicker from "@/components/TimePicker"
 
 type Row = {
   filename: string
@@ -273,29 +276,59 @@ export default function ImportPage() {
                             onChange={e => updateSlip(i, "amount", e.target.value)} style={{ width: "80px" }} />
                         </td>
                         <td style={{ padding: "6px 8px" }}>
-                          <select value={row.type} disabled={!!row.error} onChange={e => updateSlip(i, "type", e.target.value)}>
-                            <option value="expense">Expense</option>
-                            <option value="income">Income</option>
-                          </select>
+                          <div style={{ width: "100px" }}>
+                            <Select
+                              ariaLabel="Type"
+                              value={row.type}
+                              disabled={!!row.error}
+                              onChange={v => updateSlip(i, "type", v)}
+                              options={[
+                                { value: "expense", label: "Expense" },
+                                { value: "income", label: "Income" },
+                              ]}
+                            />
+                          </div>
                         </td>
                         <td style={{ padding: "6px 8px" }}>
-                          <input type="datetime-local" value={row.date} disabled={!!row.error}
-                            onChange={e => updateSlip(i, "date", e.target.value)} />
+                          <div style={{ display: "flex", gap: "4px", width: "220px" }}>
+                            <DatePicker
+                              value={row.date.slice(0, 10)}
+                              onChange={date => updateSlip(i, "date", `${date}T${row.date.slice(11, 16) || "00:00"}`)}
+                            />
+                            <TimePicker
+                              value={row.date.slice(11, 16)}
+                              onChange={time => updateSlip(i, "date", `${row.date.slice(0, 10)}T${time}`)}
+                            />
+                          </div>
                         </td>
                         <td style={{ padding: "6px 8px" }}>
                           <input type="text" value={row.description} disabled={!!row.error}
                             onChange={e => updateSlip(i, "description", e.target.value)} />
                         </td>
                         <td style={{ padding: "6px 8px" }}>
-                          <select value={row.accountId} disabled={!!row.error} onChange={e => updateSlip(i, "accountId", e.target.value)}>
-                            {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                          </select>
+                          <div style={{ width: "130px" }}>
+                            <Select
+                              ariaLabel="Account"
+                              value={row.accountId}
+                              disabled={!!row.error}
+                              onChange={v => updateSlip(i, "accountId", v)}
+                              options={accounts.map((a: any) => ({ value: String(a.id), label: a.name }))}
+                            />
+                          </div>
                         </td>
                         <td style={{ padding: "6px 8px" }}>
-                          <select value={row.categoryId} disabled={!!row.error} onChange={e => updateSlip(i, "categoryId", e.target.value)}>
-                            <option value="">None</option>
-                            {categories.filter(c => c.type === row.type).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                          </select>
+                          <div style={{ width: "150px" }}>
+                            <Select
+                              ariaLabel="Category"
+                              value={row.categoryId}
+                              disabled={!!row.error}
+                              onChange={v => updateSlip(i, "categoryId", v)}
+                              options={[
+                                { value: "", label: "None" },
+                                ...categories.filter((c: any) => c.type === row.type).map((c: any) => ({ value: String(c.id), label: c.name })),
+                              ]}
+                            />
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -341,7 +374,9 @@ export default function ImportPage() {
                     {csvRows.map((row, i) => (
                       <tr key={i} style={{ borderBottom: "1px solid var(--border)" }}>
                         <td style={{ padding: "6px 8px" }}>
-                          <input type="date" value={row.date} onChange={e => updateCsv(i, "date", e.target.value)} style={{ width: "130px" }} />
+                          <div style={{ width: "130px" }}>
+                            <DatePicker value={row.date} onChange={date => updateCsv(i, "date", date)} />
+                          </div>
                         </td>
                         <td style={{ padding: "6px 8px" }}>
                           <input type="text" value={row.description} onChange={e => updateCsv(i, "description", e.target.value)} />
@@ -350,21 +385,40 @@ export default function ImportPage() {
                           <input type="number" step="any" min="0" value={row.amount} onChange={e => updateCsv(i, "amount", e.target.value)} style={{ width: "80px" }} />
                         </td>
                         <td style={{ padding: "6px 8px" }}>
-                          <select value={row.type} onChange={e => updateCsv(i, "type", e.target.value)}>
-                            <option value="expense">Expense</option>
-                            <option value="income">Income</option>
-                          </select>
+                          <div style={{ width: "100px" }}>
+                            <Select
+                              ariaLabel="Type"
+                              value={row.type}
+                              onChange={v => updateCsv(i, "type", v)}
+                              options={[
+                                { value: "expense", label: "Expense" },
+                                { value: "income", label: "Income" },
+                              ]}
+                            />
+                          </div>
                         </td>
                         <td style={{ padding: "6px 8px" }}>
-                          <select value={row.accountId} onChange={e => updateCsv(i, "accountId", e.target.value)}>
-                            {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                          </select>
+                          <div style={{ width: "130px" }}>
+                            <Select
+                              ariaLabel="Account"
+                              value={row.accountId}
+                              onChange={v => updateCsv(i, "accountId", v)}
+                              options={accounts.map((a: any) => ({ value: String(a.id), label: a.name }))}
+                            />
+                          </div>
                         </td>
                         <td style={{ padding: "6px 8px" }}>
-                          <select value={row.categoryId} onChange={e => updateCsv(i, "categoryId", e.target.value)}>
-                            <option value="">None</option>
-                            {categories.filter(c => c.type === row.type).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                          </select>
+                          <div style={{ width: "150px" }}>
+                            <Select
+                              ariaLabel="Category"
+                              value={row.categoryId}
+                              onChange={v => updateCsv(i, "categoryId", v)}
+                              options={[
+                                { value: "", label: "None" },
+                                ...categories.filter((c: any) => c.type === row.type).map((c: any) => ({ value: String(c.id), label: c.name })),
+                              ]}
+                            />
+                          </div>
                         </td>
                       </tr>
                     ))}

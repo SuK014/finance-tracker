@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { updateLot } from "@/lib/api"
 import DeleteButton from "@/components/DeleteButton"
+import DatePicker from "@/components/DatePicker"
 
 type Lot = {
   id: number
@@ -51,11 +52,9 @@ export default function LotActions({ lot }: { lot: Lot }) {
           onChange={e => setForm({ ...form, price: e.target.value })}
           style={{ width: "80px" }}
         />
-        <input
-          type="date"
-          value={form.date}
-          onChange={e => setForm({ ...form, date: e.target.value })}
-        />
+        <div style={{ width: "130px" }}>
+          <DatePicker value={form.date} onChange={date => setForm({ ...form, date })} />
+        </div>
         <button type="submit">Save</button>
         <button type="button" onClick={() => setEditing(false)}>Cancel</button>
       </form>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import Select from "@/components/Select"
 
 export default function YearPicker({ year }: { year: number }) {
   const router = useRouter()
@@ -8,12 +9,13 @@ export default function YearPicker({ year }: { year: number }) {
   const years = Array.from({ length: 5 }, (_, i) => current - 2 + i)
 
   return (
-    <select
-      value={year}
-      onChange={e => router.push(`/reports?year=${e.target.value}`)}
-      style={{ fontSize: "14px" }}
-    >
-      {years.map(y => <option key={y} value={y}>{y}</option>)}
-    </select>
+    <div style={{ width: "100px", flexShrink: 0 }}>
+      <Select
+        ariaLabel="Report year"
+        value={String(year)}
+        onChange={y => router.push(`/reports?year=${y}`)}
+        options={years.map(y => ({ value: String(y), label: String(y) }))}
+      />
+    </div>
   )
 }

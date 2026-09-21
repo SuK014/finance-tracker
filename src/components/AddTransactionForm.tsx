@@ -4,6 +4,9 @@ import { useState, useRef } from "react"
 import { createTransaction, uploadEvidence } from "@/lib/api"
 import { useRouter } from "next/navigation"
 import CategorySelect from "@/components/CategorySelect"
+import Select from "@/components/Select"
+import DatePicker from "@/components/DatePicker"
+import TimePicker from "@/components/TimePicker"
 import { currencySymbol } from "@/lib/currency"
 
 type Category = { id: number; name: string; color?: string; type?: string }
@@ -44,6 +47,9 @@ export default function AddTransactionForm({
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
+    if (!form.accountId) { setError("Please select an account."); return }
+    if (!form.date) { setError("Please select a date."); return }
+    if (!form.amount || Number(form.amount) <= 0) { setError("Please enter an amount."); return }
     setSubmitting(true)
     try {
       const transaction = await createTransaction({
@@ -68,24 +74,23 @@ export default function AddTransactionForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-sm">
-      <select
+      <Select
+        ariaLabel="Account"
         value={form.accountId}
-        onChange={e => setForm({ ...form, accountId: e.target.value })}
-        required
-      >
-        <option value="">Select account</option>
-        {accounts.map(a => (
-          <option key={a.id} value={a.id}>{a.name}</option>
-        ))}
-      </select>
+        onChange={accountId => setForm({ ...form, accountId })}
+        placeholder="Select account"
+        options={accounts.map(a => ({ value: String(a.id), label: a.name }))}
+      />
 
-      <select
+      <Select
+        ariaLabel="Transaction type"
         value={form.type}
-        onChange={e => setForm({ ...form, type: e.target.value, categoryId: "" })}
-      >
-        <option value="expense">Expense</option>
-        <option value="income">Income</option>
-      </select>
+        onChange={type => setForm({ ...form, type, categoryId: "" })}
+        options={[
+          { value: "expense", label: "Expense" },
+          { value: "income", label: "Income" },
+        ]}
+      />
 
       <CategorySelect
         categories={categories}
@@ -105,15 +110,13 @@ export default function AddTransactionForm({
           style={{ flex: 1 }}
         />
       </div>
-      <input
-        type="date" required
+      <DatePicker
         value={form.date}
-        onChange={e => setForm({ ...form, date: e.target.value })}
+        onChange={date => setForm({ ...form, date })}
       />
-      <input
-        type="time"
+      <TimePicker
         value={form.time}
-        onChange={e => setForm({ ...form, time: e.target.value })}
+        onChange={time => setForm({ ...form, time })}
       />
       <input
         type="text" placeholder="Description"

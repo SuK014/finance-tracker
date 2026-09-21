@@ -6,6 +6,9 @@ import { updateTransaction, uploadEvidence, deleteTransaction } from "@/lib/api"
 import DeleteButton from "@/components/DeleteButton"
 import RowActionsMenu from "@/components/RowActionsMenu"
 import CategorySelect from "@/components/CategorySelect"
+import Select from "@/components/Select"
+import DatePicker from "@/components/DatePicker"
+import TimePicker from "@/components/TimePicker"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -54,6 +57,9 @@ export default function TransactionActions({
   async function handleEdit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
+    if (!form.accountId) { setError("Please select an account."); return }
+    if (!form.date) { setError("Please select a date."); return }
+    if (!form.amount || Number(form.amount) <= 0) { setError("Please enter an amount."); return }
     setSaving(true)
     try {
       const result = await updateTransaction(transaction.id, {
@@ -81,27 +87,45 @@ export default function TransactionActions({
   if (editing) {
     return (
       <form onSubmit={handleEdit} style={{ display: "flex", gap: "4px", flexWrap: "wrap", alignItems: "center" }}>
-        <select value={form.accountId} onChange={e => setForm({ ...form, accountId: e.target.value })} required>
-          {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-        </select>
-        <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value, categoryId: "" })}>
-          <option value="expense">Expense</option>
-          <option value="income">Income</option>
-        </select>
-        <CategorySelect
-          categories={categories}
-          type={form.type}
-          value={form.categoryId}
-          onChange={categoryId => setForm({ ...form, categoryId })}
-        />
+        <div style={{ width: "130px" }}>
+          <Select
+            ariaLabel="Account"
+            value={form.accountId}
+            onChange={accountId => setForm({ ...form, accountId })}
+            options={accounts.map(a => ({ value: String(a.id), label: a.name }))}
+          />
+        </div>
+        <div style={{ width: "110px" }}>
+          <Select
+            ariaLabel="Transaction type"
+            value={form.type}
+            onChange={type => setForm({ ...form, type, categoryId: "" })}
+            options={[
+              { value: "expense", label: "Expense" },
+              { value: "income", label: "Income" },
+            ]}
+          />
+        </div>
+        <div style={{ width: "150px" }}>
+          <CategorySelect
+            categories={categories}
+            type={form.type}
+            value={form.categoryId}
+            onChange={categoryId => setForm({ ...form, categoryId })}
+          />
+        </div>
         <input
           type="number" step="any" min="0.01" required
           value={form.amount}
           onChange={e => setForm({ ...form, amount: e.target.value })}
           style={{ width: "80px" }}
         />
-        <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required />
-        <input type="time" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} />
+        <div style={{ width: "130px" }}>
+          <DatePicker value={form.date} onChange={date => setForm({ ...form, date })} />
+        </div>
+        <div style={{ width: "110px" }}>
+          <TimePicker value={form.time} onChange={time => setForm({ ...form, time })} />
+        </div>
         <input
           type="text" placeholder="Description"
           value={form.description}

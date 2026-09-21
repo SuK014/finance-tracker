@@ -4,6 +4,7 @@ import { useState } from "react"
 import { createAccount } from "@/lib/api"
 import { useRouter } from "next/navigation"
 import { CURRENCIES } from "@/lib/currency"
+import Select from "@/components/Select"
 
 export default function AddAccountForm() {
   const router = useRouter()
@@ -34,16 +35,22 @@ export default function AddAccountForm() {
         value={form.name}
         onChange={e => setForm({ ...form, name: e.target.value })}
       />
-      <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-        <option value="bank">Bank</option>
-        <option value="wallet">Wallet</option>
-        <option value="credit_card">Credit Card</option>
-      </select>
-      <select value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })}>
-        {CURRENCIES.map(c => (
-          <option key={c.code} value={c.code}>{c.symbol} {c.label}</option>
-        ))}
-      </select>
+      <Select
+        ariaLabel="Account type"
+        value={form.type}
+        onChange={type => setForm({ ...form, type })}
+        options={[
+          { value: "bank", label: "Bank" },
+          { value: "wallet", label: "Wallet" },
+          { value: "credit_card", label: "Credit Card" },
+        ]}
+      />
+      <Select
+        ariaLabel="Currency"
+        value={form.currency}
+        onChange={currency => setForm({ ...form, currency })}
+        options={CURRENCIES.map(c => ({ value: c.code, label: `${c.symbol} ${c.label}` }))}
+      />
       <input
         type="text" placeholder="Bank name (optional)"
         value={form.bankName}

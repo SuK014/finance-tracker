@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { updateAccount, deleteAccount } from "@/lib/api"
 import DeleteButton from "@/components/DeleteButton"
 import RowActionsMenu from "@/components/RowActionsMenu"
+import Select from "@/components/Select"
 import { CURRENCIES } from "@/lib/currency"
 
 type Account = { id: number; name: string; type: string; bankName?: string | null; currency: string }
@@ -36,16 +37,26 @@ export default function AccountActions({ account }: { account: Account }) {
     return (
       <form onSubmit={handleEdit} style={{ display: "flex", gap: "4px", flexWrap: "wrap", alignItems: "center" }}>
         <input type="text" placeholder="Name" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} style={{ width: "120px" }} />
-        <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-          <option value="bank">Bank</option>
-          <option value="wallet">Wallet</option>
-          <option value="credit_card">Credit Card</option>
-        </select>
-        <select value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })}>
-          {CURRENCIES.map(c => (
-            <option key={c.code} value={c.code}>{c.symbol} {c.code}</option>
-          ))}
-        </select>
+        <div style={{ width: "140px" }}>
+          <Select
+            ariaLabel="Account type"
+            value={form.type}
+            onChange={type => setForm({ ...form, type })}
+            options={[
+              { value: "bank", label: "Bank" },
+              { value: "wallet", label: "Wallet" },
+              { value: "credit_card", label: "Credit Card" },
+            ]}
+          />
+        </div>
+        <div style={{ width: "140px" }}>
+          <Select
+            ariaLabel="Currency"
+            value={form.currency}
+            onChange={currency => setForm({ ...form, currency })}
+            options={CURRENCIES.map(c => ({ value: c.code, label: `${c.symbol} ${c.code}` }))}
+          />
+        </div>
         <input type="text" placeholder="Bank name" value={form.bankName} onChange={e => setForm({ ...form, bankName: e.target.value })} style={{ width: "100px" }} />
         {error && <span style={{ color: "var(--expense)", fontSize: "12px" }}>{error}</span>}
         <button type="submit" disabled={saving}>{saving ? "Saving…" : "Save"}</button>

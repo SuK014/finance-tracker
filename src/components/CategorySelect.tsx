@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { createCategory } from "@/lib/api"
+import Select from "@/components/Select"
 
 type Category = { id: number; name: string; color?: string | null; type?: string }
 
@@ -92,19 +93,18 @@ export default function CategorySelect({
   }
 
   return (
-    <select
-      required={required}
+    <Select
+      ariaLabel="Category"
       value={value}
-      onChange={e => {
-        if (e.target.value === ADD_NEW) { setAdding(true); return }
-        onChange(e.target.value)
+      onChange={v => {
+        if (v === ADD_NEW) { setAdding(true); return }
+        onChange(v)
       }}
-    >
-      {!required && <option value="">No category</option>}
-      {filtered.map(c => (
-        <option key={c.id} value={c.id}>{c.name}</option>
-      ))}
-      <option value={ADD_NEW}>+ Add new category…</option>
-    </select>
+      options={[
+        ...(!required ? [{ value: "", label: "No category" }] : []),
+        ...filtered.map(c => ({ value: String(c.id), label: c.name })),
+        { value: ADD_NEW, label: "+ Add new category…" },
+      ]}
+    />
   )
 }
