@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import AppShell from "@/components/AppShell";
 import "./globals.css";
@@ -20,6 +20,16 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Finance Tracker",
   description: "Personal finance tracker",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Finance",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#16171b",
+  viewportFit: "cover",
 };
 
 const THEME_INIT_SCRIPT = `
