@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import LogoutButton from "@/components/LogoutButton"
 import ThemeToggle from "@/components/ThemeToggle"
+import BottomTabBar from "@/components/BottomTabBar"
 
 const NAV = [
   { href: "/", label: "Dashboard" },
@@ -21,7 +21,6 @@ const NAV = [
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [open, setOpen] = useState(false)
 
   if (pathname === "/login") return <>{children}</>
 
@@ -34,19 +33,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-      {/* Mobile overlay */}
-      {open && (
-        <div
-          className="sidebar-overlay"
-          onClick={() => setOpen(false)}
-          style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
-            zIndex: 30, display: "none",
-          }}
-        />
-      )}
-
-      <aside className={`sidebar${open ? " sidebar-open" : ""}`} style={{
+      <aside className="sidebar" style={{
         width: "224px", flexShrink: 0,
         background: "var(--surface)", borderRight: "1px solid var(--border)",
         display: "flex", flexDirection: "column", padding: "24px 16px", gap: "4px",
@@ -59,7 +46,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Link
             key={n.href}
             href={n.href}
-            onClick={() => setOpen(false)}
             style={{
               padding: "8px 10px", borderRadius: "6px", textDecoration: "none",
               fontWeight: isActive(n.href) ? 600 : 400,
@@ -87,20 +73,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           padding: "12px 16px", borderBottom: "1px solid var(--border)",
           background: "var(--surface)", flexShrink: 0,
         }}>
-          <button
-            onClick={() => setOpen(v => !v)}
-            style={{ border: "none", background: "none", padding: "4px", fontSize: "20px", lineHeight: 1 }}
-          >
-            ☰
-          </button>
           <span style={{ fontWeight: 650, fontSize: "15px", flex: 1 }}>Finance Tracker</span>
           <ThemeToggle />
         </div>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "32px" }}>
+        <div className="app-content" style={{ flex: 1, overflowY: "auto", padding: "32px" }}>
           {children}
         </div>
       </div>
+
+      <BottomTabBar />
     </div>
   )
 }

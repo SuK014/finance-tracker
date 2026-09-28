@@ -512,6 +512,13 @@ li:last-child { border-bottom: none; }
 .row-menu-item:hover { background: var(--bg); }
 .row-menu-item[data-danger="true"] { color: var(--expense); }
 
+/* /more page nav rows: .row-card as a link instead of a static row */
+.more-link {
+  text-decoration: none;
+  color: var(--text-primary);
+}
+.more-link:hover { background: var(--bg); }
+
 /* Wrap real <table> elements so they scroll horizontally instead of
    breaking the page layout on narrow screens. */
 .table-scroll {
@@ -551,25 +558,47 @@ li:last-child { border-bottom: none; }
   transform: translateX(16px);
 }
 
-/* Mobile responsive */
+/* Mobile responsive: sidebar nav is replaced by the bottom tab bar below
+   768px (not hidden-and-toggleable — the tab bar is the mobile nav now). */
 @media (max-width: 768px) {
   .sidebar {
-    position: fixed !important;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    z-index: 40;
-    transform: translateX(-100%);
-    transition: transform var(--dur-slow) var(--ease-out);
-  }
-  .sidebar.sidebar-open {
-    transform: translateX(0);
-    box-shadow: 4px 0 24px rgba(0,0,0,0.12);
-  }
-  .sidebar-overlay {
-    display: block !important;
+    display: none !important;
   }
   .mobile-header {
     display: flex !important;
   }
+  .app-content {
+    padding-bottom: calc(32px + 60px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Bottom tab bar: mobile-only primary navigation, hidden on desktop where
+   the sidebar covers the same routes. */
+.bottom-tab-bar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@media (max-width: 768px) {
+  .bottom-tab-bar {
+    display: flex !important;
+  }
+}
+.bottom-tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px 6px;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 500;
+  transition: color var(--dur-fast) var(--ease-out);
 }
