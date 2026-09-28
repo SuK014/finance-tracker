@@ -12,7 +12,7 @@ const EXPENSE = "var(--expense)"
 
 export default function DailyActivityChart({ data }: { data: DayData[] }) {
   return (
-    <ResponsiveContainer width="100%" height={260}>
+    <ResponsiveContainer width="100%" height={230}>
       <LineChart data={data} margin={{ top: 4, right: 8, left: 8, bottom: 4 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
         <XAxis

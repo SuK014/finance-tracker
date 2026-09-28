@@ -30,7 +30,7 @@ export default async function NewTransactionPage({
             textDecoration: "none",
           }}
         >
-          View all transactions →
+          View all transactions
         </Link>
       </div>
       <AddTransactionForm accounts={accounts} categories={categories} defaultAccountId={accountId} />

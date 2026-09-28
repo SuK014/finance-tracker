@@ -81,7 +81,7 @@ export default async function DashboardPage({
     .slice(0, 5)
 
   return (
-    <main style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+    <main style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
       <MonthNav year={year} month={month} />
 
       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
@@ -93,9 +93,12 @@ export default async function DashboardPage({
           <span className="stat-label">Expenses</span>
           <span className="stat-value num" style={{ color: "var(--expense)" }}>-฿{expenses.toLocaleString()}</span>
         </div>
-        <div className="stat-tile">
+        <div
+          className="stat-tile stat-tile-net"
+          style={{ ["--tone" as string]: net >= 0 ? "var(--income)" : "var(--expense)" }}
+        >
           <span className="stat-label">Net</span>
-          <span className="stat-value num" style={{ color: net >= 0 ? "var(--income)" : "var(--expense)" }}>
+          <span className="stat-value num" style={{ color: "var(--tone)" }}>
             {net >= 0 ? "+" : ""}฿{net.toLocaleString()}
           </span>
         </div>
@@ -115,7 +118,7 @@ export default async function DashboardPage({
           <h2 style={{ marginBottom: "12px" }}>Spending by Category</h2>
           <CategoryBarChart data={categoryData} />
           {categoryData.some(c => c.budget != null) && (
-            <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
               <h3 style={{ margin: 0, fontSize: "12px", fontWeight: 500, color: "var(--text-muted)" }}>Budget Progress</h3>
               {categoryData.filter(c => c.budget != null).map(c => {
                 const pct = Math.min(100, Math.round((c.value / c.budget!) * 100))
@@ -148,30 +151,28 @@ export default async function DashboardPage({
 
         <section>
           <h2 style={{ marginBottom: "12px" }}>Recent Transactions</h2>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
+          <ul style={{ margin: 0 }}>
             {transactions.slice(0, 8).map((t: any) => (
-              <li key={t.id} style={{ display: "flex", gap: "8px", alignItems: "center", fontSize: "13px" }}>
-                <span className="num" style={{ color: t.type === "income" ? "var(--income)" : "var(--expense)", minWidth: "90px" }}>
+              <li key={t.id} className="row-card">
+                <span className="row-amount num" style={{ color: t.type === "income" ? "var(--income)" : "var(--expense)", fontWeight: 600 }}>
                   {t.type === "income" ? "+" : "-"}฿{Number(t.amount).toLocaleString()}
                 </span>
-                {t.category && (
-                  <span style={{
-                    padding: "2px 8px", borderRadius: "999px", fontSize: "11px",
-                    backgroundColor: t.category.color ?? "var(--text-muted)", color: "#fff",
-                  }}>
-                    {t.category.name}
+                <span className="row-primary">{t.description || t.category?.name || "Transaction"}</span>
+                <span className="row-meta">
+                  {t.category && (
+                    <span className="category-pill">
+                      <span className="dot" style={{ background: t.category.color ?? "var(--text-muted)" }} />
+                      {t.category.name}
+                    </span>
+                  )}
+                  <span className="num">
+                    {new Date(t.date).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" })}
                   </span>
-                )}
-                <span style={{ color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {t.description}
-                </span>
-                <span className="num" style={{ marginLeft: "auto", color: "var(--text-muted)", flexShrink: 0, fontSize: "12px" }}>
-                  {new Date(t.date).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" })}
                 </span>
               </li>
             ))}
             {transactions.length === 0 && (
-              <li style={{ color: "var(--text-muted)" }}>No transactions this month.</li>
+              <li style={{ color: "var(--text-muted)", border: "none", padding: "12px 0" }}>No transactions this month.</li>
             )}
           </ul>
         </section>
@@ -180,25 +181,22 @@ export default async function DashboardPage({
       {upcomingRecurring.length > 0 && (
         <section>
           <h2 style={{ marginBottom: "12px" }}>Upcoming Recurring</h2>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "8px" }}>
+          <ul style={{ margin: 0 }}>
             {upcomingRecurring.map((r: any) => {
               const d = new Date(r.nextDate)
               const isPast = d < today
               return (
-                <li key={r.id} style={{
-                  display: "flex", alignItems: "center", gap: "10px",
-                  padding: "10px 14px", borderRadius: "var(--radius)",
-                  background: "var(--surface)", border: `1px solid ${isPast ? "var(--expense)" : "var(--border)"}`,
-                  fontSize: "13px",
-                }}>
-                  <span className="num" style={{ color: r.type === "income" ? "var(--income)" : "var(--expense)", fontWeight: 600, minWidth: "80px" }}>
+                <li key={r.id} className="row-card" style={{ borderColor: isPast ? "var(--expense)" : "var(--border)" }}>
+                  <span className="row-amount num" style={{ color: r.type === "income" ? "var(--income)" : "var(--expense)", fontWeight: 600 }}>
                     {r.type === "income" ? "+" : "-"}฿{Number(r.amount).toLocaleString()}
                   </span>
-                  <span style={{ flex: 1 }}>{r.description || r.category?.name || "—"}</span>
-                  <span style={{ fontSize: "12px", color: isPast ? "var(--expense)" : "var(--text-muted)", fontWeight: isPast ? 600 : 400 }}>
-                    {isPast ? "Overdue" : ""} {d.toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" })}
+                  <span className="row-primary">{r.description || r.category?.name || "—"}</span>
+                  <span className="row-meta">
+                    <span style={{ color: isPast ? "var(--expense)" : "var(--text-muted)", fontWeight: isPast ? 600 : 400 }}>
+                      {isPast ? "Overdue · " : ""}{d.toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" })}
+                    </span>
+                    <span style={{ textTransform: "capitalize" }}>{r.frequency}</span>
                   </span>
-                  <span style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "capitalize" }}>{r.frequency}</span>
                 </li>
               )
             })}

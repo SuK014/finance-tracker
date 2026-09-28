@@ -232,7 +232,7 @@ export default function ImportPage() {
   })
 
   return (
-    <main style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+    <main style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
       <h1 style={{ margin: 0 }}>Import Transactions</h1>
 
       {/* Tab bar */}
@@ -260,7 +260,7 @@ export default function ImportPage() {
                   <thead>
                     <tr style={{ textAlign: "left", borderBottom: "1px solid var(--border)" }}>
                       {["Slip","Amount","Type","Date","Description","Account","Category"].map(h => (
-                        <th key={h} style={{ padding: "6px 8px", fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>{h}</th>
+                        <th key={h} scope="col" style={{ padding: "6px 8px", fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600, textAlign: h === "Amount" ? "right" : "left" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -271,9 +271,9 @@ export default function ImportPage() {
                           <img src={row.preview} alt={row.filename} style={{ width: "50px", height: "66px", objectFit: "cover", borderRadius: "4px" }} />
                           {row.error && <p style={{ color: "var(--expense)", fontSize: "11px", margin: "2px 0 0" }}>Parse failed</p>}
                         </td>
-                        <td style={{ padding: "6px 8px" }}>
+                        <td style={{ padding: "6px 8px", textAlign: "right" }}>
                           <input type="number" step="any" min="0" value={row.amount} disabled={!!row.error}
-                            onChange={e => updateSlip(i, "amount", e.target.value)} style={{ width: "80px" }} />
+                            onChange={e => updateSlip(i, "amount", e.target.value)} style={{ width: "80px", textAlign: "right" }} />
                         </td>
                         <td style={{ padding: "6px 8px" }}>
                           <div style={{ width: "100px" }}>
@@ -366,7 +366,7 @@ export default function ImportPage() {
                   <thead>
                     <tr style={{ textAlign: "left", borderBottom: "1px solid var(--border)" }}>
                       {["Date","Description","Amount","Type","Account","Category"].map(h => (
-                        <th key={h} style={{ padding: "6px 8px", fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>{h}</th>
+                        <th key={h} scope="col" style={{ padding: "6px 8px", fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600, textAlign: h === "Amount" ? "right" : "left" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -381,8 +381,8 @@ export default function ImportPage() {
                         <td style={{ padding: "6px 8px" }}>
                           <input type="text" value={row.description} onChange={e => updateCsv(i, "description", e.target.value)} />
                         </td>
-                        <td style={{ padding: "6px 8px" }}>
-                          <input type="number" step="any" min="0" value={row.amount} onChange={e => updateCsv(i, "amount", e.target.value)} style={{ width: "80px" }} />
+                        <td style={{ padding: "6px 8px", textAlign: "right" }}>
+                          <input type="number" step="any" min="0" value={row.amount} onChange={e => updateCsv(i, "amount", e.target.value)} style={{ width: "80px", textAlign: "right" }} />
                         </td>
                         <td style={{ padding: "6px 8px" }}>
                           <div style={{ width: "100px" }}>

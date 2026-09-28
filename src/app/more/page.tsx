@@ -14,7 +14,7 @@ const MORE_LINKS = [
 
 export default function MorePage() {
   return (
-    <main style={{ display: "flex", flexDirection: "column", gap: "32px", maxWidth: "420px" }}>
+    <main style={{ display: "flex", flexDirection: "column", gap: "22px", maxWidth: "420px" }}>
       <h1 style={{ margin: 0 }}>More</h1>
 
       <nav style={{ display: "flex", flexDirection: "column" }}>

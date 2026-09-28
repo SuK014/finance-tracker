@@ -10,7 +10,7 @@ export default async function RecurringPage() {
   ])
 
   return (
-    <main style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+    <main style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
       <h1 style={{ margin: 0 }}>Recurring Transactions</h1>
 
       <RecurringForm accounts={accounts} categories={categories} />

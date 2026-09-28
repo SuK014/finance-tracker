@@ -99,16 +99,20 @@ export default function AddTransactionForm({
         onChange={categoryId => setForm({ ...form, categoryId })}
       />
 
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span className="num" style={{ color: "var(--text-secondary)", fontSize: "14px", flexShrink: 0 }}>
-          {currencySymbol(selectedAccount?.currency)}
-        </span>
-        <input
-          type="number" placeholder="Amount" min="0.01" step="any" required
-          value={form.amount}
-          onChange={e => setForm({ ...form, amount: e.target.value })}
-          style={{ flex: 1 }}
-        />
+      <div>
+        <label htmlFor="txn-amount" className="field-label">Amount</label>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span className="num" style={{ color: "var(--text-secondary)", fontSize: "14px", flexShrink: 0 }}>
+            {currencySymbol(selectedAccount?.currency)}
+          </span>
+          <input
+            id="txn-amount"
+            type="number" placeholder="0.00" min="0.01" step="any" required
+            value={form.amount}
+            onChange={e => setForm({ ...form, amount: e.target.value })}
+            style={{ flex: 1 }}
+          />
+        </div>
       </div>
       <DatePicker
         value={form.date}
@@ -118,11 +122,15 @@ export default function AddTransactionForm({
         value={form.time}
         onChange={time => setForm({ ...form, time })}
       />
-      <input
-        type="text" placeholder="Description"
-        value={form.description}
-        onChange={e => setForm({ ...form, description: e.target.value })}
-      />
+      <div>
+        <label htmlFor="txn-description" className="field-label">Description</label>
+        <input
+          id="txn-description"
+          type="text" placeholder="e.g. Groceries at Big C"
+          value={form.description}
+          onChange={e => setForm({ ...form, description: e.target.value })}
+        />
+      </div>
 
       <div>
         <input

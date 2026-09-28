@@ -83,10 +83,8 @@ export default function TransactionList({
             </span>
             <span className="row-meta">
               {t.category && (
-                <span style={{
-                  padding: "2px 8px", borderRadius: "999px", fontSize: "11px",
-                  backgroundColor: t.category.color ?? "var(--text-muted)", color: "#fff",
-                }}>
+                <span className="category-pill">
+                  <span className="dot" style={{ background: t.category.color ?? "var(--text-muted)" }} />
                   {t.category.name}
                 </span>
               )}

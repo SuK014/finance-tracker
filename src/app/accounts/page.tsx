@@ -10,7 +10,7 @@ export default async function AccountsPage() {
     <main>
       <h1>Accounts</h1>
 
-      <ul style={{ marginBottom: "24px" }}>
+      <ul style={{ marginBottom: "22px" }}>
         {accounts.map((a: any) => (
           <li key={a.id} className="row-card">
             <span className="row-primary">{a.name}</span>
@@ -24,7 +24,7 @@ export default async function AccountsPage() {
             <span className="row-meta">
               <span>{a.type}{a.bankName ? ` · ${a.bankName}` : ""}</span>
               <Link href={`/transactions?accountId=${a.id}`} style={{ color: "var(--accent)" }}>
-                View →
+                View
               </Link>
             </span>
             <AccountActions account={a} />

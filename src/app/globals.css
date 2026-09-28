@@ -88,6 +88,17 @@ h3 { font-size: 13px; font-weight: 600; margin: 0; }
   letter-spacing: -0.02em;
 }
 
+/* Shared form field label — every input needs a real associated <label>
+   (WCAG 2.2: a placeholder alone is not an accessible name), even where the
+   placeholder is kept as a format hint. */
+.field-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
 /* Inputs */
 input, select, textarea, .select-trigger {
   border: 1px solid var(--border);
@@ -386,6 +397,30 @@ li:last-child { border-bottom: none; }
   padding: 16px 20px;
 }
 
+/* Category pill — a dot + neutral chip instead of filling the pill with the
+   category's own color behind white text, which can't guarantee AA contrast
+   against an arbitrary user-picked color. */
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.category-pill .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 /* Stat tiles — dashboard summary numbers */
 .stat-tile {
   display: flex;
@@ -407,6 +442,16 @@ li:last-child { border-bottom: none; }
   font-size: 23px;
   font-weight: 650;
 }
+/* The one figure on the tile row that answers "how am I actually doing" —
+   given a touch more weight so it isn't flattened to equal rank with the
+   supporting numbers around it. */
+.stat-tile-net {
+  border-top: 2px solid var(--tone, var(--accent));
+  background: color-mix(in srgb, var(--tone, var(--accent)) 5%, var(--surface));
+}
+.stat-tile-net .stat-value {
+  font-size: 27px;
+}
 
 @keyframes rise-in {
   from { opacity: 0; transform: translateY(6px); }
@@ -426,7 +471,7 @@ li:last-child { border-bottom: none; }
 .two-col-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 32px;
+  gap: 20px;
 }
 
 /* Dense list rows: desktop keeps the single-line layout below (unchanged);
@@ -601,4 +646,270 @@ li:last-child { border-bottom: none; }
   font-size: 11px;
   font-weight: 500;
   transition: color var(--dur-fast) var(--ease-out);
+}
+
+/* Login page: split "ledger cover / open page" layout. The cover always
+   sits on the app's own dark icon colors (#16171b bg, #7c97f0 accent —
+   see src/lib/appIcon.tsx) regardless of the light/dark toggle, since it's
+   fixed brand chrome rather than themed content. */
+.login-page {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.login-cover {
+  position: relative;
+  background: #16171b;
+  color: #f1f0ec;
+  padding: 44px 40px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.login-cover-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 36px;
+}
+.login-cover::before {
+  content: "";
+  position: absolute;
+  inset: -30% -10% auto auto;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, color-mix(in srgb, #7c97f0 30%, transparent) 0%, transparent 70%);
+  pointer-events: none;
+}
+.login-mark {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 650;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  position: relative;
+}
+.login-mark .glyph {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: color-mix(in srgb, #7c97f0 16%, transparent);
+  color: #7c97f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.login-figure {
+  position: relative;
+}
+.login-figure-label {
+  font-size: 12px;
+  color: #8d90a6;
+  margin: 0 0 6px;
+}
+.login-figure-value {
+  font-size: clamp(32px, 4vw, 44px);
+  font-weight: 500;
+  line-height: 1.05;
+  margin: 0 0 18px;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+.login-figure-value .cur {
+  font-size: 0.5em;
+  color: #8d90a6;
+  font-weight: 500;
+}
+.login-spark {
+  display: block;
+  width: 100%;
+  height: 64px;
+  margin-bottom: 22px;
+}
+.login-cover-stats {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  border-top: 1px solid rgba(241, 240, 236, 0.1);
+  padding-top: 16px;
+}
+.login-cover-stats .stat-label {
+  font-size: 11px;
+  color: #8d90a6;
+  margin: 0 0 4px;
+}
+.login-cover-stats .stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+.login-cover-stats .stat-value[data-tone="income"] {
+  color: #3fc98a;
+}
+.login-cover-stats .stat-value[data-tone="expense"] {
+  color: #ff8a80;
+}
+.login-cover-foot {
+  position: relative;
+  font-size: 12px;
+  color: #8d90a6;
+  max-width: 34ch;
+}
+
+.login-auth-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  background: var(--bg);
+  position: relative;
+}
+.login-theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+.login-card {
+  width: 100%;
+  max-width: 360px;
+}
+.login-brand {
+  font-weight: 650;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  margin-bottom: 22px;
+}
+.login-head {
+  margin-bottom: 26px;
+}
+.login-head h1 {
+  margin: 0 0 5px;
+}
+.login-head p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.login-tabs {
+  position: relative;
+  display: flex;
+  gap: 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 22px;
+}
+.login-tab {
+  border: none;
+  background: none;
+  padding: 0 0 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: 0;
+}
+.login-tab:hover:not(:disabled) {
+  background: none;
+  border-color: transparent;
+}
+.login-tab[aria-pressed="true"] {
+  color: var(--text-primary);
+}
+.login-tab-indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  width: 1px;
+  background: var(--accent);
+  border-radius: 2px;
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.login-field label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.login-pw-row {
+  position: relative;
+}
+.login-pw-row input {
+  padding-right: 38px;
+  width: 100%;
+}
+.login-pw-toggle {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  bottom: 4px;
+  width: 30px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-pw-toggle:hover:not(:disabled) {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-secondary);
+}
+.login-field-error {
+  margin: 0;
+  color: var(--expense);
+  font-size: 12.5px;
+  background: color-mix(in srgb, var(--expense) 12%, transparent);
+  padding: 9px 11px;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--expense) 35%, transparent);
+}
+.login-switch-line {
+  margin: 18px 0 0;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+.login-switch-line button {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--accent);
+  font-weight: 600;
+}
+.login-switch-line button:hover:not(:disabled) {
+  background: none;
+  border-color: transparent;
+}
+
+/* Comes last so it wins over the equal-specificity .login-page/.login-cover
+   rules above regardless of source order within the media query. */
+@media (max-width: 860px) {
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+  .login-cover {
+    display: none;
+  }
 }

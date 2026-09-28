@@ -59,7 +59,7 @@ export default async function NetWorthPage() {
   }
 
   return (
-    <main style={{ display: "flex", flexDirection: "column", gap: "32px", maxWidth: "640px" }}>
+    <main style={{ display: "flex", flexDirection: "column", gap: "22px", maxWidth: "640px" }}>
       <h1 style={{ margin: 0 }}>Net Worth</h1>
 
       {allCurrencies.map(cur => {

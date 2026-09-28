@@ -26,7 +26,7 @@ export default async function CategoriesPage() {
 
   function CategoryList({ items, showBudget }: { items: Category[]; showBudget?: boolean }) {
     return (
-      <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
+      <ul style={{ margin: 0 }}>
         {items.map(c => {
           const catSpent = spent[c.id] ?? 0
           const hasBudget = showBudget && c.budget != null && c.budget > 0
@@ -34,16 +34,16 @@ export default async function CategoriesPage() {
           const over = hasBudget && catSpent > c.budget!
 
           return (
-            <li key={c.id}>
+            <li key={c.id} className="row-card" style={{ flexDirection: "column", alignItems: "stretch", gap: "8px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <span style={{
-                  width: "12px", height: "12px", borderRadius: "50%", flexShrink: 0,
-                  backgroundColor: c.color ?? "#888", display: "inline-block",
+                  width: "10px", height: "10px", borderRadius: "50%", flexShrink: 0,
+                  backgroundColor: c.color ?? "var(--text-muted)", display: "inline-block",
                 }} />
-                <span style={{ flex: 1, fontWeight: 500 }}>{c.name}</span>
+                <span className="row-primary" style={{ flex: 1, fontWeight: 500 }}>{c.name}</span>
                 {hasBudget && (
-                  <span style={{
-                    fontSize: "12px", fontVariantNumeric: "tabular-nums", fontFamily: "var(--font-mono)",
+                  <span className="num" style={{
+                    fontSize: "12px",
                     color: over ? "var(--expense)" : "var(--text-secondary)",
                   }}>
                     ฿{catSpent.toLocaleString()} / ฿{c.budget!.toLocaleString()}
@@ -52,12 +52,12 @@ export default async function CategoriesPage() {
                 <CategoryActions category={c} />
               </div>
               {hasBudget && (
-                <div style={{ marginTop: "5px", marginLeft: "22px", height: "4px", borderRadius: "2px", background: "var(--border)" }}>
+                <div style={{ marginLeft: "20px", height: "4px", borderRadius: "2px", background: "var(--border)" }}>
                   <div style={{
                     height: "100%", borderRadius: "2px",
                     width: `${pct}%`,
                     background: over ? "var(--expense)" : (c.color ?? "var(--accent)"),
-                    transition: "width 0.3s",
+                    transition: "width var(--dur-slow) var(--ease-out)",
                   }} />
                 </div>
               )}
@@ -65,7 +65,7 @@ export default async function CategoriesPage() {
           )
         })}
         {items.length === 0 && (
-          <li style={{ color: "var(--text-muted)", padding: "8px 0" }}>None yet.</li>
+          <li style={{ color: "var(--text-muted)", border: "none", padding: "12px 0" }}>None yet.</li>
         )}
       </ul>
     )
@@ -75,7 +75,7 @@ export default async function CategoriesPage() {
     <main>
       <h1>Categories</h1>
 
-      <div className="two-col-grid" style={{ marginBottom: "40px" }}>
+      <div className="two-col-grid" style={{ marginBottom: "22px" }}>
         <section>
           <h2 style={{ fontSize: "14px", fontWeight: 600, color: "var(--expense)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px" }}>
             Expense

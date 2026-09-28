@@ -30,11 +30,15 @@ export default function AddAccountForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-sm">
-      <input
-        type="text" placeholder="Account name" required
-        value={form.name}
-        onChange={e => setForm({ ...form, name: e.target.value })}
-      />
+      <div>
+        <label htmlFor="account-name" className="field-label">Account name</label>
+        <input
+          id="account-name"
+          type="text" placeholder="e.g. SCB Savings" required
+          value={form.name}
+          onChange={e => setForm({ ...form, name: e.target.value })}
+        />
+      </div>
       <Select
         ariaLabel="Account type"
         value={form.type}
@@ -51,11 +55,15 @@ export default function AddAccountForm() {
         onChange={currency => setForm({ ...form, currency })}
         options={CURRENCIES.map(c => ({ value: c.code, label: `${c.symbol} ${c.label}` }))}
       />
-      <input
-        type="text" placeholder="Bank name (optional)"
-        value={form.bankName}
-        onChange={e => setForm({ ...form, bankName: e.target.value })}
-      />
+      <div>
+        <label htmlFor="account-bank-name" className="field-label">Bank name (optional)</label>
+        <input
+          id="account-bank-name"
+          type="text" placeholder="e.g. Siam Commercial Bank"
+          value={form.bankName}
+          onChange={e => setForm({ ...form, bankName: e.target.value })}
+        />
+      </div>
       {error && <p style={{ color: "var(--expense)", fontSize: "13px", margin: 0 }}>{error}</p>}
       <button type="submit" disabled={submitting}>{submitting ? "Adding..." : "Add Account"}</button>
     </form>

@@ -27,10 +27,10 @@ export default async function PortfolioPage() {
   const holdings: Holding[] = await getPortfolio()
 
   return (
-    <div>
+    <main>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1>Portfolio</h1>
-        <Link href="/portfolio/transactions">View Transaction History →</Link>
+        <Link href="/portfolio/transactions">View transaction history</Link>
       </div>
 
 
@@ -38,26 +38,26 @@ export default async function PortfolioPage() {
       <table>
         <thead>
           <tr>
-            <th>Symbol</th>
-            <th>Name</th>
-            <th>Shares</th>
-            <th>Avg Cost</th>
-            <th>Current Price</th>
-            <th>Total Value</th>
-            <th>Gain/Loss</th>
-            <th></th>
+            <th scope="col">Symbol</th>
+            <th scope="col">Name</th>
+            <th scope="col" style={{ textAlign: "right" }}>Shares</th>
+            <th scope="col" style={{ textAlign: "right" }}>Avg Cost</th>
+            <th scope="col" style={{ textAlign: "right" }}>Current Price</th>
+            <th scope="col" style={{ textAlign: "right" }}>Total Value</th>
+            <th scope="col" style={{ textAlign: "right" }}>Gain/Loss</th>
+            <th scope="col"></th>
           </tr>
         </thead>
         <tbody>
           {holdings.map((h) => (
             <tr key={h.id}>
-              <td>{h.symbol}</td>
+              <th scope="row" style={{ textAlign: "left", fontWeight: 500 }}>{h.symbol}</th>
               <td>{h.name}</td>
-              <td>{(h.totalShares ?? 0).toFixed(6)}</td>
-              <td>{sym(h.currency)}{(h.avgCost ?? 0).toFixed(2)}</td>
-              <td>{sym(h.currency)}{(h.currentPrice ?? 0).toFixed(2)}</td>
-              <td>{sym(h.currency)}{(h.totalValue ?? 0).toFixed(2)}</td>
-              <td className="num" style={{ color: (h.gainLoss ?? 0) >= 0 ? "var(--income)" : "var(--expense)" }}>
+              <td className="num" style={{ textAlign: "right" }}>{(h.totalShares ?? 0).toFixed(6)}</td>
+              <td className="num" style={{ textAlign: "right" }}>{sym(h.currency)}{(h.avgCost ?? 0).toFixed(2)}</td>
+              <td className="num" style={{ textAlign: "right" }}>{sym(h.currency)}{(h.currentPrice ?? 0).toFixed(2)}</td>
+              <td className="num" style={{ textAlign: "right" }}>{sym(h.currency)}{(h.totalValue ?? 0).toFixed(2)}</td>
+              <td className="num" style={{ textAlign: "right", color: (h.gainLoss ?? 0) >= 0 ? "var(--income)" : "var(--expense)" }}>
                 {(h.gainLoss ?? 0) >= 0 ? "+" : ""}{sym(h.currency)}{(h.gainLoss ?? 0).toFixed(2)} ({(h.gainLossPct ?? 0).toFixed(2)}%)
               </td>
               <td><SellAssetButton symbol={h.symbol} maxShares={h.totalShares} /></td>
@@ -69,6 +69,6 @@ export default async function PortfolioPage() {
 
       <h2>Add Asset</h2>
       <AddAssetForm />
-    </div>
+    </main>
   )
 }

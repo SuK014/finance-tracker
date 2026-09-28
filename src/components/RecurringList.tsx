@@ -203,10 +203,10 @@ function RecurringRow({
 
       <span className="row-meta">
         {item.category && (
-          <span style={{
-            padding: "1px 7px", borderRadius: "999px",
-            fontSize: "11px", background: item.category.color ?? "var(--text-muted)", color: "#fff",
-          }}>{item.category.name}</span>
+          <span className="category-pill">
+            <span className="dot" style={{ background: item.category.color ?? "var(--text-muted)" }} />
+            {item.category.name}
+          </span>
         )}
         <span style={{ textTransform: "capitalize" }}>{item.frequency}</span>
         <span className="num" style={{

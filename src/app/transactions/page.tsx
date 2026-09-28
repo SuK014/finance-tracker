@@ -41,7 +41,7 @@ export default async function TransactionPage({
         </h1>
         {activeAccount && (
           <Link href="/transactions" style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-            ← All accounts
+            All accounts
           </Link>
         )}
         <Link

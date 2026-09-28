@@ -37,7 +37,7 @@ export default function SettingsPage() {
   const inputStyle: React.CSSProperties = { width: "100%", boxSizing: "border-box" }
 
   return (
-    <main style={{ display: "flex", flexDirection: "column", gap: "32px", maxWidth: "420px" }}>
+    <main style={{ display: "flex", flexDirection: "column", gap: "22px", maxWidth: "420px" }}>
       <h1 style={{ margin: 0 }}>Settings</h1>
 
       <section style={{
