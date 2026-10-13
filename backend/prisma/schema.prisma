@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           Int                    @id @default(autoincrement())
+  email        String                 @unique
+  passwordHash String
+  createdAt    DateTime               @default(now())
+  accounts     Account[]
+  categories   Category[]
+  transactions Transaction[]
+  recurring    RecurringTransaction[]
+  assetLots    AssetLot[]
+}
+
+model Category {
+  id           Int                    @id @default(autoincrement())
+  userId       Int
+  name         String
+  color        String?
+  type         String                 @default("expense")
+  budget       Float?
+  deletedAt    DateTime?
+  user         User                   @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+  recurring    RecurringTransaction[]
+
+  @@index([userId])
+}
+
+model Account {
+  id           Int                    @id @default(autoincrement())
+  userId       Int
+  name         String
+  type         String
+  currency     String                 @default("THB")
+  bankName     String?
+  deletedAt    DateTime?
+  user         User                   @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+  recurring    RecurringTransaction[]
+
+  @@index([userId])
+}
+
+model Transaction {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  amount      Float
+  type        String
+  description String?
+  date        DateTime
+  accountId   Int
+  categoryId  Int?
+  evidenceUrl String?
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+  user        User      @relation(fields: [userId], references: [id])
+  account     Account   @relation(fields: [accountId], references: [id])
+  category    Category? @relation(fields: [categoryId], references: [id])
+
+  @@index([userId])
+}
+
+model RecurringTransaction {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  amount      Float
+  type        String
+  description String?
+  accountId   Int
+  categoryId  Int?
+  frequency   String
+  nextDate    DateTime
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id])
+  account     Account   @relation(fields: [accountId], references: [id])
+  category    Category? @relation(fields: [categoryId], references: [id])
+
+  @@index([userId])
+}
+
+// Shared reference data — the same ticker (e.g. AAPL) is the same Asset row
+// for every user. A user's actual position is the AssetLot, which IS scoped.
+model Asset {
+  id        Int        @id @default(autoincrement())
+  symbol    String     @unique
+  name      String
+  type      String     @default("stock")
+  currency  String     @default("USD")
+  deletedAt DateTime?
+  lots      AssetLot[]
+}
+
+model AssetLot {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  assetId   Int
+  lotType   String
+  quantity  Float
+  price     Float
+  date      DateTime  @default(now())
+  deletedAt DateTime?
+  user      User      @relation(fields: [userId], references: [id])
+  asset     Asset     @relation(fields: [assetId], references: [id])
+
+  @@index([userId])
+}
