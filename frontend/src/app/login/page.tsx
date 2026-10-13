@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef, useState } from "react"
 import { login, register, saveToken } from "@/lib/api"
 import ThemeToggle from "@/components/ThemeToggle"
+import BrandMark from "@/components/BrandMark"
 
 export default function LoginPage() {
   const [mode, setMode] = useState<"login" | "register">("login")
@@ -66,7 +67,7 @@ export default function LoginPage() {
     <div className="login-page">
       <section className="login-cover" aria-hidden="true">
         <div className="login-mark">
-          <span className="glyph">฿</span>
+          <BrandMark size={28} />
           Finance Tracker
         </div>
 

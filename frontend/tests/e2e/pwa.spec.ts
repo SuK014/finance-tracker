@@ -36,7 +36,7 @@ test.describe("PWA installability", () => {
     await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveCount(1);
     await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute(
       "content",
-      "#16171b"
+      "#6a5ae0"
     );
   });
 });
