@@ -1,0 +1,20 @@
+# dependencies and build output
+node_modules
+.next
+dist
+
+# secrets: never commit env files (any depth, any suffix)
+.env*
+
+# user uploads (receipt photos)
+uploads
+
+# test output and browser-tool scratch files
+test-results/
+playwright-report/
+.playwright-mcp/
+
+# local tooling and editor settings
+.claude/
+.mcp.json
+.DS_Store
