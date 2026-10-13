@@ -1,53 +1,20 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# dependencies and build output
+node_modules
+.next
+dist
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coverage
-/test-results
-/playwright-report
-/blob-report
-/playwright/.cache
-/.playwright-mcp
-
-# next.js
-/.next/
-/.next-test/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
+# secrets: never commit env files (any depth, any suffix)
 .env*
 
-# vercel
-.vercel
+# user uploads (receipt photos)
+uploads
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# test output and browser-tool scratch files
+test-results/
+playwright-report/
+.playwright-mcp/
 
-/src/generated/prisma
-
-# claude code settings
+# local tooling and editor settings
 .claude/
 .mcp.json
+.DS_Store
