@@ -18,9 +18,9 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const userId = (req as any).user.userId
-    const { name, color, type } = req.body
+    const { name, color, icon, type } = req.body
     const category = await prisma.category.create({
-      data: { name, color, type: type ?? "expense", userId },
+      data: { name, color, icon: icon ?? null, type: type ?? "expense", userId },
     })
     res.status(201).json(category)
   } catch (error) {
@@ -31,10 +31,10 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const userId = (req as any).user.userId
-    const { name, color, type, budget } = req.body
+    const { name, color, icon, type, budget } = req.body
     const { count } = await prisma.category.updateMany({
       where: { id: Number(req.params.id), userId },
-      data: { name, color, ...(type ? { type } : {}), budget: budget != null ? Number(budget) : null },
+      data: { name, color, ...(icon !== undefined ? { icon } : {}), ...(type ? { type } : {}), budget: budget != null ? Number(budget) : null },
     })
     if (count === 0) { res.status(404).json({ error: "Category not found" }); return }
     const category = await prisma.category.findUnique({ where: { id: Number(req.params.id) } })

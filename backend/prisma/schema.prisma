@@ -24,6 +24,7 @@ model Category {
   userId       Int
   name         String
   color        String?
+  icon         String?
   type         String                 @default("expense")
   budget       Float?
   deletedAt    DateTime?
