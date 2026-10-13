@@ -25,9 +25,12 @@ for (let h = 0; h < 24; h++) {
 export default function TimePicker({
   value,
   onChange,
+  inline,
 }: {
   value: string
   onChange: (value: string) => void
+  // Expand in the page flow instead of floating, for use inside scroll containers (the add sheet).
+  inline?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [customText, setCustomText] = useState(value)
@@ -53,10 +56,18 @@ export default function TimePicker({
   }, [open])
 
   useEffect(() => {
-    if (open && listRef.current) {
-      const target = listRef.current.querySelector('[data-selected="true"]') as HTMLElement | null
-      target?.scrollIntoView({ block: "center" })
-    }
+    if (!open || !listRef.current) return
+    const list = listRef.current
+    // Next frame, after the list has laid out. Scroll only the list itself —
+    // scrollIntoView would also scroll the page/sheet behind it.
+    const raf = requestAnimationFrame(() => {
+      const target = list.querySelector('[data-selected="true"]') as HTMLElement | null
+      const nearest = target ?? Array.from(list.querySelectorAll<HTMLElement>("[data-time]")).find(o => (o.dataset.time ?? "") >= value) ?? null
+      if (nearest) list.scrollTop = nearest.offsetTop - list.clientHeight / 2 + nearest.clientHeight / 2
+      if (inline) rootRef.current?.scrollIntoView({ block: "nearest" })
+    })
+    return () => cancelAnimationFrame(raf)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   function applyCustomText() {
@@ -79,7 +90,7 @@ export default function TimePicker({
         <span className={value ? "num" : "select-placeholder"}>{value ? formatDisplay12h(value) : "Select time"}</span>
       </button>
       {open && (
-        <div className="timepicker-popup" role="listbox" ref={listRef}>
+        <div className="timepicker-popup" role="listbox" ref={listRef} data-inline={inline ? "true" : undefined}>
           <div className="timepicker-custom">
             <input
               type="text"
@@ -101,6 +112,7 @@ export default function TimePicker({
               aria-selected={t === value}
               className="select-option num"
               data-selected={t === value ? "true" : undefined}
+              data-time={t}
               onClick={() => { onChange(t); setOpen(false) }}
             >
               {formatDisplay12h(t)}

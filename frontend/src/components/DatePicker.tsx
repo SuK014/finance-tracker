@@ -26,9 +26,12 @@ const MONTHS = ["January", "February", "March", "April", "May", "June", "July", 
 export default function DatePicker({
   value, // ISO "YYYY-MM-DD", or ""
   onChange,
+  inline,
 }: {
   value: string
   onChange: (value: string) => void
+  // Expand in the page flow instead of floating, for use inside scroll containers (the add sheet).
+  inline?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const selected = parseISODate(value)
@@ -36,7 +39,10 @@ export default function DatePicker({
   const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (open) setViewMonth(selected ?? new Date())
+    if (open) {
+      setViewMonth(selected ?? new Date())
+      if (inline) rootRef.current?.scrollIntoView({ block: "nearest" })
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
@@ -96,7 +102,7 @@ export default function DatePicker({
         </span>
       </button>
       {open && (
-        <div className="datepicker-popup" role="dialog" aria-label="Choose date">
+        <div className="datepicker-popup" role="dialog" aria-label="Choose date" data-inline={inline ? "true" : undefined}>
           <div className="datepicker-header">
             <button type="button" className="datepicker-nav" onClick={() => setViewMonth(new Date(year, month - 1, 1))} aria-label="Previous month">‹</button>
             <span className="datepicker-title">{MONTHS[month]} {year}</span>

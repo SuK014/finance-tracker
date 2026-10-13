@@ -20,7 +20,14 @@ const transaction = {
 const categories = [category]
 let nextCategoryId = 100
 
+const subscriptions = [
+  { id: 1, amount: 419, type: "expense", description: "Netflix Premium", frequency: "monthly", nextDate: "2026-12-05T00:00:00.000Z", active: true, accountId: 1, categoryId: null, account: { name: account.name }, category: null },
+  { id: 2, amount: 1200, type: "expense", description: "Disney+", frequency: "yearly", nextDate: "2027-03-01T00:00:00.000Z", active: true, accountId: 1, categoryId: null, account: { name: account.name }, category: null },
+  { id: 3, amount: 300, type: "expense", description: "Gym", frequency: "monthly", nextDate: "2026-12-10T00:00:00.000Z", active: true, accountId: 1, categoryId: null, account: { name: account.name }, category: null },
+]
+
 const FIXTURES = {
+  "/api/recurring": subscriptions,
   "/api/accounts": [account],
   "/api/transactions": [transaction],
 }
@@ -47,7 +54,7 @@ const server = createServer((req, res) => {
       req.on("data", chunk => { body += chunk })
       req.on("end", () => {
         const parsed = JSON.parse(body || "{}")
-        const created = { id: nextCategoryId++, name: parsed.name, color: parsed.color, type: parsed.type ?? "expense" }
+        const created = { id: nextCategoryId++, name: parsed.name, color: parsed.color, icon: parsed.icon ?? null, type: parsed.type ?? "expense" }
         categories.push(created)
         res.writeHead(201)
         res.end(JSON.stringify(created))
@@ -56,6 +63,33 @@ const server = createServer((req, res) => {
     }
     res.writeHead(200)
     res.end(JSON.stringify(categories))
+    return
+  }
+
+  if (path === "/api/slips/extract" && req.method === "POST") {
+    let raw = ""
+    req.on("data", chunk => { raw += chunk.toString("latin1") })
+    req.on("end", () => {
+      res.writeHead(200)
+      if (raw.includes("limit.png")) {
+        res.end(JSON.stringify([{ filename: "limit.png", success: false, error: "Error: Gemini request failed (429): RESOURCE_EXHAUSTED" }]))
+        return
+      }
+      res.end(JSON.stringify([{
+        filename: "slip.png", success: true,
+        data: { amount: 250, type: "expense", date: "2026-10-13T12:30", description: "7-Eleven" },
+      }]))
+    })
+    return
+  }
+
+  if (path === "/api/transactions" && req.method === "POST") {
+    let body = ""
+    req.on("data", chunk => { body += chunk })
+    req.on("end", () => {
+      res.writeHead(201)
+      res.end(JSON.stringify({ id: 99, ...JSON.parse(body || "{}") }))
+    })
     return
   }
 
