@@ -22,7 +22,14 @@ router.post("/extract", upload.array("images", 20), async (req, res) => {
     return
   }
 
-  const provider = getVisionProvider()
+  let provider
+  try {
+    provider = getVisionProvider()
+  } catch (err) {
+    console.error("[slips] could not start the vision provider:", err)
+    res.status(500).json({ error: String(err) })
+    return
+  }
 
   const results = await Promise.all(
     files.map(async (file) => {
@@ -31,6 +38,7 @@ router.post("/extract", upload.array("images", 20), async (req, res) => {
         const data = await provider.extractSlip(base64, file.mimetype)
         return { filename: file.originalname, success: true, data }
       } catch (err) {
+        console.error(`[slips] extraction failed for "${file.originalname}" (provider: ${process.env.VISION_PROVIDER ?? "claude"}):`, err)
         return { filename: file.originalname, success: false, error: String(err) }
       }
     })

@@ -10,11 +10,10 @@ export function getVisionProvider(): VisionProvider {
     return new ClaudeVisionProvider()
   }
 
-  // To add a new provider later:
-  // if (provider === "gemini") {
-  //   const { GeminiVisionProvider } = require("./gemini")
-  //   return new GeminiVisionProvider()
-  // }
+  if (provider === "gemini") {
+    const { GeminiVisionProvider } = require("./gemini")
+    return new GeminiVisionProvider()
+  }
 
-  throw new Error(`Unknown VISION_PROVIDER: "${provider}". Supported: claude`)
+  throw new Error(`Unknown VISION_PROVIDER: "${provider}". Supported: claude, gemini`)
 }

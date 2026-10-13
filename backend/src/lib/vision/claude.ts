@@ -1,19 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk"
 import type { VisionProvider, SlipData } from "./types"
-
-const PROMPT = `You are reading a Thai bank transfer slip (e-slip).
-Extract the following fields and return ONLY valid JSON, nothing else:
-{
-  "amount": <number or null>,
-  "type": "income" or "expense" or null,
-  "date": "<ISO 8601 datetime string or null>",
-  "description": "<sender/receiver name or note, or null>"
-}
-Rules:
-- amount: the transferred amount as a number (no currency symbol)
-- type: "income" if money is received, "expense" if money is sent — if unclear, return null
-- date: combine date + time from the slip into ISO format (e.g. "2026-07-26T14:30:00")
-- description: use the sender/receiver name or any memo/note on the slip`
+import { SLIP_PROMPT } from "./prompt"
 
 export class ClaudeVisionProvider implements VisionProvider {
   private client: Anthropic
@@ -36,7 +23,7 @@ export class ClaudeVisionProvider implements VisionProvider {
               type: "image",
               source: { type: "base64", media_type: mimeType as any, data: imageBase64 },
             },
-            { type: "text", text: PROMPT },
+            { type: "text", text: SLIP_PROMPT },
           ],
         },
       ],
