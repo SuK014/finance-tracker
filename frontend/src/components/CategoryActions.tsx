@@ -5,15 +5,17 @@ import { useRouter } from "next/navigation"
 import { updateCategory, deleteCategory } from "@/lib/api"
 import DeleteButton from "@/components/DeleteButton"
 import RowActionsMenu from "@/components/RowActionsMenu"
+import EmojiPicker from "@/components/EmojiPicker"
 
-type Category = { id: number; name: string; color?: string | null; type?: string; budget?: number | null }
+type Category = { id: number; name: string; color?: string | null; icon?: string | null; type?: string; budget?: number | null }
 
 export default function CategoryActions({ category }: { category: Category }) {
   const router = useRouter()
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({
     name: category.name,
-    color: category.color ?? "#6366f1",
+    color: category.color ?? "#6a5ae0",
+    icon: category.icon ?? "",
     type: category.type ?? "expense",
     budget: category.budget != null ? String(category.budget) : "",
   })
@@ -28,6 +30,7 @@ export default function CategoryActions({ category }: { category: Category }) {
       const result = await updateCategory(category.id, {
         name: form.name,
         color: form.color,
+        icon: form.icon || null,
         type: form.type,
         budget: form.budget ? Number(form.budget) : null,
       })
@@ -56,6 +59,7 @@ export default function CategoryActions({ category }: { category: Category }) {
             </button>
           ))}
         </div>
+        <div style={{ flexBasis: "100%" }}><EmojiPicker value={form.icon} onChange={icon => setForm({ ...form, icon })} /></div>
         <input type="text" placeholder="Name" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} style={{ width: "120px" }} />
         <input type="color" value={form.color} onChange={e => setForm({ ...form, color: e.target.value })} />
         <input type="number" placeholder="Budget ฿ (optional)" min="0" step="any" value={form.budget} onChange={e => setForm({ ...form, budget: e.target.value })} style={{ width: "130px" }} />

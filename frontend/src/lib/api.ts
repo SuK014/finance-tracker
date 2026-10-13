@@ -103,7 +103,7 @@ export async function getCategories() {
     return res.json()
 }
 
-export async function createCategory(data: { name: string; color?: string; type?: string }) {
+export async function createCategory(data: { name: string; color?: string; icon?: string; type?: string }) {
     const res = await fetch(`${API_URL}/api/categories`, {
         method: "POST",
         headers: authHeaders(),
@@ -112,7 +112,7 @@ export async function createCategory(data: { name: string; color?: string; type?
     return res.json()
 }
 
-export async function updateCategory(id: number, data: { name: string; color?: string; type?: string; budget?: number | null }) {
+export async function updateCategory(id: number, data: { name: string; color?: string; icon?: string | null; type?: string; budget?: number | null }) {
     const res = await fetch(`${API_URL}/api/categories/${id}`, {
         method: "PUT",
         headers: authHeaders(),

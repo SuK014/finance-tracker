@@ -3,15 +3,16 @@
 import { useState } from "react"
 import { createCategory } from "@/lib/api"
 import { useRouter } from "next/navigation"
+import EmojiPicker from "@/components/EmojiPicker"
 
 export default function AddCategoryForm() {
   const router = useRouter()
-  const [form, setForm] = useState({ name: "", color: "#6366f1", type: "expense" })
+  const [form, setForm] = useState({ name: "", color: "#6a5ae0", icon: "", type: "expense" })
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    await createCategory({ name: form.name, color: form.color, type: form.type })
-    setForm({ name: "", color: "#6366f1", type: "expense" })
+    await createCategory({ name: form.name, color: form.color, icon: form.icon || undefined, type: form.type })
+    setForm({ name: "", color: "#6a5ae0", icon: "", type: "expense" })
     router.refresh()
   }
 
@@ -34,15 +35,20 @@ export default function AddCategoryForm() {
           </button>
         ))}
       </div>
+      <div>
+        <span className="field-label">Icon</span>
+        <EmojiPicker value={form.icon} onChange={icon => setForm({ ...form, icon })} />
+      </div>
       <input
         type="text"
+        aria-label="Category name"
         placeholder={`Category name (e.g. ${form.type === "expense" ? "Food, Transport" : "Salary, Freelance"})`}
         value={form.name}
         onChange={e => setForm({ ...form, name: e.target.value })}
         required
       />
       <div className="flex items-center gap-2">
-        <label>Color</label>
+        <label className="field-label" style={{ margin: 0 }}>Color</label>
         <input
           type="color"
           value={form.color}
@@ -50,7 +56,7 @@ export default function AddCategoryForm() {
         />
         <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>{form.color}</span>
       </div>
-      <button type="submit">Add Category</button>
+      <button type="submit">Add category</button>
     </form>
   )
 }

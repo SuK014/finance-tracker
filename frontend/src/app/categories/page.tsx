@@ -1,8 +1,9 @@
 import { getCategories, getTransactions } from "@/lib/serverApi"
 import AddCategoryForm from "@/components/AddCategoryForm"
 import CategoryActions from "@/components/CategoryActions"
+import CategoryIcon from "@/components/CategoryIcon"
 
-type Category = { id: number; name: string; color?: string | null; type?: string; budget?: number | null }
+type Category = { id: number; name: string; color?: string | null; icon?: string | null; type?: string; budget?: number | null }
 
 export default async function CategoriesPage() {
   const now = new Date()
@@ -36,10 +37,7 @@ export default async function CategoriesPage() {
           return (
             <li key={c.id} className="row-card" style={{ flexDirection: "column", alignItems: "stretch", gap: "8px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{
-                  width: "10px", height: "10px", borderRadius: "50%", flexShrink: 0,
-                  backgroundColor: c.color ?? "var(--text-muted)", display: "inline-block",
-                }} />
+                <CategoryIcon category={c} />
                 <span className="row-primary" style={{ flex: 1, fontWeight: 500 }}>{c.name}</span>
                 {hasBudget && (
                   <span className="num" style={{
@@ -52,7 +50,7 @@ export default async function CategoriesPage() {
                 <CategoryActions category={c} />
               </div>
               {hasBudget && (
-                <div style={{ marginLeft: "20px", height: "4px", borderRadius: "2px", background: "var(--border)" }}>
+                <div style={{ marginLeft: "52px", height: "6px", borderRadius: "3px", background: "var(--accent-soft)" }}>
                   <div style={{
                     height: "100%", borderRadius: "2px",
                     width: `${pct}%`,
@@ -77,20 +75,20 @@ export default async function CategoriesPage() {
 
       <div className="two-col-grid" style={{ marginBottom: "22px" }}>
         <section>
-          <h2 style={{ fontSize: "14px", fontWeight: 600, color: "var(--expense)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px" }}>
+          <h2 style={{ color: "var(--expense)" }}>
             Expense
           </h2>
           <CategoryList items={expense} showBudget />
         </section>
         <section>
-          <h2 style={{ fontSize: "14px", fontWeight: 600, color: "var(--income)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px" }}>
+          <h2 style={{ color: "var(--income)" }}>
             Income
           </h2>
           <CategoryList items={income} />
         </section>
       </div>
 
-      <h2>Add Category</h2>
+      <h2>Add category</h2>
       <AddCategoryForm />
     </main>
   )
