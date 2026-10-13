@@ -107,6 +107,7 @@ router.post("/:id/record", async (req, res) => {
     if (r.frequency === "daily")   next.setDate(next.getDate() + 1)
     if (r.frequency === "weekly")  next.setDate(next.getDate() + 7)
     if (r.frequency === "monthly") next.setMonth(next.getMonth() + 1)
+    if (r.frequency === "yearly")  next.setFullYear(next.getFullYear() + 1)
 
     await prisma.recurringTransaction.update({
       where: { id: r.id },
