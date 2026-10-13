@@ -80,13 +80,13 @@ export default async function ReportsPage({
                     opacity: hasActivity ? 1 : 0.45,
                   }}>
                     <th scope="row" style={{ padding: "8px 12px", fontWeight: 500, textAlign: "left" }}>{MONTH_NAMES[m.month - 1]}</th>
-                    <td style={{ padding: "8px 12px", textAlign: "right", color: "var(--income)", fontVariantNumeric: "tabular-nums", fontFamily: "var(--font-mono)" }}>
+                    <td style={{ padding: "8px 12px", textAlign: "right", color: "var(--income)", fontVariantNumeric: "tabular-nums" }}>
                       {m.income > 0 ? `+฿${m.income.toLocaleString()}` : "—"}
                     </td>
-                    <td style={{ padding: "8px 12px", textAlign: "right", color: "var(--expense)", fontVariantNumeric: "tabular-nums", fontFamily: "var(--font-mono)" }}>
+                    <td style={{ padding: "8px 12px", textAlign: "right", color: "var(--expense)", fontVariantNumeric: "tabular-nums" }}>
                       {m.expense > 0 ? `-฿${m.expense.toLocaleString()}` : "—"}
                     </td>
-                    <td style={{ padding: "8px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums", fontFamily: "var(--font-mono)",
+                    <td style={{ padding: "8px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums",
                       color: m.net > 0 ? "var(--income)" : m.net < 0 ? "var(--expense)" : "var(--text-secondary)" }}>
                       {hasActivity ? `${m.net >= 0 ? "+" : ""}฿${m.net.toLocaleString()}` : "—"}
                     </td>

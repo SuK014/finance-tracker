@@ -2,6 +2,7 @@ import { getPortfolio } from "@/lib/serverApi"
 import AddAssetForm from "@/components/AddAssetForm"
 import SellAssetButton from "@/components/SellAssetButton"
 import Link from "next/link"
+import SectionTabs from "@/components/SectionTabs"
 
 type Holding = {
   id: number
@@ -28,6 +29,7 @@ export default async function PortfolioPage() {
 
   return (
     <main>
+      <SectionTabs group="wealth" />
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1>Portfolio</h1>
         <Link href="/portfolio/transactions">View transaction history</Link>

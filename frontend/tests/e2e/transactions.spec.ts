@@ -20,14 +20,14 @@ test.describe("transactions page (redesigned)", () => {
 
     await page.goto("/transactions");
 
-    await expect(page.getByRole("heading", { name: "All Transactions" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Transactions", exact: true })).toBeVisible();
     expect(errors).toEqual([]);
   });
 
   test("search input filters the transaction list (primary flow)", async ({ page }) => {
     await page.goto("/transactions");
 
-    const search = page.getByPlaceholder("Search by description, category, or account…");
+    const search = page.getByRole("searchbox", { name: "Search by description, category, or account" });
     await expect(search).toBeVisible();
 
     // Matches the fixture transaction's category ("Groceries")
@@ -39,15 +39,17 @@ test.describe("transactions page (redesigned)", () => {
     await expect(page.getByText("No transactions match your search.")).toBeVisible();
   });
 
-  test("search input and add-transaction link are keyboard reachable with visible focus", async ({ page }) => {
+  test("search input and add-transaction button are keyboard reachable and the button opens the sheet", async ({ page }) => {
     await page.goto("/transactions");
 
-    const search = page.getByPlaceholder("Search by description, category, or account…");
+    const search = page.getByRole("searchbox", { name: "Search by description, category, or account" });
     await search.focus();
     await expect(search).toBeFocused();
 
-    const addLink = page.getByRole("link", { name: "+ Add Transaction" });
-    await addLink.focus();
-    await expect(addLink).toBeFocused();
+    const addButton = page.getByRole("main").getByRole("button", { name: "+ Add transaction" });
+    await addButton.focus();
+    await expect(addButton).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("dialog", { name: "Add transaction" })).toBeVisible();
   });
 });

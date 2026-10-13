@@ -1,5 +1,6 @@
 import { getAccounts, getPortfolio } from "@/lib/serverApi"
 import { currencySymbol as sym } from "@/lib/currency"
+import SectionTabs from "@/components/SectionTabs"
 
 export default async function NetWorthPage() {
   const [accounts, holdings] = await Promise.all([getAccounts(), getPortfolio()])
@@ -60,6 +61,7 @@ export default async function NetWorthPage() {
 
   return (
     <main style={{ display: "flex", flexDirection: "column", gap: "22px", maxWidth: "640px" }}>
+      <SectionTabs group="wealth" />
       <h1 style={{ margin: 0 }}>Net Worth</h1>
 
       {allCurrencies.map(cur => {

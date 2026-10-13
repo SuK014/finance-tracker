@@ -5,84 +5,99 @@ import Link from "next/link"
 import LogoutButton from "@/components/LogoutButton"
 import ThemeToggle from "@/components/ThemeToggle"
 import BottomTabBar from "@/components/BottomTabBar"
+import { AddSheetProvider, useAddSheet } from "@/components/AddSheet"
+import { UserIcon } from "@/components/TabIcons"
+import BrandMark from "@/components/BrandMark"
 
-const NAV = [
-  { href: "/", label: "Dashboard" },
-  { href: "/accounts", label: "Accounts" },
-  { href: "/transactions/new", label: "Transactions" },
-  { href: "/categories", label: "Categories" },
-  { href: "/recurring", label: "Recurring" },
-  { href: "/reports", label: "Reports" },
-  { href: "/net-worth", label: "Net Worth" },
-  { href: "/portfolio", label: "Portfolio" },
-  { href: "/import", label: "Import" },
-  { href: "/settings", label: "Settings" },
+const NAV_GROUPS: Array<{ label?: string; items: Array<{ href: string; label: string; match: (p: string) => boolean }> }> = [
+  { items: [{ href: "/", label: "Home", match: p => p === "/" }] },
+  {
+    label: "Activity",
+    items: [
+      { href: "/transactions", label: "Transactions", match: p => p.startsWith("/transactions") },
+      { href: "/subscriptions", label: "Subscriptions", match: p => p.startsWith("/subscriptions") },
+    ],
+  },
+  { items: [{ href: "/reports", label: "Reports", match: p => p.startsWith("/reports") }] },
+  {
+    label: "Wealth",
+    items: [
+      { href: "/net-worth", label: "Net worth", match: p => p.startsWith("/net-worth") },
+      { href: "/accounts", label: "Accounts", match: p => p.startsWith("/accounts") },
+      { href: "/portfolio", label: "Portfolio", match: p => p.startsWith("/portfolio") },
+    ],
+  },
+  {
+    label: "Manage",
+    items: [
+      { href: "/categories", label: "Categories", match: p => p.startsWith("/categories") },
+      { href: "/import", label: "Import", match: p => p.startsWith("/import") },
+      { href: "/settings", label: "Settings", match: p => p.startsWith("/settings") },
+    ],
+  },
 ]
+
+function Brand() {
+  return (
+    <span className="brand">
+      <BrandMark size={32} />
+      Finance Tracker
+    </span>
+  )
+}
+
+function Sidebar({ pathname }: { pathname: string }) {
+  const { open } = useAddSheet()
+  return (
+    <aside className="sidebar">
+      <Brand />
+      <button type="button" className="sidebar-add" onClick={open}>+ Add transaction</button>
+      <nav aria-label="Sections" style={{ display: "contents" }}>
+        {NAV_GROUPS.map((g, i) => (
+          <div key={i} style={{ display: "contents" }}>
+            {g.label && <span className="nav-group-label">{g.label}</span>}
+            {g.items.map(n => (
+              <Link key={n.href} href={n.href} className="nav-link" aria-current={n.match(pathname) ? "page" : undefined}>
+                {n.label}
+              </Link>
+            ))}
+          </div>
+        ))}
+      </nav>
+      <div className="sidebar-foot">
+        <div className="sidebar-foot-row">
+          <span>Appearance</span>
+          <ThemeToggle />
+        </div>
+        <LogoutButton />
+      </div>
+    </aside>
+  )
+}
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   if (pathname === "/login") return <>{children}</>
 
-  // "Transactions" now links straight to the add-form; keep it highlighted
-  // whether you're there or on the list itself (/transactions).
-  function isActive(href: string) {
-    if (href === "/transactions/new") return pathname.startsWith("/transactions")
-    return pathname === href
-  }
-
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-      <aside className="sidebar" style={{
-        width: "224px", flexShrink: 0,
-        background: "var(--surface)", borderRight: "1px solid var(--border)",
-        display: "flex", flexDirection: "column", padding: "24px 16px", gap: "4px",
-        height: "100vh", overflowY: "auto",
-      }}>
-        <span style={{ fontWeight: 650, fontSize: "15px", letterSpacing: "-0.01em", padding: "0 8px", marginBottom: "20px" }}>
-          Finance Tracker
-        </span>
-        {NAV.map(n => (
-          <Link
-            key={n.href}
-            href={n.href}
-            style={{
-              padding: "8px 10px", borderRadius: "6px", textDecoration: "none",
-              fontWeight: isActive(n.href) ? 600 : 400,
-              background: isActive(n.href) ? "var(--bg)" : "transparent",
-              color: isActive(n.href) ? "var(--accent)" : "var(--text-primary)",
-              transition: "background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1)",
-            }}
-          >
-            {n.label}
-          </Link>
-        ))}
-        <div style={{ marginTop: "auto", paddingTop: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px" }}>
-            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>Appearance</span>
+    <AddSheetProvider>
+      <div className="app-shell">
+        <Sidebar pathname={pathname} />
+        <div className="app-main-col">
+          <div className="mobile-header">
+            <Brand />
             <ThemeToggle />
+            <Link href="/more" className="profile-link" aria-label="Menu and settings">
+              <UserIcon size={22} />
+            </Link>
           </div>
-          <LogoutButton />
+          <div className="app-content">
+            <div className="page-wrap">{children}</div>
+          </div>
         </div>
-      </aside>
-
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        {/* Mobile header */}
-        <div className="mobile-header" style={{
-          display: "none", alignItems: "center", gap: "12px",
-          padding: "12px 16px", borderBottom: "1px solid var(--border)",
-          background: "var(--surface)", flexShrink: 0,
-        }}>
-          <span style={{ fontWeight: 650, fontSize: "15px", flex: 1 }}>Finance Tracker</span>
-          <ThemeToggle />
-        </div>
-
-        <div className="app-content" style={{ flex: 1, overflowY: "auto", padding: "32px" }}>
-          {children}
-        </div>
+        <BottomTabBar />
       </div>
-
-      <BottomTabBar />
-    </div>
+    </AddSheetProvider>
   )
 }

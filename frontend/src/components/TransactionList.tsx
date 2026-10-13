@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import TransactionActions from "@/components/TransactionActions"
+import { categoryEmoji } from "@/lib/categoryIcon"
 
 type Transaction = {
   id: number
@@ -11,7 +12,7 @@ type Transaction = {
   description?: string | null
   evidenceUrl?: string | null
   account?: { name: string } | null
-  category?: { name: string; color?: string | null } | null
+  category?: { name: string; color?: string | null; icon?: string | null; type?: string | null } | null
   accountId: number
   categoryId?: number | null
 }
@@ -62,7 +63,8 @@ export default function TransactionList({
       <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "12px", flexWrap: "wrap" }}>
         <input
           type="search"
-          placeholder="Search by description, category, or account…"
+          placeholder="Search transactions"
+          aria-label="Search by description, category, or account"
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{ flex: 1, minWidth: "200px", maxWidth: "360px" }}
@@ -84,7 +86,7 @@ export default function TransactionList({
             <span className="row-meta">
               {t.category && (
                 <span className="category-pill">
-                  <span className="dot" style={{ background: t.category.color ?? "var(--text-muted)" }} />
+                  <span aria-hidden="true">{categoryEmoji(t.category)}</span>
                   {t.category.name}
                 </span>
               )}

@@ -2,7 +2,7 @@
 
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts"
 
-const PALETTE = ["#3b62e0", "#e0803b", "#1f8f5f", "#c99a2e", "#c75f96", "#4a9d4a", "#6a5acd", "#c7433b"]
+const PALETTE = ["#6a5ae0", "#ff9a7d", "#5cb8f0", "#2fb585", "#f2c14e", "#c76bd1", "#8d9bff", "#ef6f6c"]
 
 type CategoryData = { name: string; value: number }
 
@@ -55,7 +55,7 @@ export default function CategoryBarChart({ data }: { data: CategoryData[] }) {
 
         <Tooltip
           formatter={(value) => [`฿${Number(value).toLocaleString()}`, "Spending"]}
-          contentStyle={{ background: "var(--surface)", borderRadius: "6px", border: "1px solid var(--border)", fontSize: "13px", color: "var(--text-primary)" }}
+          contentStyle={{ background: "var(--surface)", borderRadius: "12px", border: "1px solid var(--border)", fontSize: "13px", color: "var(--text-primary)" }}
         />
         <Legend
           iconType="circle"

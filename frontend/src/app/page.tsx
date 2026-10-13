@@ -3,6 +3,12 @@ import DailyActivityChart from "@/components/DailyActivityChart"
 import CategoryBarChart from "@/components/CategoryBarChart"
 import TransactionCalendar from "@/components/TransactionCalendar"
 import MonthNav from "@/components/MonthNav"
+import CategoryIcon from "@/components/CategoryIcon"
+import SubscriptionIcon from "@/components/ServiceIcon"
+import { categoryEmoji } from "@/lib/categoryIcon"
+import Link from "next/link"
+
+type CatTotal = { name: string; value: number; color?: string | null; icon?: string | null; budget?: number | null }
 
 export default async function DashboardPage({
   searchParams,
@@ -50,12 +56,12 @@ export default async function DashboardPage({
     }
   })
 
-  const byCat: Record<string, { name: string; value: number; color?: string | null; budget?: number | null }> = {}
+  const byCat: Record<string, CatTotal> = {}
   transactions
     .filter((t: any) => t.type === "expense" && t.category)
     .forEach((t: any) => {
       const k = String(t.category.id)
-      if (!byCat[k]) byCat[k] = { name: t.category.name, value: 0, color: t.category.color, budget: null }
+      if (!byCat[k]) byCat[k] = { name: t.category.name, value: 0, color: t.category.color, icon: t.category.icon, budget: null }
       byCat[k].value += t.amount
     })
 
@@ -64,7 +70,7 @@ export default async function DashboardPage({
     if (cat.budget != null && byCat[String(cat.id)]) {
       byCat[String(cat.id)].budget = cat.budget
     } else if (cat.budget != null && cat.type === "expense") {
-      byCat[String(cat.id)] = { name: cat.name, value: 0, color: cat.color, budget: cat.budget }
+      byCat[String(cat.id)] = { name: cat.name, value: 0, color: cat.color, icon: cat.icon, budget: cat.budget }
     }
   }
 
@@ -80,122 +86,169 @@ export default async function DashboardPage({
     .sort((a: any, b: any) => new Date(a.nextDate).getTime() - new Date(b.nextDate).getTime())
     .slice(0, 5)
 
-  return (
-    <main style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
-      <MonthNav year={year} month={month} />
+  // Hero: spent vs budget when budgets exist, otherwise spent vs income.
+  const totalBudget = categoryData.reduce((sum, c) => sum + (c.budget ?? 0), 0)
+  const budgetedSpent = categoryData.filter(c => c.budget != null).reduce((sum, c) => sum + c.value, 0)
+  const hasBudget = totalBudget > 0
+  const heroBase = hasBudget ? totalBudget : income
+  const heroSpent = hasBudget ? budgetedSpent : expenses
+  const heroPct = heroBase > 0 ? Math.min(100, Math.round((heroSpent / heroBase) * 100)) : 0
+  const heroOver = heroBase > 0 && heroSpent > heroBase
+  const monthLabel = new Date(year, month - 1, 1).toLocaleString("en-GB", { month: "long" })
+  const hour = Number(new Date().toLocaleString("en-GB", { timeZone: "Asia/Bangkok", hour: "2-digit", hour12: false }))
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"
+  const topCats = categoryData.filter(c => c.value > 0).slice(0, 3)
+  const money = (n: number) => `฿${Math.round(n).toLocaleString()}`
 
-      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-        <div className="stat-tile">
-          <span className="stat-label">Income</span>
-          <span className="stat-value num" style={{ color: "var(--income)" }}>+฿{income.toLocaleString()}</span>
-        </div>
-        <div className="stat-tile">
-          <span className="stat-label">Expenses</span>
-          <span className="stat-value num" style={{ color: "var(--expense)" }}>-฿{expenses.toLocaleString()}</span>
-        </div>
-        <div
-          className="stat-tile stat-tile-net"
-          style={{ ["--tone" as string]: net >= 0 ? "var(--income)" : "var(--expense)" }}
-        >
-          <span className="stat-label">Net</span>
-          <span className="stat-value num" style={{ color: "var(--tone)" }}>
-            {net >= 0 ? "+" : ""}฿{net.toLocaleString()}
-          </span>
-        </div>
-        <div className="stat-tile">
-          <span className="stat-label">Savings Rate</span>
-          <span className="stat-value num" style={{ color: "var(--text-primary)" }}>{savingsRate}%</span>
-        </div>
+  return (
+    <main style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      <div className="home-head">
+        <h1 className="home-greeting">{greeting} 👋</h1>
+        <MonthNav year={year} month={month} />
       </div>
 
-      <section>
-        <h2 style={{ marginBottom: "12px" }}>Daily Activity</h2>
-        <DailyActivityChart data={dailyData} />
+      <div className="top-grid">
+      <section className="hero" aria-label={`${monthLabel} summary`}>
+        <div className="hero-label">Spent in {monthLabel}</div>
+        <div className="hero-amount num">{money(expenses)}</div>
+        <div className="hero-sub">
+          {hasBudget
+            ? heroOver
+              ? `${money(heroSpent - totalBudget)} over your ${money(totalBudget)} budget`
+              : `${money(totalBudget - heroSpent)} left of your ${money(totalBudget)} budget`
+            : income > 0
+              ? `${money(income)} earned this month`
+              : "Set category budgets to track what's left"}
+        </div>
+        {heroBase > 0 && (
+          <>
+            <div
+              className="hero-bar"
+              data-over={heroOver}
+              role="progressbar"
+              aria-label={hasBudget ? "Budget used" : "Income spent"}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={heroPct}
+            >
+              <i style={{ width: `${heroPct}%` }} />
+            </div>
+            <div className="hero-sub">{heroPct}% {hasBudget ? "of budget used" : "of income spent"}</div>
+          </>
+        )}
+        {topCats.length > 0 && (
+          <div className="hero-chips">
+            {topCats.map(c => (
+              <span key={c.name} className="hero-chip">
+                {categoryEmoji({ icon: c.icon, name: c.name })} {c.name} {expenses > 0 ? Math.round((c.value / expenses) * 100) : 0}%
+              </span>
+            ))}
+          </div>
+        )}
       </section>
 
-      <div className="two-col-grid">
-        <section>
-          <h2 style={{ marginBottom: "12px" }}>Spending by Category</h2>
-          <CategoryBarChart data={categoryData} />
+      <div className="pill-row">
+        <div className="pill-card pill-sky">
+          <small>{net >= 0 ? "Saved" : "Overspent"}</small>
+          <b className="num" style={net < 0 ? { color: "var(--expense)" } : undefined}>{net >= 0 ? "" : "-"}{money(Math.abs(net))}</b>
+          {income > 0 && <small style={{ marginTop: 2 }}>{savingsRate}% of income</small>}
+        </div>
+        <Link href="/subscriptions" className="pill-card pill-peach">
+          <small>Renewing this week</small>
+          <b className="num">{upcomingRecurring.length}</b>
+          <small style={{ marginTop: 2 }}>{upcomingRecurring.length === 0 ? "Nothing due" : "View subscriptions"}</small>
+        </Link>
+      </div>
+
+      </div>
+
+      <div className="home-grid">
+        <section className="card" aria-labelledby="recent-h">
+          <div className="section-head">
+            <h2 id="recent-h">Recent</h2>
+            <Link href="/transactions">See all</Link>
+          </div>
+          {transactions.length === 0 ? (
+            <div className="empty-state">
+              <span className="big" aria-hidden="true">🧾</span>
+              Nothing logged in {monthLabel} yet. Tap + to add your first transaction.
+            </div>
+          ) : (
+            <ul>
+              {transactions.slice(0, 8).map((t: any) => (
+                <li key={t.id} className="tx-row">
+                  <CategoryIcon category={t.category ?? { type: t.type }} />
+                  <div className="tx-main">
+                    <div className="tx-title">{t.description || t.category?.name || "Transaction"}</div>
+                    <div className="tx-sub">
+                      {t.category?.name ? `${t.category.name} · ` : ""}
+                      {new Date(t.date).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" })}
+                    </div>
+                  </div>
+                  <span className="tx-amount num" style={{ color: t.type === "income" ? "var(--income)" : "var(--expense)" }}>
+                    {t.type === "income" ? "+" : "-"}฿{Number(t.amount).toLocaleString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px", minWidth: 0 }}>
           {categoryData.some(c => c.budget != null) && (
-            <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
-              <h3 style={{ margin: 0, fontSize: "12px", fontWeight: 500, color: "var(--text-muted)" }}>Budget Progress</h3>
+            <section className="card" aria-labelledby="budgets-h">
+              <h2 id="budgets-h">Budgets</h2>
               {categoryData.filter(c => c.budget != null).map(c => {
                 const pct = Math.min(100, Math.round((c.value / c.budget!) * 100))
                 const over = c.value > c.budget!
                 return (
-                  <div key={c.name}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "4px" }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        {c.color && <span style={{ display: "inline-block", width: "10px", height: "10px", borderRadius: "50%", background: c.color }} />}
-                        {c.name}
-                      </span>
-                      <span className="num" style={{ color: over ? "var(--expense)" : "var(--text-secondary)" }}>
-                        ฿{c.value.toLocaleString()} / ฿{c.budget!.toLocaleString()}
+                  <div key={c.name} className="budget-row">
+                    <div className="budget-top">
+                      <span><CategoryIcon category={c} size="sm" />{c.name}</span>
+                      <span className="num" style={{ color: over ? "var(--expense)" : "var(--text-secondary)", fontWeight: 600 }}>
+                        {money(c.value)} / {money(c.budget!)}
                       </span>
                     </div>
-                    <div style={{ height: "6px", borderRadius: "3px", background: "var(--border)" }}>
-                      <div style={{
-                        height: "100%", borderRadius: "3px",
-                        width: `${pct}%`,
-                        background: over ? "var(--expense)" : (c.color ?? "var(--accent)"),
-                        transition: "width var(--dur-slow) var(--ease-out)",
-                      }} />
+                    <div className="budget-track">
+                      <i style={{ width: `${pct}%`, background: over ? "var(--expense)" : (c.color ?? "var(--accent)") }} />
                     </div>
                   </div>
                 )
               })}
-            </div>
+            </section>
           )}
-        </section>
 
-        <section>
-          <h2 style={{ marginBottom: "12px" }}>Recent Transactions</h2>
-          <ul style={{ margin: 0 }}>
-            {transactions.slice(0, 8).map((t: any) => (
-              <li key={t.id} className="row-card">
-                <span className="row-amount num" style={{ color: t.type === "income" ? "var(--income)" : "var(--expense)", fontWeight: 600 }}>
-                  {t.type === "income" ? "+" : "-"}฿{Number(t.amount).toLocaleString()}
-                </span>
-                <span className="row-primary">{t.description || t.category?.name || "Transaction"}</span>
-                <span className="row-meta">
-                  {t.category && (
-                    <span className="category-pill">
-                      <span className="dot" style={{ background: t.category.color ?? "var(--text-muted)" }} />
-                      {t.category.name}
-                    </span>
-                  )}
-                  <span className="num">
-                    {new Date(t.date).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" })}
-                  </span>
-                </span>
-              </li>
-            ))}
-            {transactions.length === 0 && (
-              <li style={{ color: "var(--text-muted)", border: "none", padding: "12px 0" }}>No transactions this month.</li>
-            )}
-          </ul>
-        </section>
+          <section className="card" aria-labelledby="cat-h">
+            <h2 id="cat-h">Where it went</h2>
+            <CategoryBarChart data={categoryData} />
+          </section>
+        </div>
       </div>
 
+      <section className="card" aria-labelledby="daily-h">
+        <h2 id="daily-h">Daily activity</h2>
+        <DailyActivityChart data={dailyData} />
+      </section>
+
       {upcomingRecurring.length > 0 && (
-        <section>
-          <h2 style={{ marginBottom: "12px" }}>Upcoming Recurring</h2>
-          <ul style={{ margin: 0 }}>
+        <section className="card" aria-labelledby="upcoming-h">
+          <h2 id="upcoming-h">Renewing soon</h2>
+          <ul>
             {upcomingRecurring.map((r: any) => {
               const d = new Date(r.nextDate)
               const isPast = d < today
               return (
-                <li key={r.id} className="row-card" style={{ borderColor: isPast ? "var(--expense)" : "var(--border)" }}>
-                  <span className="row-amount num" style={{ color: r.type === "income" ? "var(--income)" : "var(--expense)", fontWeight: 600 }}>
+                <li key={r.id} className="tx-row">
+                  <SubscriptionIcon description={r.description} category={r.category ?? { type: r.type }} />
+                  <div className="tx-main">
+                    <div className="tx-title">{r.description || r.category?.name || "Subscription"}</div>
+                    <div className="tx-sub" style={{ color: isPast ? "var(--expense)" : undefined, fontWeight: isPast ? 600 : 400 }}>
+                      {isPast ? "Overdue · " : ""}
+                      {d.toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" })} · {r.frequency}
+                    </div>
+                  </div>
+                  <span className="tx-amount num" style={{ color: r.type === "income" ? "var(--income)" : "var(--expense)" }}>
                     {r.type === "income" ? "+" : "-"}฿{Number(r.amount).toLocaleString()}
-                  </span>
-                  <span className="row-primary">{r.description || r.category?.name || "—"}</span>
-                  <span className="row-meta">
-                    <span style={{ color: isPast ? "var(--expense)" : "var(--text-muted)", fontWeight: isPast ? 600 : 400 }}>
-                      {isPast ? "Overdue · " : ""}{d.toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" })}
-                    </span>
-                    <span style={{ textTransform: "capitalize" }}>{r.frequency}</span>
                   </span>
                 </li>
               )
@@ -204,8 +257,8 @@ export default async function DashboardPage({
         </section>
       )}
 
-      <section>
-        <h2 style={{ marginBottom: "12px" }}>Calendar</h2>
+      <section className="card" aria-labelledby="cal-h">
+        <h2 id="cal-h">Calendar</h2>
         <TransactionCalendar transactions={transactions} year={year} month={month} />
       </section>
     </main>

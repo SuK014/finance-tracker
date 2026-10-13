@@ -115,12 +115,12 @@ export default function TransactionCalendar({
                 {day}
               </span>
               {expense > 0 && (
-                <span style={{ fontSize: "10px", color: "var(--expense)", fontVariantNumeric: "tabular-nums", fontFamily: "var(--font-mono)" }}>
+                <span style={{ fontSize: "10px", color: "var(--expense)", fontVariantNumeric: "tabular-nums" }}>
                   -฿{expense.toLocaleString()}
                 </span>
               )}
               {income > 0 && (
-                <span style={{ fontSize: "10px", color: "var(--income)", fontVariantNumeric: "tabular-nums", fontFamily: "var(--font-mono)" }}>
+                <span style={{ fontSize: "10px", color: "var(--income)", fontVariantNumeric: "tabular-nums" }}>
                   +฿{income.toLocaleString()}
                 </span>
               )}
@@ -178,7 +178,7 @@ export default function TransactionCalendar({
                   <span style={{
                     color: t.type === "income" ? "var(--income)" : "var(--expense)",
                     fontWeight: 600, minWidth: "80px", fontSize: "14px",
-                    fontVariantNumeric: "tabular-nums", fontFamily: "var(--font-mono)",
+                    fontVariantNumeric: "tabular-nums",
                   }}>
                     {t.type === "income" ? "+" : "-"}฿{Number(t.amount).toLocaleString()}
                   </span>

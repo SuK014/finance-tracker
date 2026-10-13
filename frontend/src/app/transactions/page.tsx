@@ -3,6 +3,8 @@ import AccountFilter from "@/components/AccountFilter"
 import TransactionList from "@/components/TransactionList"
 import MonthNav from "@/components/MonthNav"
 import Link from "next/link"
+import SectionTabs from "@/components/SectionTabs"
+import AddTransactionButton from "@/components/AddTransactionButton"
 
 export default async function TransactionPage({
   searchParams,
@@ -35,29 +37,17 @@ export default async function TransactionPage({
 
   return (
     <main>
+      <SectionTabs group="activity" />
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px", flexWrap: "wrap" }}>
         <h1 style={{ margin: 0 }}>
-          {activeAccount ? `${activeAccount.name} Transactions` : "All Transactions"}
+          {activeAccount ? `${activeAccount.name}` : "Transactions"}
         </h1>
         {activeAccount && (
           <Link href="/transactions" style={{ fontSize: "13px", color: "var(--text-muted)" }}>
             All accounts
           </Link>
         )}
-        <Link
-          href={accountId ? `/transactions/new?accountId=${accountId}` : "/transactions/new"}
-          style={{
-            marginLeft: "auto",
-            padding: "6px 14px",
-            background: "var(--accent)",
-            color: "#fff",
-            borderRadius: "var(--radius)",
-            fontSize: "13px",
-            textDecoration: "none",
-          }}
-        >
-          + Add Transaction
-        </Link>
+        <AddTransactionButton className="btn-primary" style={{ marginLeft: "auto", border: "none" }} />
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" }}>

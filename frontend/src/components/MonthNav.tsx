@@ -36,20 +36,23 @@ export default function MonthNav({
   const btnStyle: React.CSSProperties = {
     background: "none",
     border: "1px solid var(--border)",
-    borderRadius: "var(--radius)",
-    padding: "4px 10px",
+    padding: 0,
+    width: "40px",
+    height: "40px",
+    borderRadius: "50%",
+    minHeight: 0,
     cursor: "pointer",
     color: "var(--text-secondary)",
-    fontSize: "14px",
+    fontSize: "18px",
   }
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-      <button onClick={prev} style={btnStyle}>‹</button>
+      <button onClick={prev} style={btnStyle} aria-label="Previous month">‹</button>
       <span style={{ minWidth: "140px", textAlign: "center", fontWeight: 600 }}>
         {label}
       </span>
-      <button onClick={next} disabled={isCurrent} style={{ ...btnStyle, opacity: isCurrent ? 0.3 : 1 }}>›</button>
+      <button onClick={next} disabled={isCurrent} style={{ ...btnStyle, opacity: isCurrent ? 0.3 : 1 }} aria-label="Next month">›</button>
     </div>
   )
 }

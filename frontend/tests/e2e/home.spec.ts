@@ -27,19 +27,19 @@ test.describe("dashboard (redesigned home page)", () => {
     // the login page renders it as an <h1>. Assert on content that actually
     // exists on the dashboard.
     await expect(page.getByText("Finance Tracker").first()).toBeVisible({ timeout: 15000 });
-    await expect(page.locator(".stat-tile").first()).toBeVisible();
+    await expect(page.locator(".hero")).toBeVisible();
     expect(errors).toEqual([]);
   });
 
-  test("shows the four summary stat tiles with tabular numeric values", async ({ page }) => {
+  test("leads with the monthly hero card and the two summary pills", async ({ page }) => {
     await page.goto("/");
 
-    const tiles = page.locator(".stat-tile");
-    await expect(tiles).toHaveCount(4);
-    await expect(tiles.filter({ hasText: "Income" })).toBeVisible();
-    await expect(tiles.filter({ hasText: "Expenses" })).toBeVisible();
-    await expect(tiles.filter({ hasText: "Net" })).toBeVisible();
-    await expect(tiles.filter({ hasText: "Savings Rate" })).toBeVisible();
+    const hero = page.locator(".hero");
+    await expect(hero).toBeVisible();
+    await expect(hero.getByText(/^Spent in /)).toBeVisible();
+    await expect(hero.locator(".hero-amount")).toHaveText(/^฿[\d,]+$/);
+    await expect(page.locator(".pill-card")).toHaveCount(2);
+    await expect(page.getByText("Renewing this week")).toBeVisible();
   });
 
   test("theme toggle switches light/dark and persists across reload", async ({ page }) => {

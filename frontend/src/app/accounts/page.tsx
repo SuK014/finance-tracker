@@ -2,12 +2,14 @@ import { getAccounts } from "@/lib/serverApi"
 import AddAccountForm from "@/components/AddAccountForm"
 import AccountActions from "@/components/AccountActions"
 import Link from "next/link"
+import SectionTabs from "@/components/SectionTabs"
 
 export default async function AccountsPage() {
   const accounts = await getAccounts()
 
   return (
     <main>
+      <SectionTabs group="wealth" />
       <h1>Accounts</h1>
 
       <ul style={{ marginBottom: "22px" }}>

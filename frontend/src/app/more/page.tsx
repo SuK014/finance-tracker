@@ -3,24 +3,23 @@ import ThemeToggle from "@/components/ThemeToggle"
 import LogoutButton from "@/components/LogoutButton"
 
 const MORE_LINKS = [
-  { href: "/categories", label: "Categories" },
-  { href: "/recurring", label: "Recurring" },
-  { href: "/reports", label: "Reports" },
-  { href: "/net-worth", label: "Net Worth" },
-  { href: "/portfolio", label: "Portfolio" },
-  { href: "/import", label: "Import" },
-  { href: "/settings", label: "Settings" },
+  { href: "/categories", label: "Categories", hint: "Icons, colours and budgets" },
+  { href: "/import", label: "Import", hint: "Read transactions from slips" },
+  { href: "/settings", label: "Settings", hint: "Password and preferences" },
 ]
 
 export default function MorePage() {
   return (
-    <main style={{ display: "flex", flexDirection: "column", gap: "22px", maxWidth: "420px" }}>
-      <h1 style={{ margin: 0 }}>More</h1>
+    <main style={{ display: "flex", flexDirection: "column", gap: "22px", maxWidth: "480px" }}>
+      <h1 style={{ margin: 0 }}>Menu</h1>
 
       <nav style={{ display: "flex", flexDirection: "column" }}>
-        {MORE_LINKS.map(({ href, label }) => (
+        {MORE_LINKS.map(({ href, label, hint }) => (
           <Link key={href} href={href} className="row-card more-link">
-            <span style={{ flex: 1 }}>{label}</span>
+            <span style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <span style={{ fontWeight: 700 }}>{label}</span>
+              <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>{hint}</span>
+            </span>
             <span aria-hidden="true" style={{ color: "var(--text-muted)" }}>›</span>
           </Link>
         ))}

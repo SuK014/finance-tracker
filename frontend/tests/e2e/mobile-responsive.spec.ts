@@ -18,13 +18,13 @@ test.describe("mobile responsiveness (390px)", () => {
 
   test("dashboard has no horizontal overflow and stacks its two-column section", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator(".stat-tile").first()).toBeVisible();
+    await expect(page.locator(".hero")).toBeVisible();
 
     expect(await hasHorizontalOverflow(page)).toBe(false);
 
-    // The "Spending by Category" / "Recent Transactions" section must stack
-    // to one column, not squeeze into two, at this width.
-    const grid = page.locator(".two-col-grid").first();
+    // The "Recent" / "Where it went" section must stack to one column, not
+    // squeeze into two, at this width.
+    const grid = page.locator(".home-grid").first();
     const box = await grid.boundingBox();
     const firstChildBox = await grid.locator("> *").first().boundingBox();
     expect(firstChildBox?.width).toBeGreaterThan((box?.width ?? 0) * 0.9);
