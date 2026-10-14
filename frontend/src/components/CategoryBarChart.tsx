@@ -1,6 +1,6 @@
 "use client"
 
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts"
 
 const PALETTE = ["#6a5ae0", "#ff9a7d", "#5cb8f0", "#2fb585", "#f2c14e", "#c76bd1", "#8d9bff", "#ef6f6c"]
 
@@ -14,14 +14,15 @@ export default function CategoryBarChart({ data }: { data: CategoryData[] }) {
   const total = data.reduce((s, d) => s + d.value, 0)
 
   return (
-    <ResponsiveContainer width="100%" height={250}>
+    <div>
+    <ResponsiveContainer width="100%" height={220}>
       <PieChart>
         <Pie
           data={data}
           cx="50%"
           cy="50%"
-          innerRadius={72}
-          outerRadius={108}
+          innerRadius={64}
+          outerRadius={96}
           paddingAngle={3}
           dataKey="value"
           strokeWidth={2}
@@ -35,7 +36,7 @@ export default function CategoryBarChart({ data }: { data: CategoryData[] }) {
         {/* Center total label */}
         <text
           x="50%"
-          y="46%"
+          y="45%"
           textAnchor="middle"
           dominantBaseline="middle"
           style={{ fontSize: "11px", fill: "var(--text-secondary)" }}
@@ -44,7 +45,7 @@ export default function CategoryBarChart({ data }: { data: CategoryData[] }) {
         </text>
         <text
           x="50%"
-          y="56%"
+          y="55%"
           textAnchor="middle"
           dominantBaseline="middle"
           className="num"
@@ -57,15 +58,18 @@ export default function CategoryBarChart({ data }: { data: CategoryData[] }) {
           formatter={(value) => [`฿${Number(value).toLocaleString()}`, "Spending"]}
           contentStyle={{ background: "var(--surface)", borderRadius: "12px", border: "1px solid var(--border)", fontSize: "13px", color: "var(--text-primary)" }}
         />
-        <Legend
-          iconType="circle"
-          iconSize={8}
-          wrapperStyle={{ fontSize: "13px", paddingTop: "8px" }}
-          formatter={(value, entry: any) =>
-            `${value} · ฿${Number(entry.payload.value).toLocaleString()}`
-          }
-        />
       </PieChart>
     </ResponsiveContainer>
+    {/* Own legend below the chart (the built-in one is positioned over the donut) */}
+    <div className="donut-legend">
+      {data.map((d, i) => (
+        <div key={d.name} className="donut-legend-item">
+          <span className="donut-dot" style={{ background: PALETTE[i % PALETTE.length] }} aria-hidden="true" />
+          <span className="donut-name">{d.name}</span>
+          <span className="num donut-val">฿{d.value.toLocaleString()}</span>
+        </div>
+      ))}
+    </div>
+    </div>
   )
 }
