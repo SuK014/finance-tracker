@@ -21,6 +21,17 @@ router.get("/price/:symbol", async (req, res) => {
   })
 })
 
+// USD→THB rate, for showing a combined net worth in baht
+router.get("/fx", async (_req, res) => {
+  try {
+    const fx = await yf.quote("USDTHB=X")
+    res.json({ usdthb: fx.regularMarketPrice ?? null })
+  } catch (err) {
+    console.error("[portfolio] could not fetch USDTHB:", err)
+    res.json({ usdthb: null })
+  }
+})
+
 // All individual lots — for the transactions page
 router.get("/lots", async (req, res) => {
   const userId = (req as any).user.userId

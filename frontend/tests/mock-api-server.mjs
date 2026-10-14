@@ -30,6 +30,10 @@ const FIXTURES = {
   "/api/recurring": subscriptions,
   "/api/accounts": [account],
   "/api/transactions": [transaction],
+  "/api/portfolio": [
+    { id: 1, symbol: "APP", name: "Applovin Corporation", type: "stock", currency: "USD", totalShares: 2, avgCost: 250, currentPrice: 260, totalValue: 520, gainLoss: 20, gainLossPct: 4 },
+  ],
+  "/api/portfolio/fx": { usdthb: 30 },
 }
 
 const server = createServer((req, res) => {
