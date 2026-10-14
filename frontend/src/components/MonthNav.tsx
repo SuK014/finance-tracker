@@ -33,26 +33,19 @@ export default function MonthNav({
   const isCurrent = now.getFullYear() === year && now.getMonth() + 1 === month
   const label = new Date(year, month - 1, 1).toLocaleString("en-GB", { month: "long", year: "numeric" })
 
-  const btnStyle: React.CSSProperties = {
-    background: "none",
-    border: "1px solid var(--border)",
-    padding: 0,
-    width: "40px",
-    height: "40px",
-    borderRadius: "50%",
-    minHeight: 0,
-    cursor: "pointer",
-    color: "var(--text-secondary)",
-    fontSize: "18px",
-  }
+  const chevron = (dir: "left" | "right") => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d={dir === "left" ? "M10 3.5 5.5 8l4.5 4.5" : "M6 3.5 10.5 8 6 12.5"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-      <button onClick={prev} style={btnStyle} aria-label="Previous month">‹</button>
+      <button type="button" className="month-btn" onClick={prev} aria-label="Previous month">{chevron("left")}</button>
       <span style={{ minWidth: "140px", textAlign: "center", fontWeight: 600 }}>
         {label}
       </span>
-      <button onClick={next} disabled={isCurrent} style={{ ...btnStyle, opacity: isCurrent ? 0.3 : 1 }} aria-label="Next month">›</button>
+      <button type="button" className="month-btn" onClick={next} disabled={isCurrent} aria-label="Next month">{chevron("right")}</button>
     </div>
   )
 }
