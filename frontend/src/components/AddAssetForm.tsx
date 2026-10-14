@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { getAssetPrice, createAsset } from "@/lib/api"
 import { useRouter } from "next/navigation"
+import InvestAccountSelect, { type InvestAccount } from "@/components/InvestAccountSelect"
 
 const ASSET_TYPES = [
   { value: "stock", label: "Stock" },
@@ -18,7 +19,7 @@ type PriceData = {
   usdthb: number
 }
 
-export default function AddAssetForm() {
+export default function AddAssetForm({ accounts = [] }: { accounts?: InvestAccount[] }) {
   const router = useRouter()
 
   const [assetType, setAssetType] = useState("")
@@ -30,6 +31,15 @@ export default function AddAssetForm() {
   const [currency, setCurrency] = useState<"THB" | "USD">("THB")
   const [amount, setAmount] = useState("")
   const [submitting, setSubmitting] = useState(false)
+  const [accountId, setAccountId] = useState("")
+  const [submitError, setSubmitError] = useState("")
+
+  useEffect(() => {
+    try {
+      const last = localStorage.getItem("investAccountId") ?? ""
+      if (accounts.some(a => String(a.id) === last)) setAccountId(last)
+    } catch {}
+  }, [accounts])
 
   const amountNum = Number(amount)
   const amountInUsd = priceData
@@ -59,18 +69,28 @@ export default function AddAssetForm() {
     e.preventDefault()
     if (!priceData || shares <= 0) return
     setSubmitting(true)
-    await createAsset({
-      symbol: priceData.symbol,
-      name: priceData.name,
-      type: assetType,
-      quantity: shares,
-      price: priceData.price,
-    })
+    setSubmitError("")
+    try {
+      const res = await createAsset({
+        symbol: priceData.symbol,
+        name: priceData.name,
+        type: assetType,
+        quantity: shares,
+        price: priceData.price,
+        ...(accountId ? { accountId: Number(accountId) } : {}),
+      })
+      if (res?.error) { setSubmitError(res.error); return }
+    } catch {
+      setSubmitError("Couldn't add it. Check your connection and try again.")
+      return
+    } finally {
+      setSubmitting(false)
+    }
+    try { localStorage.setItem("investAccountId", accountId) } catch {}
     setAssetType("")
     setSymbolInput("")
     setPriceData(null)
     setAmount("")
-    setSubmitting(false)
     router.refresh()
   }
 
@@ -135,6 +155,20 @@ export default function AddAssetForm() {
           {shares > 0 && (
             <p>You will get <strong>{shares.toFixed(6)} shares</strong></p>
           )}
+
+          {accounts.length > 0 && (
+            <InvestAccountSelect
+              mode="buy"
+              accounts={accounts}
+              value={accountId}
+              onChange={setAccountId}
+              assetCurrency={priceData.currency}
+              assetAmount={shares * priceData.price}
+              usdthb={priceData.usdthb}
+            />
+          )}
+
+          {submitError && <p role="alert" style={{ color: "var(--expense)", margin: 0 }}>{submitError}</p>}
 
           <button type="submit" disabled={submitting || shares <= 0}>
             {submitting ? "Adding..." : "Add to Portfolio"}

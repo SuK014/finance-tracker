@@ -8,6 +8,7 @@ type Lot = {
   quantity: number
   price: number
   date: string
+  account?: { name: string } | null
   asset: {
     symbol: string
     name: string
@@ -36,6 +37,7 @@ export default async function TransactionsPage() {
             <th scope="col" style={{ textAlign: "right" }}>Shares</th>
             <th scope="col" style={{ textAlign: "right" }}>Price</th>
             <th scope="col" style={{ textAlign: "right" }}>Total</th>
+            <th scope="col">Account</th>
             <th scope="col">Actions</th>
           </tr>
         </thead>
@@ -53,6 +55,7 @@ export default async function TransactionsPage() {
               <td className="num" style={{ textAlign: "right" }}>{lot.quantity.toFixed(6)}</td>
               <td className="num" style={{ textAlign: "right" }}>{lot.asset.currency === "THB" ? "฿" : "$"}{lot.price.toFixed(2)}</td>
               <td className="num" style={{ textAlign: "right" }}>{lot.asset.currency === "THB" ? "฿" : "$"}{(lot.quantity * lot.price).toFixed(2)}</td>
+              <td>{lot.account?.name ?? "—"}</td>
               <td>
                 <LotActions lot={lot} />
               </td>

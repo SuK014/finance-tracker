@@ -332,13 +332,10 @@ select:disabled {
   gap: 1px;
   animation: rise-in var(--dur-fast) var(--ease-out) both;
 }
-.timepicker-custom {
-  display: flex;
-  gap: 6px;
-  padding: 6px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 4px;
-}
+/* Always-visible typing field beside the list toggle. */
+.timepicker-custom { display: flex; gap: 8px; align-items: stretch; }
+.timepicker-custom input { flex: 0 0 96px; min-width: 0; text-align: center; }
+.timepicker-custom .select-trigger { flex: 1; min-width: 0; }
 
 /* Buttons */
 button {
@@ -1398,3 +1395,34 @@ li:last-child { border-bottom: none; }
     border-top: 1px solid var(--border);
   }
 }
+
+/* Voice add (Say it) */
+.voice { display: flex; flex-direction: column; gap: 10px; }
+.voice-row { display: flex; gap: 10px; align-items: center; }
+.voice-btn { flex: 1; min-height: 44px; background: var(--accent-soft); color: var(--accent); border: 1.5px solid var(--accent); border-radius: 16px; font-weight: 700; }
+.voice-btn[data-listening="true"] { background: var(--expense); border-color: var(--expense); color: #fff; animation: voice-pulse 1.4s ease-in-out infinite; }
+.voice-lang { width: auto; flex-shrink: 0; }
+.voice-lang button { min-width: 48px; }
+.voice-type { display: flex; gap: 8px; }
+.voice-type input { flex: 1; min-width: 0; }
+@keyframes voice-pulse { 50% { opacity: 0.8; } }
+@media (prefers-reduced-motion: reduce) { .voice-btn[data-listening="true"] { animation: none; } }
+
+/* Transactions grouped by day */
+.day-group { margin-top: 20px; }
+.day-group:first-of-type { margin-top: 4px; }
+.day-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 0 4px 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.01em; color: var(--text-secondary); }
+.day-total { font-size: 13px; font-weight: 700; }
+
+/* Donut legend (Home "Where it went") */
+.donut-legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px 16px; margin-top: 20px; }
+.donut-legend-item { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; }
+.donut-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.donut-name { color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.donut-val { color: var(--text-secondary); margin-left: auto; white-space: nowrap; }
+
+/* Month switcher arrows */
+.month-btn { display: inline-grid; place-items: center; width: 44px; height: 44px; min-height: 0; padding: 0; border-radius: 50%; background: var(--surface); border: 1.5px solid color-mix(in srgb, var(--accent) 28%, var(--border)); color: var(--text-primary); box-shadow: 0 1px 2px rgba(35, 36, 58, 0.06); transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast); }
+.month-btn:hover:not(:disabled) { background: var(--accent-soft); color: var(--accent); }
+.month-btn:active:not(:disabled) { transform: scale(0.94); }
+.month-btn:disabled { opacity: 0.4; box-shadow: none; cursor: not-allowed; }

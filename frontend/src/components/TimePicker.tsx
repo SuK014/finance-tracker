@@ -11,6 +11,25 @@ function formatDisplay12h(hhmm: string) {
   return `${h12}:${String(m).padStart(2, "0")} ${period}`
 }
 
+// Digits only: "2347" -> "23:47", "930" -> "9:30". A first digit of 3-9 can only be
+// a one-digit hour, so the colon goes after it.
+function formatTyped(raw: string) {
+  const all = raw.replace(/\D/g, "")
+  const hourLen = all.length > 0 && Number(all[0]) > 2 ? 1 : 2
+  const digits = all.slice(0, hourLen + 2)
+  return digits.length <= hourLen ? digits : `${digits.slice(0, hourLen)}:${digits.slice(hourLen)}`
+}
+
+// "9:30" / "09:30" -> "09:30", or null if it isn't a real time.
+function parseTyped(text: string): string | null {
+  const m = text.match(/^(\d{1,2}):(\d{2})$/)
+  if (!m) return null
+  const h = Number(m[1])
+  const min = Number(m[2])
+  if (h > 23 || min > 59) return null
+  return `${String(h).padStart(2, "0")}:${m[2]}`
+}
+
 const TIMES: string[] = []
 for (let h = 0; h < 24; h++) {
   for (let m = 0; m < 60; m += 15) {
@@ -38,8 +57,8 @@ export default function TimePicker({
   const listRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (open) setCustomText(value)
-  }, [open, value])
+    setCustomText(value)
+  }, [value])
 
   useEffect(() => {
     if (!open) return
@@ -70,40 +89,43 @@ export default function TimePicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
-  function applyCustomText() {
-    if (/^\d{2}:\d{2}$/.test(customText)) {
-      const [h, m] = customText.split(":").map(Number)
-      if (h >= 0 && h <= 23 && m >= 0 && m <= 59) onChange(customText)
-    }
+  function applyCustomText(text = customText) {
+    const t = parseTyped(text)
+    if (t) onChange(t)
   }
 
   return (
     <div className="datepicker-root" ref={rootRef}>
-      <button
-        type="button"
-        className="select-trigger"
-        onClick={() => setOpen(v => !v)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-label="Choose time"
-      >
-        <span className={value ? "num" : "select-placeholder"}>{value ? formatDisplay12h(value) : "Select time"}</span>
-      </button>
+      <div className="timepicker-custom">
+        <input
+          type="text"
+          inputMode="numeric"
+          placeholder="HHMM"
+          aria-label="Type time (24-hour, numbers only)"
+          value={customText}
+          onChange={e => {
+            const text = formatTyped(e.target.value)
+            setCustomText(text)
+            // A complete time (e.g. 4 digits) is applied right away.
+            if (/^\d{1,2}:\d{2}$/.test(text)) applyCustomText(text)
+          }}
+          onBlur={() => { applyCustomText(); setCustomText(value) }}
+          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); applyCustomText(); setOpen(false) } }}
+          className="num"
+        />
+        <button
+          type="button"
+          className="select-trigger"
+          onClick={() => setOpen(v => !v)}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-label="Choose time"
+        >
+          <span className={value ? "num" : "select-placeholder"}>{value ? formatDisplay12h(value) : "Select time"}</span>
+        </button>
+      </div>
       {open && (
         <div className="timepicker-popup" role="listbox" ref={listRef} data-inline={inline ? "true" : undefined}>
-          <div className="timepicker-custom">
-            <input
-              type="text"
-              inputMode="numeric"
-              placeholder="HH:MM"
-              value={customText}
-              onChange={e => setCustomText(e.target.value)}
-              onBlur={applyCustomText}
-              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); applyCustomText(); setOpen(false) } }}
-              className="num"
-              style={{ flex: 1 }}
-            />
-          </div>
           {TIMES.map(t => (
             <button
               key={t}

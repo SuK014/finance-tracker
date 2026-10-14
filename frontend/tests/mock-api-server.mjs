@@ -30,6 +30,10 @@ const FIXTURES = {
   "/api/recurring": subscriptions,
   "/api/accounts": [account],
   "/api/transactions": [transaction],
+  "/api/portfolio": [
+    { id: 1, symbol: "APP", name: "Applovin Corporation", type: "stock", currency: "USD", totalShares: 2, avgCost: 250, currentPrice: 260, totalValue: 520, gainLoss: 20, gainLossPct: 4 },
+  ],
+  "/api/portfolio/fx": { usdthb: 30 },
 }
 
 const server = createServer((req, res) => {
@@ -79,6 +83,44 @@ const server = createServer((req, res) => {
         filename: "slip.png", success: true,
         data: { amount: 250, type: "expense", date: "2026-10-13T12:30", description: "7-Eleven" },
       }]))
+    })
+    return
+  }
+
+  if (path === "/api/voice/parse" && req.method === "POST") {
+    let body = ""
+    req.on("data", chunk => { body += chunk })
+    req.on("end", () => {
+      const { text = "" } = JSON.parse(body || "{}")
+      res.writeHead(200)
+      if (/nothing/i.test(text)) {
+        res.end(JSON.stringify({ amount: null, type: "expense", categoryId: null, description: text, date: null, source: "rules" }))
+        return
+      }
+      res.end(JSON.stringify({ amount: 85, type: "expense", categoryId: 1, description: "coffee", date: "2026-10-12", source: "ai" }))
+    })
+    return
+  }
+
+  if (path === "/api/portfolio/price/APP") {
+    res.writeHead(200)
+    res.end(JSON.stringify({ symbol: "APP", name: "Applovin Corporation", price: 260, currency: "USD", usdthb: 30 }))
+    return
+  }
+
+  if ((path === "/api/portfolio" || path === "/api/portfolio/sell") && req.method === "POST") {
+    let body = ""
+    req.on("data", chunk => { body += chunk })
+    req.on("end", () => {
+      const parsed = JSON.parse(body || "{}")
+      // Mirrors the real server's rule: you can't sell more than you hold.
+      if (path.endsWith("/sell") && parsed.quantity > 2) {
+        res.writeHead(400)
+        res.end(JSON.stringify({ error: "You only hold 2 shares of APP." }))
+        return
+      }
+      res.writeHead(201)
+      res.end(JSON.stringify({ id: 77, ...parsed }))
     })
     return
   }

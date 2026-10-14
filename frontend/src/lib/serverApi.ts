@@ -47,6 +47,17 @@ export async function getPortfolio(): Promise<any[]> {
     return safeArray(res)
 }
 
+export async function getUsdThb(): Promise<number | null> {
+    try {
+        const res = await serverFetch(`${API_URL}/api/portfolio/fx`)
+        if (!res.ok) return null
+        const data = await res.json()
+        return typeof data?.usdthb === "number" && data.usdthb > 0 ? data.usdthb : null
+    } catch {
+        return null
+    }
+}
+
 export async function getLots(): Promise<any[]> {
     const res = await serverFetch(`${API_URL}/api/portfolio/lots`)
     return safeArray(res)

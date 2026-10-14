@@ -142,7 +142,7 @@ export async function getAssetPrice(symbol: string): Promise<{ symbol: string; n
     return res.json()
 }
 
-export async function createAsset(data: { symbol: string; name: string; type: string; quantity: number; price: number }) {
+export async function createAsset(data: { symbol: string; name: string; type: string; quantity: number; price: number; accountId?: number }) {
     const res = await fetch(`${API_URL}/api/portfolio`, {
         method: "POST",
         headers: authHeaders(),
@@ -151,7 +151,7 @@ export async function createAsset(data: { symbol: string; name: string; type: st
     return res.json()
 }
 
-export async function sellAsset(data: { symbol: string; quantity: number; price: number }) {
+export async function sellAsset(data: { symbol: string; quantity: number; price: number; accountId?: number }) {
     const res = await fetch(`${API_URL}/api/portfolio/sell`, {
         method: "POST",
         headers: authHeaders(),
@@ -256,4 +256,24 @@ export async function extractSlips(files: File[]) {
         data?: { amount: number | null; type: string | null; date: string | null; description: string | null }
         error?: string
     }>>
+}
+
+// Voice add: turn a spoken or typed sentence into transaction fields.
+export type VoiceParse = {
+    amount: number | null
+    type: "income" | "expense"
+    categoryId: number | null
+    description: string
+    date: string | null
+    source: "ai" | "rules"
+    error?: string
+}
+
+export async function parseVoice(text: string, today: string, categories: Array<{ id: number; name: string; type?: string }>): Promise<VoiceParse> {
+    const res = await fetch(`${API_URL}/api/voice/parse`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ text, today, categories: categories.map(c => ({ id: c.id, name: c.name, type: c.type })) }),
+    })
+    return res.json()
 }

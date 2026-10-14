@@ -1,9 +1,9 @@
-import { getAccounts, getPortfolio } from "@/lib/serverApi"
+import { getAccounts, getPortfolio, getUsdThb } from "@/lib/serverApi"
 import { currencySymbol as sym } from "@/lib/currency"
 import SectionTabs from "@/components/SectionTabs"
 
 export default async function NetWorthPage() {
-  const [accounts, holdings] = await Promise.all([getAccounts(), getPortfolio()])
+  const [accounts, holdings, usdthb] = await Promise.all([getAccounts(), getPortfolio(), getUsdThb()])
 
   // Group accounts by currency, splitting credit cards out as liabilities
   // (debt) rather than folding them silently into the same "Accounts" list —
@@ -23,13 +23,18 @@ export default async function NetWorthPage() {
   for (const h of holdings) {
     const cur = h.currency ?? "USD"
     if (!portfolioByCurrency[cur]) portfolioByCurrency[cur] = 0
-    portfolioByCurrency[cur] += (h.price ?? 0) * (h.quantity ?? 0)
+    portfolioByCurrency[cur] += h.totalValue ?? 0
   }
 
   const allCurrencies = Array.from(new Set([
     ...Object.keys(byCurrency),
     ...Object.keys(portfolioByCurrency),
   ])).sort()
+
+  // Combined total in baht, only when every currency is THB or USD and a rate is available.
+  const totalOf = (cur: string) => (byCurrency[cur]?.total ?? 0) + (portfolioByCurrency[cur] ?? 0)
+  const canCombine = usdthb !== null && allCurrencies.length > 1 && allCurrencies.every(c => c === "THB" || c === "USD")
+  const combinedThb = canCombine ? totalOf("THB") + totalOf("USD") * (usdthb as number) : null
 
   const sectionStyle: React.CSSProperties = {
     background: "var(--surface)",
@@ -63,6 +68,18 @@ export default async function NetWorthPage() {
     <main style={{ display: "flex", flexDirection: "column", gap: "22px", maxWidth: "640px" }}>
       <SectionTabs group="wealth" />
       <h1 style={{ margin: 0 }}>Net Worth</h1>
+
+      {combinedThb !== null && (
+        <div style={{ ...sectionStyle, background: "var(--accent-soft)", gap: "4px" }} data-testid="combined-net-worth">
+          <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Total net worth, all in baht</span>
+          <span className="num" style={{ fontSize: "28px", fontWeight: 700, color: combinedThb >= 0 ? "var(--income)" : "var(--expense)" }}>
+            {sym("THB")}{combinedThb.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+          <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+            Includes your portfolio, converted at $1 = ฿{(usdthb as number).toFixed(2)}.
+          </span>
+        </div>
+      )}
 
       {allCurrencies.map(cur => {
         const accountGroup = byCurrency[cur]
@@ -99,9 +116,9 @@ export default async function NetWorthPage() {
                 </h3>
                 {holdings.filter((h: any) => (h.currency ?? "USD") === cur).map((h: any) => (
                   <div key={h.symbol} style={rowStyle}>
-                    <span>{h.symbol} <span style={{ color: "var(--text-secondary)", fontSize: "12px" }}>×{h.quantity}</span></span>
+                    <span>{h.symbol} <span style={{ color: "var(--text-secondary)", fontSize: "12px" }}>×{Number(h.totalShares ?? 0).toLocaleString(undefined, { maximumFractionDigits: 6 })}</span></span>
                     <span className="num">
-                      {sym(cur)}{((h.price ?? 0) * h.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {sym(cur)}{(h.totalValue ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 ))}

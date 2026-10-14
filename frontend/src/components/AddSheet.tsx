@@ -10,6 +10,8 @@ import DatePicker from "@/components/DatePicker"
 import TimePicker from "@/components/TimePicker"
 import EmojiPicker from "@/components/EmojiPicker"
 import CategoryIcon from "@/components/CategoryIcon"
+import VoiceInput from "@/components/VoiceInput"
+import type { VoiceParse } from "@/lib/api"
 
 type Account = { id: number; name: string; currency?: string }
 type Category = { id: number; name: string; color?: string | null; icon?: string | null; type?: string }
@@ -202,6 +204,20 @@ function Sheet({ closing, onClose, onSaved }: { closing: boolean; onClose: () =>
     }
   }
 
+  function applyVoice(r: VoiceParse, heard: string) {
+    setError(null)
+    setType(r.type)
+    setCategoryId(r.categoryId ? String(r.categoryId) : "")
+    if (r.amount != null) setAmount(String(r.amount))
+    if (r.description) setDescription(r.description)
+    if (r.date) setWhen(w => ({ ...w, date: r.date as string }))
+    setScanNote(
+      r.amount != null
+        ? `Heard “${heard}”. Check the details, then save.`
+        : `Heard “${heard}”, but no amount. Fill it in below.`
+    )
+  }
+
   async function addCategory() {
     if (!newName.trim()) return
     setError(null)
@@ -279,6 +295,7 @@ function Sheet({ closing, onClose, onSaved }: { closing: boolean; onClose: () =>
           <button type="button" className="scan-btn" onClick={() => scanRef.current?.click()} disabled={scanning}>
             <span aria-hidden="true">📷</span> {scanning ? "Reading receipt…" : "Scan a receipt"}
           </button>
+          <VoiceInput categories={categories} onResult={applyVoice} />
           {scanNote && <p className="sheet-note" role="status">{scanNote}</p>}
           <div className="seg" role="group" aria-label="Transaction type">
             {(["expense", "income"] as const).map(t => (

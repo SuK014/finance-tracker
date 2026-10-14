@@ -118,9 +118,12 @@ test.describe("custom TimePicker", () => {
     await page.goto("/transactions/new");
 
     const timeTrigger = page.getByRole("button", { name: "Choose time" });
-    await timeTrigger.click();
-    const customInput = page.locator(".timepicker-custom input");
-    await customInput.fill("14:37");
+    // The typing field is always visible: no need to open the list first.
+    const customInput = page.getByRole("textbox", { name: /Type time/ });
+    await expect(customInput).toBeVisible();
+    await customInput.fill("");
+    await customInput.pressSequentially("1437");
+    await expect(customInput).toHaveValue("14:37");
     await customInput.press("Enter");
     await expect(timeTrigger).toContainText("2:37 PM");
   });
