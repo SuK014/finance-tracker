@@ -1408,3 +1408,9 @@ li:last-child { border-bottom: none; }
 @keyframes voice-pulse { 50% { opacity: 0.8; } }
 @media (prefers-reduced-motion: reduce) { .voice-btn[data-listening="true"] { animation: none; } }
 
+/* Transactions grouped by day */
+.day-group { margin-top: 20px; }
+.day-group:first-of-type { margin-top: 4px; }
+.day-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 0 4px 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.01em; color: var(--text-secondary); }
+.day-total { font-size: 13px; font-weight: 700; }
+

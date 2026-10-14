@@ -24,6 +24,16 @@ test.describe("transactions page (redesigned)", () => {
     expect(errors).toEqual([]);
   });
 
+  test("transactions are grouped under a day heading with the day's total", async ({ page }) => {
+    await page.goto("/transactions?month=2026-09");
+
+    const day = page.getByRole("region", { name: "Sat, 12 Sep 2026" });
+    await expect(day.getByRole("heading", { level: 3 })).toContainText("-฿84.2");
+    await expect(day.locator(".row-card", { hasText: "Whole Foods" })).toBeVisible();
+    // The row shows only the time now; the date lives in the heading.
+    await expect(day.locator(".row-card")).not.toContainText("Sep 2026");
+  });
+
   test("search input filters the transaction list (primary flow)", async ({ page }) => {
     await page.goto("/transactions");
 
