@@ -83,6 +83,21 @@ const server = createServer((req, res) => {
     return
   }
 
+  if (path === "/api/voice/parse" && req.method === "POST") {
+    let body = ""
+    req.on("data", chunk => { body += chunk })
+    req.on("end", () => {
+      const { text = "" } = JSON.parse(body || "{}")
+      res.writeHead(200)
+      if (/nothing/i.test(text)) {
+        res.end(JSON.stringify({ amount: null, type: "expense", categoryId: null, description: text, date: null, source: "rules" }))
+        return
+      }
+      res.end(JSON.stringify({ amount: 85, type: "expense", categoryId: 1, description: "coffee", date: "2026-10-12", source: "ai" }))
+    })
+    return
+  }
+
   if (path === "/api/transactions" && req.method === "POST") {
     let body = ""
     req.on("data", chunk => { body += chunk })

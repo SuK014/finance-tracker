@@ -257,3 +257,23 @@ export async function extractSlips(files: File[]) {
         error?: string
     }>>
 }
+
+// Voice add: turn a spoken or typed sentence into transaction fields.
+export type VoiceParse = {
+    amount: number | null
+    type: "income" | "expense"
+    categoryId: number | null
+    description: string
+    date: string | null
+    source: "ai" | "rules"
+    error?: string
+}
+
+export async function parseVoice(text: string, today: string, categories: Array<{ id: number; name: string; type?: string }>): Promise<VoiceParse> {
+    const res = await fetch(`${API_URL}/api/voice/parse`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ text, today, categories: categories.map(c => ({ id: c.id, name: c.name, type: c.type })) }),
+    })
+    return res.json()
+}

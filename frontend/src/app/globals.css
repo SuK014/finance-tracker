@@ -1398,3 +1398,16 @@ li:last-child { border-bottom: none; }
     border-top: 1px solid var(--border);
   }
 }
+
+/* Voice add (Say it) */
+.voice { display: flex; flex-direction: column; gap: 10px; }
+.voice-row { display: flex; gap: 10px; align-items: center; }
+.voice-btn { flex: 1; min-height: 44px; background: var(--accent-soft); color: var(--accent); border: 1.5px solid var(--accent); border-radius: 16px; font-weight: 700; }
+.voice-btn[data-listening="true"] { background: var(--expense); border-color: var(--expense); color: #fff; animation: voice-pulse 1.4s ease-in-out infinite; }
+.voice-lang { width: auto; flex-shrink: 0; }
+.voice-lang button { min-width: 48px; }
+.voice-type { display: flex; gap: 8px; }
+.voice-type input { flex: 1; min-width: 0; }
+@keyframes voice-pulse { 50% { opacity: 0.8; } }
+@media (prefers-reduced-motion: reduce) { .voice-btn[data-listening="true"] { animation: none; } }
+
