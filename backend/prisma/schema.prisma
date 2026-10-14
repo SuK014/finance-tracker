@@ -46,6 +46,7 @@ model Account {
   user         User                   @relation(fields: [userId], references: [id])
   transactions Transaction[]
   recurring    RecurringTransaction[]
+  assetLots    AssetLot[]
 
   @@index([userId])
 }
@@ -60,11 +61,14 @@ model Transaction {
   accountId   Int
   categoryId  Int?
   evidenceUrl String?
+  // "investment" for the cash side of a portfolio buy/sell; kept out of spending and income totals.
+  source      String?
   createdAt   DateTime  @default(now())
   deletedAt   DateTime?
   user        User      @relation(fields: [userId], references: [id])
   account     Account   @relation(fields: [accountId], references: [id])
   category    Category? @relation(fields: [categoryId], references: [id])
+  assetLot    AssetLot?
 
   @@index([userId])
 }
@@ -109,8 +113,13 @@ model AssetLot {
   price     Float
   date      DateTime  @default(now())
   deletedAt DateTime?
-  user      User      @relation(fields: [userId], references: [id])
-  asset     Asset     @relation(fields: [assetId], references: [id])
+  // Optional link to the account the cash moved through, and the transaction that recorded it.
+  accountId     Int?
+  transactionId Int?         @unique
+  user          User         @relation(fields: [userId], references: [id])
+  asset         Asset        @relation(fields: [assetId], references: [id])
+  account       Account?     @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
 
   @@index([userId])
 }

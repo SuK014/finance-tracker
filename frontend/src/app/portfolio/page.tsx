@@ -1,4 +1,4 @@
-import { getPortfolio } from "@/lib/serverApi"
+import { getPortfolio, getAccounts } from "@/lib/serverApi"
 import AddAssetForm from "@/components/AddAssetForm"
 import SellAssetButton from "@/components/SellAssetButton"
 import Link from "next/link"
@@ -25,7 +25,8 @@ function sym(currency: string) {
 }
 
 export default async function PortfolioPage() {
-  const holdings: Holding[] = await getPortfolio()
+  const [holdings, accounts]: [Holding[], any[]] = await Promise.all([getPortfolio(), getAccounts()])
+  const accountOptions = accounts.map(a => ({ id: a.id, name: a.name, currency: a.currency }))
 
   return (
     <main>
@@ -62,7 +63,7 @@ export default async function PortfolioPage() {
               <td className="num" style={{ textAlign: "right", color: (h.gainLoss ?? 0) >= 0 ? "var(--income)" : "var(--expense)" }}>
                 {(h.gainLoss ?? 0) >= 0 ? "+" : ""}{sym(h.currency)}{(h.gainLoss ?? 0).toFixed(2)} ({(h.gainLossPct ?? 0).toFixed(2)}%)
               </td>
-              <td><SellAssetButton symbol={h.symbol} maxShares={h.totalShares} /></td>
+              <td><SellAssetButton symbol={h.symbol} maxShares={h.totalShares} accounts={accountOptions} currency={h.currency} /></td>
             </tr>
           ))}
         </tbody>
@@ -70,7 +71,7 @@ export default async function PortfolioPage() {
       </div>
 
       <h2>Add Asset</h2>
-      <AddAssetForm />
+      <AddAssetForm accounts={accountOptions} />
     </main>
   )
 }

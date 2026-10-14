@@ -15,10 +15,12 @@ router.get("/monthly", async (req, res) => {
         const end = new Date(year, i + 1, 1)
         const txns = await prisma.transaction.findMany({
           where: { userId, deletedAt: null, date: { gte: start, lt: end } },
-          select: { amount: true, type: true },
+          select: { amount: true, type: true, source: true },
         })
-        const income  = txns.filter(t => t.type === "income") .reduce((s, t) => s + t.amount, 0)
-        const expense = txns.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0)
+        // Buying and selling investments moves money between accounts and the portfolio; it is not spending or earnings.
+        const real = txns.filter(t => t.source !== "investment")
+        const income  = real.filter(t => t.type === "income") .reduce((s, t) => s + t.amount, 0)
+        const expense = real.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0)
         return { month: m, year, income, expense, net: income - expense }
       })
     )

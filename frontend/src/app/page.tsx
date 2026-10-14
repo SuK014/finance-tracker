@@ -34,11 +34,14 @@ export default async function DashboardPage({
     getRecurring(),
   ])
 
-  const income = transactions
+  // Buying or selling investments moves money to and from the portfolio; it isn't spending or earning.
+  const real = transactions.filter((t: any) => t.source !== "investment")
+
+  const income = real
     .filter((t: any) => t.type === "income")
     .reduce((sum: number, t: any) => sum + t.amount, 0)
 
-  const expenses = transactions
+  const expenses = real
     .filter((t: any) => t.type === "expense")
     .reduce((sum: number, t: any) => sum + t.amount, 0)
 
@@ -48,7 +51,7 @@ export default async function DashboardPage({
   const daysInMonth = new Date(year, month, 0).getDate()
   const dailyData = Array.from({ length: daysInMonth }, (_, i) => {
     const day = i + 1
-    const dayTxns = transactions.filter((t: any) => new Date(t.date).getDate() === day)
+    const dayTxns = real.filter((t: any) => new Date(t.date).getDate() === day)
     return {
       date: String(day),
       income:  dayTxns.filter((t: any) => t.type === "income") .reduce((s: number, t: any) => s + t.amount, 0),
@@ -57,7 +60,7 @@ export default async function DashboardPage({
   })
 
   const byCat: Record<string, CatTotal> = {}
-  transactions
+  real
     .filter((t: any) => t.type === "expense" && t.category)
     .forEach((t: any) => {
       const k = String(t.category.id)
@@ -181,7 +184,7 @@ export default async function DashboardPage({
                   <div className="tx-main">
                     <div className="tx-title">{t.description || t.category?.name || "Transaction"}</div>
                     <div className="tx-sub">
-                      {t.category?.name ? `${t.category.name} · ` : ""}
+                      {t.source === "investment" ? "Investment · " : t.category?.name ? `${t.category.name} · ` : ""}
                       {new Date(t.date).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" })}
                     </div>
                   </div>

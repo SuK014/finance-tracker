@@ -102,6 +102,29 @@ const server = createServer((req, res) => {
     return
   }
 
+  if (path === "/api/portfolio/price/APP") {
+    res.writeHead(200)
+    res.end(JSON.stringify({ symbol: "APP", name: "Applovin Corporation", price: 260, currency: "USD", usdthb: 30 }))
+    return
+  }
+
+  if ((path === "/api/portfolio" || path === "/api/portfolio/sell") && req.method === "POST") {
+    let body = ""
+    req.on("data", chunk => { body += chunk })
+    req.on("end", () => {
+      const parsed = JSON.parse(body || "{}")
+      // Mirrors the real server's rule: you can't sell more than you hold.
+      if (path.endsWith("/sell") && parsed.quantity > 2) {
+        res.writeHead(400)
+        res.end(JSON.stringify({ error: "You only hold 2 shares of APP." }))
+        return
+      }
+      res.writeHead(201)
+      res.end(JSON.stringify({ id: 77, ...parsed }))
+    })
+    return
+  }
+
   if (path === "/api/transactions" && req.method === "POST") {
     let body = ""
     req.on("data", chunk => { body += chunk })

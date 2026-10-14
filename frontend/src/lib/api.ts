@@ -142,7 +142,7 @@ export async function getAssetPrice(symbol: string): Promise<{ symbol: string; n
     return res.json()
 }
 
-export async function createAsset(data: { symbol: string; name: string; type: string; quantity: number; price: number }) {
+export async function createAsset(data: { symbol: string; name: string; type: string; quantity: number; price: number; accountId?: number }) {
     const res = await fetch(`${API_URL}/api/portfolio`, {
         method: "POST",
         headers: authHeaders(),
@@ -151,7 +151,7 @@ export async function createAsset(data: { symbol: string; name: string; type: st
     return res.json()
 }
 
-export async function sellAsset(data: { symbol: string; quantity: number; price: number }) {
+export async function sellAsset(data: { symbol: string; quantity: number; price: number; accountId?: number }) {
     const res = await fetch(`${API_URL}/api/portfolio/sell`, {
         method: "POST",
         headers: authHeaders(),

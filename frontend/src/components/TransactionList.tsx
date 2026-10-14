@@ -15,6 +15,7 @@ type Transaction = {
   category?: { name: string; color?: string | null; icon?: string | null; type?: string | null } | null
   accountId: number
   categoryId?: number | null
+  source?: string | null
 }
 
 const TZ = "Asia/Bangkok"
@@ -120,6 +121,12 @@ export default function TransactionList({
                   {t.type === "income" ? "+" : "-"}฿{Number(t.amount).toLocaleString()}
                 </span>
                 <span className="row-meta">
+                  {t.source === "investment" && (
+                    <span className="category-pill">
+                      <span aria-hidden="true">📈</span>
+                      Investment
+                    </span>
+                  )}
                   {t.category && (
                     <span className="category-pill">
                       <span aria-hidden="true">{categoryEmoji(t.category)}</span>
