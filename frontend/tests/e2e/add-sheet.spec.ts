@@ -92,6 +92,26 @@ test.describe("date and time pickers inside the sheet (390px)", () => {
     await expect(dialog.getByRole("button", { name: "Choose time" })).toContainText("9:30 AM");
   });
 
+  test("the time can be typed without opening the list", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Add transaction" }).click();
+    const dialog = page.getByRole("dialog", { name: "Add transaction" });
+
+    const field = dialog.getByRole("textbox", { name: /Type time/ });
+    await expect(field).toBeVisible();
+    await expect(dialog.getByRole("listbox")).toHaveCount(0);
+    await field.fill("");
+    await field.pressSequentially("2305");
+    await expect(field).toHaveValue("23:05");
+    await expect(dialog.getByRole("button", { name: "Choose time" })).toContainText("11:05 PM");
+    await field.fill("");
+    await field.pressSequentially("930");
+    await expect(field).toHaveValue("09:30");
+    await field.press("Enter");
+    await expect(dialog.getByRole("button", { name: "Choose time" })).toContainText("9:30 AM");
+    await expect(dialog.getByRole("listbox")).toHaveCount(0);
+  });
+
   test("the date calendar opens inline and picking a day updates it", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Add transaction" }).click();

@@ -332,13 +332,10 @@ select:disabled {
   gap: 1px;
   animation: rise-in var(--dur-fast) var(--ease-out) both;
 }
-.timepicker-custom {
-  display: flex;
-  gap: 6px;
-  padding: 6px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 4px;
-}
+/* Always-visible typing field beside the list toggle. */
+.timepicker-custom { display: flex; gap: 8px; align-items: stretch; }
+.timepicker-custom input { flex: 0 0 96px; min-width: 0; text-align: center; }
+.timepicker-custom .select-trigger { flex: 1; min-width: 0; }
 
 /* Buttons */
 button {
