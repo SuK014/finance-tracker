@@ -11,12 +11,12 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Finance Tracker",
+  title: "NgernTong",
   description: "Personal finance tracker",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Finance",
+    title: "NgernTong",
   },
 };
 

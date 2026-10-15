@@ -43,7 +43,10 @@ function Brand() {
   return (
     <span className="brand">
       <BrandMark size={32} />
-      Finance Tracker
+      <span className="brand-text">
+        <span className="wordmark">Ngern<span className="wordmark-gold">Tong</span></span>
+        <small lang="th">เงินทอง</small>
+      </span>
     </span>
   )
 }

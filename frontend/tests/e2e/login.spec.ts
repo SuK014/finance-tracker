@@ -4,7 +4,7 @@ test.describe("login page", () => {
   test("renders the sign-in form by default", async ({ page }) => {
     await page.goto("/login");
 
-    await expect(page.locator(".login-brand")).toHaveText("Finance Tracker");
+    await expect(page.locator(".login-brand")).toHaveText("NgernTong");
     await expect(page.getByRole("heading", { name: "Sign in to your account" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
   });

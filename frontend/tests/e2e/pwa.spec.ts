@@ -6,7 +6,7 @@ test.describe("PWA installability", () => {
     expect(res.ok()).toBeTruthy();
 
     const manifest = await res.json();
-    expect(manifest.name).toBe("Finance Tracker");
+    expect(manifest.name).toBe("NgernTong");
     expect(manifest.display).toBe("standalone");
     expect(manifest.icons).toEqual(
       expect.arrayContaining([
