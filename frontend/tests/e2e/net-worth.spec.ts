@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 // Runs against the isolated :3010 instance + mock API (see home.spec.ts).
-// Fixture: Kasikorn ฿1,000, and 2 shares of APP worth $520, at $1 = ฿30.
+// Fixture: Kasikorn ฿1,000, a matured bond worth ฿10,250.68, and 2 shares of APP worth $520, at $1 = ฿30.
 test.use({ baseURL: "http://localhost:3010" });
 
 test.beforeEach(async ({ context }) => {
@@ -20,8 +20,12 @@ test.describe("net worth", () => {
     await expect(usd).toContainText("$520.00");
     await expect(usd).toContainText("Total USD");
 
-    // ฿1,000 + $520 x 30 = ฿16,600
-    await expect(page.getByTestId("combined-net-worth")).toContainText("฿16,600.00");
+    // ฿1,000 + ฿10,250.68 (bond) + $520 x 30 = ฿26,850.68
+    await expect(page.getByTestId("combined-net-worth")).toContainText("฿26,850.68");
+
+    const thb = page.locator("div", { has: page.getByRole("heading", { name: "THB", exact: true }) }).last();
+    await expect(thb).toContainText("Savings bond 2020");
+    await expect(thb).toContainText("฿10,250.68");
     expect(errors).toEqual([]);
   });
 });

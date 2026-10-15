@@ -1,8 +1,9 @@
-import { getPortfolio, getAccounts } from "@/lib/serverApi"
+import { getPortfolio, getAccounts, getBonds } from "@/lib/serverApi"
 import AddAssetForm from "@/components/AddAssetForm"
 import SellAssetButton from "@/components/SellAssetButton"
 import Link from "next/link"
 import SectionTabs from "@/components/SectionTabs"
+import BondSection from "@/components/BondSection"
 
 type Holding = {
   id: number
@@ -25,7 +26,7 @@ function sym(currency: string) {
 }
 
 export default async function PortfolioPage() {
-  const [holdings, accounts]: [Holding[], any[]] = await Promise.all([getPortfolio(), getAccounts()])
+  const [holdings, accounts, bonds]: [Holding[], any[], any[]] = await Promise.all([getPortfolio(), getAccounts(), getBonds()])
   const accountOptions = accounts.map(a => ({ id: a.id, name: a.name, currency: a.currency }))
 
   return (
@@ -70,8 +71,12 @@ export default async function PortfolioPage() {
       </table>
       </div>
 
-      <h2>Add Asset</h2>
-      <AddAssetForm accounts={accountOptions} />
+      <BondSection bonds={bonds} />
+
+      <section aria-labelledby="add-asset-h" className="asset-section card">
+        <h2 id="add-asset-h">Add Asset</h2>
+        <AddAssetForm accounts={accountOptions} />
+      </section>
     </main>
   )
 }

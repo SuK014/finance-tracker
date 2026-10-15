@@ -1,9 +1,10 @@
-import { getAccounts, getPortfolio, getUsdThb } from "@/lib/serverApi"
+import { getAccounts, getPortfolio, getUsdThb, getBonds } from "@/lib/serverApi"
 import { currencySymbol as sym } from "@/lib/currency"
 import SectionTabs from "@/components/SectionTabs"
+import { bondValue } from "@/lib/bonds"
 
 export default async function NetWorthPage() {
-  const [accounts, holdings, usdthb] = await Promise.all([getAccounts(), getPortfolio(), getUsdThb()])
+  const [accounts, holdings, usdthb, bonds] = await Promise.all([getAccounts(), getPortfolio(), getUsdThb(), getBonds()])
 
   // Group accounts by currency, splitting credit cards out as liabilities
   // (debt) rather than folding them silently into the same "Accounts" list —
@@ -25,6 +26,10 @@ export default async function NetWorthPage() {
     if (!portfolioByCurrency[cur]) portfolioByCurrency[cur] = 0
     portfolioByCurrency[cur] += h.totalValue ?? 0
   }
+
+  // Bonds are worth what was paid plus the interest earned so far.
+  const bondRows = bonds.map((b: any) => ({ id: b.id, name: b.name, currency: b.currency ?? "THB", value: bondValue(b).value }))
+  for (const b of bondRows) portfolioByCurrency[b.currency] = (portfolioByCurrency[b.currency] ?? 0) + b.value
 
   const allCurrencies = Array.from(new Set([
     ...Object.keys(byCurrency),
@@ -119,6 +124,14 @@ export default async function NetWorthPage() {
                     <span>{h.symbol} <span style={{ color: "var(--text-secondary)", fontSize: "12px" }}>×{Number(h.totalShares ?? 0).toLocaleString(undefined, { maximumFractionDigits: 6 })}</span></span>
                     <span className="num">
                       {sym(cur)}{(h.totalValue ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                ))}
+                {bondRows.filter(b => b.currency === cur).map(b => (
+                  <div key={`bond-${b.id}`} style={rowStyle}>
+                    <span>{b.name} <span style={{ color: "var(--text-secondary)", fontSize: "12px" }}>bond</span></span>
+                    <span className="num">
+                      {sym(cur)}{b.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 ))}

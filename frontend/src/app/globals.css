@@ -1476,3 +1476,6 @@ li:last-child { border-bottom: none; }
 .payday-keep b { color: var(--text-primary); font-size: 18px; }
 .payday-keep[data-over="true"] b { color: var(--expense); }
 .seg-3 { grid-template-columns: repeat(3, 1fr); }
+.bond-section { margin-top: 28px; display: flex; flex-direction: column; gap: 14px; }
+.asset-section { margin-top: 20px; }
+.asset-section h2 { margin-bottom: 14px; }

@@ -315,3 +315,19 @@ export async function receiveSalary(
     return res.json()
 }
 
+// Bonds
+export type BondInput = { name: string; principal: number; ratePct: number; startDate: string; maturityDate: string }
+
+export async function createBond(data: BondInput): Promise<{ error?: string }> {
+    const res = await fetch(`${API_URL}/api/bonds`, { method: "POST", headers: authHeaders(), body: JSON.stringify(data) })
+    return res.json()
+}
+
+export async function updateBond(id: number, data: BondInput): Promise<{ error?: string }> {
+    const res = await fetch(`${API_URL}/api/bonds/${id}`, { method: "PUT", headers: authHeaders(), body: JSON.stringify(data) })
+    return res.json()
+}
+
+export async function deleteBond(id: number) {
+    await fetch(`${API_URL}/api/bonds/${id}`, { method: "DELETE", headers: authHeaders() })
+}

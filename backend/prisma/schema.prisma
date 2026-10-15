@@ -168,3 +168,19 @@ model GoalEntry {
   @@index([accountId])
 }
 
+// A bond held directly (no live price): worth what was paid plus simple interest earned so far.
+model Bond {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  name         String
+  principal    Float
+  ratePct      Float
+  startDate    DateTime
+  maturityDate DateTime
+  currency     String    @default("THB")
+  createdAt    DateTime  @default(now())
+  deletedAt    DateTime?
+  user         User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}

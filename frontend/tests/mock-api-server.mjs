@@ -34,7 +34,14 @@ const goals = [
   { id: 2, name: "Emergency fund", icon: "🛟", target: 5000, deadline: null, ruleType: "percent", ruleValue: 10, saved: 0, accounts: [] },
 ]
 
+// A matured bond keeps its value fixed, so tests do not depend on today's date:
+// 10,000 at 2.5% for 366 days (2020) = 10,250.68.
+const bonds = [
+  { id: 1, name: "Savings bond 2020", principal: 10000, ratePct: 2.5, startDate: "2020-01-01T00:00:00.000Z", maturityDate: "2021-01-01T00:00:00.000Z", currency: "THB" },
+]
+
 const FIXTURES = {
+  "/api/bonds": bonds,
   "/api/goals": goals,
   "/api/recurring": subscriptions,
   "/api/accounts": [account],
@@ -143,6 +150,16 @@ const server = createServer((req, res) => {
     req.on("end", () => {
       res.writeHead(201)
       res.end(JSON.stringify({ id: 60, ...JSON.parse(body || "{}") }))
+    })
+    return
+  }
+
+  if ((path === "/api/bonds" && req.method === "POST") || (/^\/api\/bonds\/\d+$/.test(path) && req.method === "PUT")) {
+    let body = ""
+    req.on("data", chunk => { body += chunk })
+    req.on("end", () => {
+      res.writeHead(path === "/api/bonds" ? 201 : 200)
+      res.end(JSON.stringify({ id: 80, ...JSON.parse(body || "{}") }))
     })
     return
   }
