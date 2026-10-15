@@ -1,5 +1,5 @@
 import { getTransactions, getCategories, getRecurring, getGoals, getAccounts } from "@/lib/serverApi"
-import { baht, goalPercent, totalAvailable, type Goal } from "@/lib/goals"
+import { baht, dayMonth, goalPercent, totalAvailable, type Goal } from "@/lib/goals"
 import DailyActivityChart from "@/components/DailyActivityChart"
 import CategoryBarChart from "@/components/CategoryBarChart"
 import TransactionCalendar from "@/components/TransactionCalendar"
@@ -36,6 +36,7 @@ export default async function DashboardPage({
     getGoals(),
     getAccounts(),
   ])
+  const salary = recurring.find((r: any) => r.active && r.type === "income")
   const setAsideTotal = accounts.reduce((sum: number, a: any) => sum + (a.setAside ?? 0), 0)
 
   // Buying or selling investments moves money to and from the portfolio; it isn't spending or earning.
@@ -89,7 +90,7 @@ export default async function DashboardPage({
   const in7 = new Date(today)
   in7.setDate(in7.getDate() + 7)
   const upcomingRecurring = recurring
-    .filter((r: any) => r.active && new Date(r.nextDate) <= in7)
+    .filter((r: any) => r.active && r.type !== "income" && new Date(r.nextDate) <= in7)
     .sort((a: any, b: any) => new Date(a.nextDate).getTime() - new Date(b.nextDate).getTime())
     .slice(0, 5)
 
@@ -202,7 +203,7 @@ export default async function DashboardPage({
         </section>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "24px", minWidth: 0 }}>
-          {goals.length > 0 && (
+          {(goals.length > 0 || salary) && (
             <section className="card" aria-labelledby="goals-h">
               <div className="section-head">
                 <h2 id="goals-h">Goals</h2>
@@ -223,6 +224,11 @@ export default async function DashboardPage({
               {goals.length > 0 && (
                 <p className="goal-hint" style={{ margin: "12px 0 0" }}>
                   {baht(setAsideTotal)} set aside · <b className="num">{baht(totalAvailable(accounts))}</b> left to spend
+                </p>
+              )}
+              {salary && (
+                <p className="goal-hint" style={{ margin: "6px 0 0" }}>
+                  Next payday {dayMonth(salary.nextDate)} · <span className="num">{baht(salary.amount)}</span>
                 </p>
               )}
             </section>

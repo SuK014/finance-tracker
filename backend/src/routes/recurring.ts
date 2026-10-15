@@ -120,4 +120,60 @@ router.post("/:id/record", async (req, res) => {
   }
 })
 
+// POST /api/recurring/:id/receive { amount?, allocations?: [{ goalId, amount }] }
+// Payday: records a recurring income (the amount can differ from the usual one), moves the next date on,
+// and sets money aside for goals in the account it landed in — all together, or not at all.
+router.post("/:id/receive", async (req, res) => {
+  try {
+    const userId = (req as any).user.userId
+    const r = await prisma.recurringTransaction.findFirst({
+      where: { id: Number(req.params.id), userId, active: true, type: "income" },
+    })
+    if (!r) { res.status(404).json({ error: "Salary not found" }); return }
+
+    const amount = req.body.amount === undefined ? r.amount : Number(req.body.amount)
+    if (!(amount > 0) || !Number.isFinite(amount)) { res.status(400).json({ error: "Enter the amount you received." }); return }
+
+    const raw: unknown[] = Array.isArray(req.body.allocations) ? req.body.allocations : []
+    const allocations = raw
+      .map((a: any) => ({ goalId: Number(a?.goalId), amount: Math.round(Number(a?.amount) * 100) / 100 }))
+      .filter(a => a.amount > 0)
+    const total = allocations.reduce((sum, a) => sum + a.amount, 0)
+    if (total > amount + 0.005) {
+      res.status(400).json({ error: "You can't set aside more than you received." })
+      return
+    }
+    if (allocations.length > 0) {
+      const goals = await prisma.goal.findMany({
+        where: { userId, deletedAt: null, id: { in: allocations.map(a => a.goalId) } },
+        select: { id: true },
+      })
+      if (goals.length !== new Set(allocations.map(a => a.goalId)).size) { res.status(400).json({ error: "One of those goals no longer exists." }); return }
+    }
+
+    const next = new Date(r.nextDate)
+    if (r.frequency === "daily")   next.setDate(next.getDate() + 1)
+    if (r.frequency === "weekly")  next.setDate(next.getDate() + 7)
+    if (r.frequency === "monthly") next.setMonth(next.getMonth() + 1)
+    if (r.frequency === "yearly")  next.setFullYear(next.getFullYear() + 1)
+
+    const now = new Date()
+    const transaction = await prisma.$transaction(async (tx) => {
+      const txn = await tx.transaction.create({
+        data: { amount, type: "income", description: r.description, accountId: r.accountId, categoryId: r.categoryId, date: now, userId },
+      })
+      await tx.recurringTransaction.update({ where: { id: r.id }, data: { nextDate: next } })
+      for (const a of allocations) {
+        await tx.goalEntry.create({
+          data: { userId, goalId: a.goalId, accountId: r.accountId, amount: a.amount, kind: "deposit", date: now },
+        })
+      }
+      return txn
+    })
+    res.status(201).json({ transaction, setAside: Math.round(total * 100) / 100 })
+  } catch {
+    res.status(500).json({ error: "Failed to record your salary" })
+  }
+})
+
 export default router

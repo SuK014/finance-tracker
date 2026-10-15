@@ -1460,4 +1460,19 @@ li:last-child { border-bottom: none; }
 .home-goal .budget-top { margin-bottom: 8px; }
 .sheet-warn { margin: 0; font-size: 13px; font-weight: 600; color: var(--text-primary); background: color-mix(in srgb, var(--peach, #ffb59e) 28%, transparent); padding: 10px 12px; border-radius: 12px; }
 
+/* Payday */
+.payday-card { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 22px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border)); }
+.payday-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.payday-top > div { display: flex; flex-direction: column; min-width: 0; }
+.payday-top small { color: var(--text-secondary); font-size: 13px; }
+.payday-top b { font-size: 24px; line-height: 1.2; }
+.payday-into { font-size: 12px; color: var(--text-muted); }
+.payday-edit { align-self: flex-start; background: transparent; border: none; min-height: 0; padding: 0; color: var(--accent); font-size: 13px; font-weight: 600; }
+.alloc-list { display: flex; flex-direction: column; gap: 10px; }
+.alloc-row { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 10px; align-items: center; }
+.alloc-row label { font-size: 14px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.alloc-row .goal-money-input input { font-size: 16px; }
+.payday-keep { margin: 0; font-size: 14px; color: var(--text-secondary); text-align: center; }
+.payday-keep b { color: var(--text-primary); font-size: 18px; }
+.payday-keep[data-over="true"] b { color: var(--expense); }
 .seg-3 { grid-template-columns: repeat(3, 1fr); }

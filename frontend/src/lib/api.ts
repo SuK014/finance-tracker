@@ -306,3 +306,12 @@ export async function goalMoney(
     return res.json()
 }
 
+// Payday: record a recurring salary and set money aside for goals in one step
+export async function receiveSalary(
+    id: number,
+    data: { amount: number; allocations: { goalId: number; amount: number }[] },
+): Promise<{ error?: string; setAside?: number }> {
+    const res = await fetch(`${API_URL}/api/recurring/${id}/receive`, { method: "POST", headers: authHeaders(), body: JSON.stringify(data) })
+    return res.json()
+}
+

@@ -39,7 +39,7 @@ export default async function SubscriptionsPage() {
 
       <section aria-labelledby="active-h">
         <h2 id="active-h">Active</h2>
-        <SubscriptionList items={items} accounts={accounts} categories={categories} />
+        <SubscriptionList items={items.filter((r: any) => r.type !== "income")} accounts={accounts} categories={categories} />
       </section>
 
       <SubscriptionForm accounts={accounts} categories={categories} />

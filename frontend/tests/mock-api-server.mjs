@@ -26,6 +26,9 @@ const subscriptions = [
   { id: 3, amount: 300, type: "expense", description: "Gym", frequency: "monthly", nextDate: "2026-12-10T00:00:00.000Z", active: true, accountId: 1, categoryId: null, account: { name: account.name }, category: null },
 ]
 
+// Only a user signed in with this token has a salary set up; everyone else sees the "Set up your salary" state.
+const salary = { id: 9, amount: 30000, type: "income", description: "Salary", frequency: "monthly", nextDate: "2026-12-25T00:00:00.000Z", active: true, accountId: 1, categoryId: null, account: { name: account.name }, category: null }
+
 const goals = [
   { id: 1, name: "Japan trip", icon: "🏝", target: 1000, deadline: "2027-12-31T00:00:00.000Z", ruleType: "fixed", ruleValue: 300, saved: 400, accounts: [{ accountId: 1, amount: 400 }] },
   { id: 2, name: "Emergency fund", icon: "🛟", target: 5000, deadline: null, ruleType: "percent", ruleValue: 10, saved: 0, accounts: [] },
@@ -57,6 +60,22 @@ const server = createServer((req, res) => {
 
   res.setHeader("Content-Type", "application/json")
   const path = (req.url ?? "").split("?")[0]
+
+  if (path === "/api/recurring" && req.method === "GET" && req.headers.authorization === "Bearer test-salary-token") {
+    res.writeHead(200)
+    res.end(JSON.stringify([...subscriptions, salary]))
+    return
+  }
+
+  if (/^\/api\/recurring\/\d+\/receive$/.test(path) && req.method === "POST") {
+    let body = ""
+    req.on("data", chunk => { body += chunk })
+    req.on("end", () => {
+      res.writeHead(201)
+      res.end(JSON.stringify({ transaction: { id: 70 }, ...JSON.parse(body || "{}") }))
+    })
+    return
+  }
 
   if (path === "/api/categories") {
     if (req.method === "POST") {
