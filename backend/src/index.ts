@@ -8,6 +8,7 @@ import portfolioRouter from "./routes/portfolio"
 import slipsRouter from "./routes/slips"
 import voiceRouter from "./routes/voice"
 import recurringRouter from "./routes/recurring"
+import goalsRouter from "./routes/goals"
 import reportsRouter from "./routes/reports"
 import authRouter from "./routes/auth"
 import { requireAuth } from "./middleware/auth"
@@ -38,6 +39,7 @@ app.use("/api/portfolio", portfolioRouter)
 app.use("/api/slips", slipsRouter)
 app.use("/api/voice", voiceRouter)
 app.use("/api/recurring", recurringRouter)
+app.use("/api/goals", goalsRouter)
 app.use("/api/reports", reportsRouter)
 
 app.listen(PORT,() => {

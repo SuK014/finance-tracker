@@ -6,7 +6,7 @@ import { createServer } from "node:http"
 
 const port = process.env.MOCK_API_PORT || 3055
 
-const account = { id: 1, name: "Kasikorn", type: "bank", bankName: "Kasikorn", currency: "THB", balance: 1000 }
+const account = { id: 1, name: "Kasikorn", type: "bank", bankName: "Kasikorn", currency: "THB", balance: 1000, setAside: 400, available: 600 }
 const category = { id: 1, name: "Groceries", color: "#3b62e0", type: "expense" }
 const transaction = {
   id: 1, amount: 84.2, type: "expense", date: "2026-09-12T00:00:00.000Z",
@@ -26,7 +26,13 @@ const subscriptions = [
   { id: 3, amount: 300, type: "expense", description: "Gym", frequency: "monthly", nextDate: "2026-12-10T00:00:00.000Z", active: true, accountId: 1, categoryId: null, account: { name: account.name }, category: null },
 ]
 
+const goals = [
+  { id: 1, name: "Japan trip", icon: "🏝", target: 1000, deadline: "2027-12-31T00:00:00.000Z", ruleType: "fixed", ruleValue: 300, saved: 400, accounts: [{ accountId: 1, amount: 400 }] },
+  { id: 2, name: "Emergency fund", icon: "🛟", target: 5000, deadline: null, ruleType: "percent", ruleValue: 10, saved: 0, accounts: [] },
+]
+
 const FIXTURES = {
+  "/api/goals": goals,
   "/api/recurring": subscriptions,
   "/api/accounts": [account],
   "/api/transactions": [transaction],
@@ -98,6 +104,26 @@ const server = createServer((req, res) => {
         return
       }
       res.end(JSON.stringify({ amount: 85, type: "expense", categoryId: 1, description: "coffee", date: "2026-10-12", source: "ai" }))
+    })
+    return
+  }
+
+  if (path === "/api/goals" && req.method === "POST") {
+    let body = ""
+    req.on("data", chunk => { body += chunk })
+    req.on("end", () => {
+      res.writeHead(201)
+      res.end(JSON.stringify({ id: 50, saved: 0, accounts: [], ...JSON.parse(body || "{}") }))
+    })
+    return
+  }
+
+  if (/^\/api\/goals\/\d+\/(deposit|withdraw|spend)$/.test(path) && req.method === "POST") {
+    let body = ""
+    req.on("data", chunk => { body += chunk })
+    req.on("end", () => {
+      res.writeHead(201)
+      res.end(JSON.stringify({ id: 60, ...JSON.parse(body || "{}") }))
     })
     return
   }

@@ -12,6 +12,7 @@ const GROUPS = {
     { href: "/net-worth", label: "Net worth" },
     { href: "/accounts", label: "Accounts" },
     { href: "/portfolio", label: "Portfolio" },
+    { href: "/goals", label: "Goals" },
   ],
 } as const
 

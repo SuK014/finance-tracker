@@ -277,3 +277,32 @@ export async function parseVoice(text: string, today: string, categories: Array<
     })
     return res.json()
 }
+
+// Savings goals
+import type { Goal } from "@/lib/goals"
+
+export type GoalInput = { name: string; icon?: string; target: number; deadline?: string | null; ruleType?: "fixed" | "percent" | null; ruleValue?: number | null }
+
+export async function createGoal(data: GoalInput): Promise<Goal & { error?: string }> {
+    const res = await fetch(`${API_URL}/api/goals`, { method: "POST", headers: authHeaders(), body: JSON.stringify(data) })
+    return res.json()
+}
+
+export async function updateGoal(id: number, data: GoalInput): Promise<{ error?: string }> {
+    const res = await fetch(`${API_URL}/api/goals/${id}`, { method: "PUT", headers: authHeaders(), body: JSON.stringify(data) })
+    return res.json()
+}
+
+export async function deleteGoal(id: number) {
+    await fetch(`${API_URL}/api/goals/${id}`, { method: "DELETE", headers: authHeaders() })
+}
+
+export async function goalMoney(
+    id: number,
+    action: "deposit" | "withdraw" | "spend",
+    data: { accountId: number; amount: number; categoryId?: number; description?: string },
+): Promise<{ error?: string }> {
+    const res = await fetch(`${API_URL}/api/goals/${id}/${action}`, { method: "POST", headers: authHeaders(), body: JSON.stringify(data) })
+    return res.json()
+}
+

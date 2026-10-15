@@ -22,6 +22,9 @@ export default async function AccountsPage() {
               color: a.balance >= 0 ? "var(--income)" : "var(--expense)",
             }}>
               {a.balance >= 0 ? "+" : ""}฿{Number(a.balance ?? 0).toLocaleString()}
+              {(a.setAside ?? 0) > 0 && (
+                <span className="acct-aside">฿{Number(a.setAside).toLocaleString()} set aside · ฿{Number(a.available ?? 0).toLocaleString()} available</span>
+              )}
             </span>
             <span className="row-meta">
               <span>{a.type}{a.bankName ? ` · ${a.bankName}` : ""}</span>

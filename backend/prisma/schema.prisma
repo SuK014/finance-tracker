@@ -17,6 +17,8 @@ model User {
   transactions Transaction[]
   recurring    RecurringTransaction[]
   assetLots    AssetLot[]
+  goals        Goal[]
+  bonds        Bond[]
 }
 
 model Category {
@@ -47,6 +49,7 @@ model Account {
   transactions Transaction[]
   recurring    RecurringTransaction[]
   assetLots    AssetLot[]
+  goalEntries  GoalEntry[]
 
   @@index([userId])
 }
@@ -69,6 +72,7 @@ model Transaction {
   account     Account   @relation(fields: [accountId], references: [id])
   category    Category? @relation(fields: [categoryId], references: [id])
   assetLot    AssetLot?
+  goalEntry   GoalEntry?
 
   @@index([userId])
 }
@@ -123,3 +127,44 @@ model AssetLot {
 
   @@index([userId])
 }
+
+// A savings goal. Money "set aside" for it stays in a real account; see GoalEntry.
+model Goal {
+  id        Int         @id @default(autoincrement())
+  userId    Int
+  name      String
+  icon      String?
+  target    Float
+  deadline  DateTime?
+  // Pay-yourself-first rule applied when a salary is received: "fixed" (baht) or "percent" of the salary.
+  ruleType  String?
+  ruleValue Float?
+  createdAt DateTime    @default(now())
+  deletedAt DateTime?
+  user      User        @relation(fields: [userId], references: [id])
+  entries   GoalEntry[]
+
+  @@index([userId])
+}
+
+// Money moved in or out of a goal. amount > 0 sets money aside in accountId; amount < 0 takes it back
+// ("withdraw") or spends it ("spend", with the expense it created in transactionId).
+model GoalEntry {
+  id            Int          @id @default(autoincrement())
+  userId        Int
+  goalId        Int
+  accountId     Int
+  amount        Float
+  kind          String
+  transactionId Int?         @unique
+  date          DateTime     @default(now())
+  deletedAt     DateTime?
+  goal          Goal         @relation(fields: [goalId], references: [id])
+  account       Account      @relation(fields: [accountId], references: [id])
+  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([goalId])
+  @@index([accountId])
+}
+

@@ -13,7 +13,7 @@ import CategoryIcon from "@/components/CategoryIcon"
 import VoiceInput from "@/components/VoiceInput"
 import type { VoiceParse } from "@/lib/api"
 
-type Account = { id: number; name: string; currency?: string }
+type Account = { id: number; name: string; currency?: string; setAside?: number; available?: number }
 type Category = { id: number; name: string; color?: string | null; icon?: string | null; type?: string }
 
 const AddSheetContext = createContext<{ open: () => void }>({ open: () => {} })
@@ -171,6 +171,9 @@ function Sheet({ closing, onClose, onSaved }: { closing: boolean; onClose: () =>
 
   const account = accounts.find(a => String(a.id) === accountId)
   const shown = categories.filter(c => !c.type || c.type === type)
+  // A heads-up (not a block) when spending would dip into money set aside for goals.
+  const intoGoals =
+    type === "expense" && account && (account.setAside ?? 0) > 0 && Number(amount) > (account.available ?? Infinity)
 
   async function scanSlip(file: File | undefined) {
     if (!file) return
@@ -334,6 +337,12 @@ function Sheet({ closing, onClose, onSaved }: { closing: boolean; onClose: () =>
               </button>
             ))}
           </div>
+
+          {intoGoals && account && (
+            <p className="sheet-warn" role="status">
+              That&apos;s more than the ฿{Math.max(0, Math.round(account.available ?? 0)).toLocaleString()} available in {account.name}. The rest comes out of money set aside for your goals.
+            </p>
+          )}
 
           <div>
             <span className="field-label">Category</span>

@@ -1,4 +1,5 @@
-import { getTransactions, getCategories, getRecurring } from "@/lib/serverApi"
+import { getTransactions, getCategories, getRecurring, getGoals, getAccounts } from "@/lib/serverApi"
+import { baht, goalPercent, totalAvailable, type Goal } from "@/lib/goals"
 import DailyActivityChart from "@/components/DailyActivityChart"
 import CategoryBarChart from "@/components/CategoryBarChart"
 import TransactionCalendar from "@/components/TransactionCalendar"
@@ -28,11 +29,14 @@ export default async function DashboardPage({
   }
 
   const monthStr = `${year}-${String(month).padStart(2, "0")}`
-  const [transactions, categories, recurring] = await Promise.all([
+  const [transactions, categories, recurring, goals, accounts]: [any[], any[], any[], Goal[], any[]] = await Promise.all([
     getTransactions(undefined, monthStr),
     getCategories(),
     getRecurring(),
+    getGoals(),
+    getAccounts(),
   ])
+  const setAsideTotal = accounts.reduce((sum: number, a: any) => sum + (a.setAside ?? 0), 0)
 
   // Buying or selling investments moves money to and from the portfolio; it isn't spending or earning.
   const real = transactions.filter((t: any) => t.source !== "investment")
@@ -198,6 +202,32 @@ export default async function DashboardPage({
         </section>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "24px", minWidth: 0 }}>
+          {goals.length > 0 && (
+            <section className="card" aria-labelledby="goals-h">
+              <div className="section-head">
+                <h2 id="goals-h">Goals</h2>
+                <Link href="/goals">See all</Link>
+              </div>
+              {goals.slice(0, 2).map(g => (
+                <div key={g.id} className="home-goal">
+                  <div className="budget-top">
+                    <span><span aria-hidden="true">{g.icon || "🎯"}</span> {g.name}</span>
+                    <span className="num" style={{ color: "var(--text-secondary)", fontWeight: 600 }}>{baht(g.saved)} / {baht(g.target)}</span>
+                  </div>
+                  <div className="goal-bar" role="progressbar" aria-label={`${g.name} progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={goalPercent(g)} style={{ "--p": goalPercent(g) / 100 } as React.CSSProperties}>
+                    <i />
+                  </div>
+                </div>
+              ))}
+              {goals.length === 0 && <p className="goal-hint" style={{ margin: 0 }}>Save part of each salary before you spend it. <Link href="/goals">Start a goal</Link></p>}
+              {goals.length > 0 && (
+                <p className="goal-hint" style={{ margin: "12px 0 0" }}>
+                  {baht(setAsideTotal)} set aside · <b className="num">{baht(totalAvailable(accounts))}</b> left to spend
+                </p>
+              )}
+            </section>
+          )}
+
           {categoryData.some(c => c.budget != null) && (
             <section className="card" aria-labelledby="budgets-h">
               <h2 id="budgets-h">Budgets</h2>

@@ -25,6 +25,7 @@ const NAV_GROUPS: Array<{ label?: string; items: Array<{ href: string; label: st
       { href: "/net-worth", label: "Net worth", match: p => p.startsWith("/net-worth") },
       { href: "/accounts", label: "Accounts", match: p => p.startsWith("/accounts") },
       { href: "/portfolio", label: "Portfolio", match: p => p.startsWith("/portfolio") },
+      { href: "/goals", label: "Goals", match: p => p.startsWith("/goals") },
     ],
   },
   {
