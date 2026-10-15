@@ -36,6 +36,17 @@ test.describe("linking portfolio trades to an account", () => {
     expect(sells[0]).toMatchObject({ symbol: "APP", quantity: 1, price: 260, accountId: 1 });
   });
 
+  test("Sell all fills in everything you hold", async ({ page }) => {
+    const sells = capture(page, "/api/portfolio/sell");
+    await page.goto("/portfolio");
+    await page.getByRole("button", { name: "Sell", exact: true }).click();
+    await page.getByRole("button", { name: "Sell all" }).click();
+    await expect(page.getByRole("spinbutton", { name: "Quantity to sell" })).toHaveValue("2");
+    await page.getByRole("button", { name: "Confirm" }).click();
+    await expect.poll(() => sells.length).toBe(1);
+    expect(sells[0]).toMatchObject({ symbol: "APP", quantity: 2 });
+  });
+
   test("selling without an account sends no account", async ({ page }) => {
     const sells = capture(page, "/api/portfolio/sell");
     await page.goto("/portfolio");
