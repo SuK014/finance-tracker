@@ -87,3 +87,60 @@ test.describe("on a phone (390px)", () => {
     await expect(row.getByRole("button", { name: "More actions" })).toBeVisible();
   });
 });
+
+test.describe("prices in dollars", () => {
+  test("a dollar subscription shows in dollars with the baht amount, and counts in baht in the total", async ({ page, context }) => {
+    await context.addCookies([{ name: "token", value: "test-usd-token", url: "http://localhost:3010" }]);
+    await page.goto("/subscriptions");
+
+    const claude = page.locator(".sub-card", { hasText: "Claude" });
+    await expect(claude).toContainText("-$20.00");
+    await expect(claude).toContainText("about ฿600"); // $1 = ฿30 in the mock
+
+    // 819 + $20 x 30 = 1,419 a month
+    await expect(page.getByRole("region", { name: "Subscription cost" })).toContainText("฿1,419");
+    // Baht ones are unchanged
+    await expect(page.locator(".sub-card", { hasText: "Netflix Premium" })).toContainText("-฿419");
+  });
+
+  test("adding a subscription in dollars previews the baht and sends the currency", async ({ page }) => {
+    const posted: Record<string, unknown>[] = [];
+    page.on("request", r => { if (r.method() === "POST" && /\/api\/recurring$/.test(r.url())) posted.push(r.postDataJSON()); });
+    await page.goto("/subscriptions");
+
+    await page.getByRole("textbox", { name: "Subscription name" }).fill("Claude");
+    await page.getByRole("spinbutton", { name: "Price" }).fill("20");
+    await expect(page.getByRole("button", { name: "Baht ฿" })).toHaveAttribute("aria-pressed", "true");
+    await page.getByRole("button", { name: "US dollar $" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "About" })).toContainText("฿600");
+
+    await page.getByRole("button", { name: "Add subscription" }).click();
+    await expect.poll(() => posted.length).toBe(1);
+    expect(posted[0]).toMatchObject({ amount: 20, currency: "USD", description: "Claude" });
+  });
+
+  test("a baht subscription sends baht", async ({ page }) => {
+    const posted: Record<string, unknown>[] = [];
+    page.on("request", r => { if (r.method() === "POST" && /\/api\/recurring$/.test(r.url())) posted.push(r.postDataJSON()); });
+    await page.goto("/subscriptions");
+    await page.getByRole("textbox", { name: "Subscription name" }).fill("Gym 2");
+    await page.getByRole("spinbutton", { name: "Price" }).fill("500");
+    await page.getByRole("button", { name: "Add subscription" }).click();
+    await expect.poll(() => posted.length).toBe(1);
+    expect(posted[0]).toMatchObject({ amount: 500, currency: "THB" });
+  });
+
+  test("editing a subscription lets you switch its currency", async ({ page, context }) => {
+    await context.addCookies([{ name: "token", value: "test-usd-token", url: "http://localhost:3010" }]);
+    const puts: Record<string, unknown>[] = [];
+    page.on("request", r => { if (r.method() === "PUT" && /\/api\/recurring\/11$/.test(r.url())) puts.push(r.postDataJSON()); });
+    await page.goto("/subscriptions");
+    await page.locator(".sub-card", { hasText: "Claude" }).getByRole("button", { name: "Edit" }).first().click();
+    // The edit form sits above the "Add subscription" form, so its toggle comes first.
+    await expect(page.getByRole("button", { name: "US dollar $" }).first()).toHaveAttribute("aria-pressed", "true");
+    await page.getByRole("button", { name: "Baht ฿" }).first().click();
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect.poll(() => puts.length).toBe(1);
+    expect(puts[0]).toMatchObject({ currency: "THB" });
+  });
+});

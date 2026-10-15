@@ -1,7 +1,14 @@
 import { Router } from "express"
 import { prisma } from "../lib/db"
+import { cashAmount } from "../lib/investing"
+import { getUsdThb } from "../lib/fx"
 
 const router = Router()
+
+// "THB" / "USD" when given, otherwise null (= the account's own currency).
+function cleanCurrency(value: unknown): string | null {
+  return value === "THB" || value === "USD" ? value : null
+}
 
 router.get("/", async (req, res) => {
   try {
@@ -31,6 +38,7 @@ router.post("/", async (req, res) => {
         accountId: Number(accountId),
         categoryId: categoryId ? Number(categoryId) : null,
         frequency,
+        currency: cleanCurrency(req.body.currency),
         nextDate: new Date(nextDate),
         userId,
       },
@@ -55,6 +63,7 @@ router.put("/:id", async (req, res) => {
         accountId: Number(accountId),
         categoryId: categoryId ? Number(categoryId) : null,
         frequency,
+        currency: cleanCurrency(req.body.currency),
         nextDate: new Date(nextDate),
       },
     })
@@ -88,12 +97,23 @@ router.post("/:id/record", async (req, res) => {
     const userId = (req as any).user.userId
     const r = await prisma.recurringTransaction.findFirst({
       where: { id: Number(req.params.id), userId },
+      include: { account: true },
     })
     if (!r) { res.status(404).json({ error: "Not found" }); return }
 
+    // A price billed in another currency (e.g. USD) leaves the account in the account's own currency, at today's rate.
+    const billed = r.currency ?? r.account.currency
+    const amount = billed === r.account.currency
+      ? r.amount
+      : cashAmount(r.account.currency, billed, r.amount, await getUsdThb())
+    if (amount === null) {
+      res.status(502).json({ error: "Couldn't get today's exchange rate. Try again in a moment." })
+      return
+    }
+
     const transaction = await prisma.transaction.create({
       data: {
-        amount: r.amount,
+        amount,
         type: r.type,
         description: r.description,
         accountId: r.accountId,

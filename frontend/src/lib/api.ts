@@ -205,7 +205,7 @@ export async function getRecurring() {
 export async function createRecurring(data: {
     amount: number; type: string; description?: string
     accountId: number; categoryId?: number
-    frequency: string; nextDate: string
+    frequency: string; nextDate: string; currency?: string
 }) {
     const res = await fetch(`${API_URL}/api/recurring`, {
         method: "POST",
@@ -218,7 +218,7 @@ export async function createRecurring(data: {
 export async function updateRecurring(id: number, data: {
     amount?: number; type?: string; description?: string
     accountId?: number; categoryId?: number
-    frequency?: string; nextDate?: string; active?: boolean
+    frequency?: string; nextDate?: string; active?: boolean; currency?: string
 }) {
     const res = await fetch(`${API_URL}/api/recurring/${id}`, {
         method: "PUT",

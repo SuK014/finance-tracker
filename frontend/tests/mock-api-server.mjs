@@ -34,6 +34,9 @@ const goals = [
   { id: 2, name: "Emergency fund", icon: "🛟", target: 5000, deadline: null, ruleType: "percent", ruleValue: 10, saved: 0, accounts: [] },
 ]
 
+// A subscription billed in dollars (account is in baht); only the user with this token has it.
+const dollarSub = { id: 11, amount: 20, type: "expense", description: "Claude", frequency: "monthly", nextDate: "2026-12-07T00:00:00.000Z", active: true, accountId: 1, categoryId: null, currency: "USD", account: { name: account.name, currency: "THB" }, category: null }
+
 // A matured bond keeps its value fixed, so tests do not depend on today's date:
 // 10,000 at 2.5% for 366 days (2020) = 10,250.68.
 const bonds = [
@@ -71,6 +74,12 @@ const server = createServer((req, res) => {
   if (path === "/api/recurring" && req.method === "GET" && req.headers.authorization === "Bearer test-salary-token") {
     res.writeHead(200)
     res.end(JSON.stringify([...subscriptions, salary]))
+    return
+  }
+
+  if (path === "/api/recurring" && req.method === "GET" && req.headers.authorization === "Bearer test-usd-token") {
+    res.writeHead(200)
+    res.end(JSON.stringify([...subscriptions, dollarSub]))
     return
   }
 

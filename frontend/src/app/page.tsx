@@ -1,4 +1,5 @@
 import { getTransactions, getCategories, getRecurring, getGoals, getAccounts } from "@/lib/serverApi"
+import { billedCurrency, priceText } from "@/lib/recurringMoney"
 import { baht, dayMonth, goalPercent, totalAvailable, type Goal } from "@/lib/goals"
 import DailyActivityChart from "@/components/DailyActivityChart"
 import CategoryBarChart from "@/components/CategoryBarChart"
@@ -285,7 +286,7 @@ export default async function DashboardPage({
                     </div>
                   </div>
                   <span className="tx-amount num" style={{ color: r.type === "income" ? "var(--income)" : "var(--expense)" }}>
-                    {r.type === "income" ? "+" : "-"}฿{Number(r.amount).toLocaleString()}
+                    {r.type === "income" ? "+" : "-"}{priceText(Number(r.amount), billedCurrency(r))}
                   </span>
                 </li>
               )

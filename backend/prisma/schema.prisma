@@ -87,6 +87,8 @@ model RecurringTransaction {
   categoryId  Int?
   frequency   String
   nextDate    DateTime
+  // Currency the price is billed in ("USD" for e.g. an AI subscription). Null = the account's own currency.
+  currency    String?
   active      Boolean   @default(true)
   createdAt   DateTime  @default(now())
   user        User      @relation(fields: [userId], references: [id])
