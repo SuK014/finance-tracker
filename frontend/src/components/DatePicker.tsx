@@ -17,7 +17,16 @@ function sameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
 }
 
+function Chevron({ dir }: { dir: "left" | "right" }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={dir === "left" ? "M10 3.5 5.5 8l4.5 4.5" : "M6 3.5 10.5 8 6 12.5"} />
+    </svg>
+  )
+}
+
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
+const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
 // Replaces the native <input type="date"> — its calendar popup is a native
@@ -34,6 +43,8 @@ export default function DatePicker({
   inline?: boolean
 }) {
   const [open, setOpen] = useState(false)
+  // Tapping the month opens a month list, tapping the year opens a year list; picking one drops back to the days.
+  const [view, setView] = useState<"days" | "months" | "years">("days")
   const selected = parseISODate(value)
   const [viewMonth, setViewMonth] = useState(() => selected ?? new Date())
   const rootRef = useRef<HTMLDivElement>(null)
@@ -41,6 +52,7 @@ export default function DatePicker({
   useEffect(() => {
     if (open) {
       setViewMonth(selected ?? new Date())
+      setView("days")
       if (inline) rootRef.current?.scrollIntoView({ block: "nearest" })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -103,29 +115,88 @@ export default function DatePicker({
       </button>
       {open && (
         <div className="datepicker-popup" role="dialog" aria-label="Choose date" data-inline={inline ? "true" : undefined}>
-          <div className="datepicker-header">
-            <button type="button" className="datepicker-nav" onClick={() => setViewMonth(new Date(year, month - 1, 1))} aria-label="Previous month">‹</button>
-            <span className="datepicker-title">{MONTHS[month]} {year}</span>
-            <button type="button" className="datepicker-nav" onClick={() => setViewMonth(new Date(year, month + 1, 1))} aria-label="Next month">›</button>
-          </div>
-          <div className="datepicker-weekdays">
-            {WEEKDAYS.map(w => <span key={w}>{w}</span>)}
-          </div>
-          <div className="datepicker-grid">
-            {cells.map(({ date, inMonth }, i) => (
-              <button
-                key={i}
-                type="button"
-                className="datepicker-day"
-                data-in-month={inMonth ? "true" : undefined}
-                data-selected={selected && sameDay(date, selected) ? "true" : undefined}
-                data-today={sameDay(date, today) ? "true" : undefined}
-                onClick={() => selectDate(date)}
-              >
-                {date.getDate()}
-              </button>
-            ))}
-          </div>
+          {view === "days" && (
+            <>
+              <div className="datepicker-header">
+                <button type="button" className="datepicker-nav" onClick={() => setViewMonth(new Date(year, month - 1, 1))} aria-label="Previous month"><Chevron dir="left" /></button>
+                <span className="datepicker-title">
+                  <button type="button" className="datepicker-title-btn" onClick={() => setView("months")} aria-label={`${MONTHS[month]}, choose month`}>{MONTHS[month]}</button>
+                  <button type="button" className="datepicker-title-btn" onClick={() => setView("years")} aria-label={`${year}, choose year`}>{year}</button>
+                </span>
+                <button type="button" className="datepicker-nav" onClick={() => setViewMonth(new Date(year, month + 1, 1))} aria-label="Next month"><Chevron dir="right" /></button>
+              </div>
+              <div className="datepicker-weekdays">
+                {WEEKDAYS.map(w => <span key={w}>{w}</span>)}
+              </div>
+              <div className="datepicker-grid">
+                {cells.map(({ date, inMonth }, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className="datepicker-day"
+                    data-in-month={inMonth ? "true" : undefined}
+                    data-selected={selected && sameDay(date, selected) ? "true" : undefined}
+                    data-today={sameDay(date, today) ? "true" : undefined}
+                    onClick={() => selectDate(date)}
+                  >
+                    {date.getDate()}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+          {view === "months" && (
+            <>
+              <div className="datepicker-header">
+                <button type="button" className="datepicker-nav" onClick={() => setViewMonth(new Date(year - 1, month, 1))} aria-label="Previous year"><Chevron dir="left" /></button>
+                <span className="datepicker-title">
+                  <button type="button" className="datepicker-title-btn" onClick={() => setView("years")} aria-label={`${year}, choose year`}>{year}</button>
+                </span>
+                <button type="button" className="datepicker-nav" onClick={() => setViewMonth(new Date(year + 1, month, 1))} aria-label="Next year"><Chevron dir="right" /></button>
+              </div>
+              <div className="datepicker-choices" role="group" aria-label="Choose month">
+                {MONTHS_SHORT.map((m, i) => (
+                  <button
+                    key={m}
+                    type="button"
+                    className="datepicker-choice"
+                    aria-label={MONTHS[i]}
+                    data-selected={i === month ? "true" : undefined}
+                    data-today={i === today.getMonth() && year === today.getFullYear() ? "true" : undefined}
+                    onClick={() => { setViewMonth(new Date(year, i, 1)); setView("days") }}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+          {view === "years" && (() => {
+            const start = year - (((year % 12) + 12) % 12)
+            return (
+              <>
+                <div className="datepicker-header">
+                  <button type="button" className="datepicker-nav" onClick={() => setViewMonth(new Date(year - 12, month, 1))} aria-label="Previous years"><Chevron dir="left" /></button>
+                  <span className="datepicker-title num">{start} – {start + 11}</span>
+                  <button type="button" className="datepicker-nav" onClick={() => setViewMonth(new Date(year + 12, month, 1))} aria-label="Next years"><Chevron dir="right" /></button>
+                </div>
+                <div className="datepicker-choices" role="group" aria-label="Choose year">
+                  {Array.from({ length: 12 }, (_, i) => start + i).map(y => (
+                    <button
+                      key={y}
+                      type="button"
+                      className="datepicker-choice num"
+                      data-selected={y === year ? "true" : undefined}
+                      data-today={y === today.getFullYear() ? "true" : undefined}
+                      onClick={() => { setViewMonth(new Date(y, month, 1)); setView("days") }}
+                    >
+                      {y}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )
+          })()}
           <div className="datepicker-footer">
             <button type="button" className="datepicker-link" onClick={() => { onChange(""); setOpen(false) }}>Clear</button>
             <button type="button" className="datepicker-link" onClick={() => selectDate(new Date())}>Today</button>
