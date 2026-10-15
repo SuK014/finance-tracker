@@ -1,8 +1,10 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Select from "@/components/Select"
 import { currencySymbol } from "@/lib/currency"
 import { cashPreview } from "@/lib/investing"
+import { getDefaultInvestAccount, setDefaultInvestAccount } from "@/lib/investDefault"
 
 export type InvestAccount = { id: number; name: string; currency?: string }
 
@@ -25,6 +27,8 @@ export default function InvestAccountSelect({
   assetAmount: number
   usdthb: number | null
 }) {
+  const [defaultId, setDefaultId] = useState("")
+  useEffect(() => { setDefaultId(getDefaultInvestAccount(accounts)) }, [accounts])
   const label = mode === "buy" ? "Pay from account" : "Deposit to account"
   const account = accounts.find(a => String(a.id) === value)
   const cur = account?.currency ?? "THB"
@@ -43,6 +47,21 @@ export default function InvestAccountSelect({
           ...accounts.map(a => ({ value: String(a.id), label: `${a.name} (${a.currency ?? "THB"})` })),
         ]}
       />
+      {account && (
+        <label style={{ display: "flex", alignItems: "center", gap: "8px", margin: "8px 0 0", fontSize: "13px", color: "var(--text-secondary)", cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={defaultId === value}
+            onChange={e => {
+              const next = e.target.checked ? value : ""
+              setDefaultInvestAccount(next)
+              setDefaultId(next)
+            }}
+            style={{ width: "auto", minHeight: 0, margin: 0 }}
+          />
+          Use {account.name} as my default account
+        </label>
+      )}
       {account && preview !== null && (
         <p style={{ margin: "6px 0 0", fontSize: "13px", color: "var(--text-secondary)" }} role="status">
           {mode === "buy" ? "Takes about" : "Adds about"}{" "}

@@ -74,7 +74,7 @@ test.describe("linking portfolio trades to an account", () => {
     await page.getByRole("button", { name: "Stock", exact: true }).click();
     await page.getByPlaceholder("Symbol (e.g. AAPL)").fill("APP");
     await page.getByRole("button", { name: "Look up" }).click();
-    await expect(page.getByText("Applovin Corporation")).toBeVisible();
+    await expect(page.getByText("Current price:")).toBeVisible();
 
     // Amount is entered in THB by default: ฿7,800 = $260 = exactly 1 share.
     await page.getByPlaceholder("Amount in THB").fill("7800");
@@ -86,5 +86,37 @@ test.describe("linking portfolio trades to an account", () => {
     await expect.poll(() => buys.length).toBe(1);
     expect(buys[0]).toMatchObject({ symbol: "APP", accountId: 1 });
     expect(Number(buys[0].quantity)).toBeCloseTo(1, 6);
+  });
+
+  test("an account can be set as the default for buying and selling, and cleared again", async ({ page }) => {
+    await page.goto("/portfolio");
+    await page.getByRole("button", { name: "Stock", exact: true }).click();
+    await page.getByPlaceholder("Symbol (e.g. AAPL)").fill("APP");
+    await page.getByRole("button", { name: "Look up" }).click();
+    await expect(page.getByText("Current price:")).toBeVisible();
+    await page.getByPlaceholder("Amount in THB").fill("7800");
+    await page.getByRole("button", { name: "Pay from account" }).click();
+    await page.getByRole("option", { name: /Kasikorn/ }).click();
+    await page.getByRole("checkbox", { name: /default account/ }).check();
+
+    // A fresh load pre-selects it, in the buy form and the sell form.
+    await page.reload();
+    await page.getByRole("button", { name: "Stock", exact: true }).click();
+    await page.getByPlaceholder("Symbol (e.g. AAPL)").fill("APP");
+    await page.getByRole("button", { name: "Look up" }).click();
+    await expect(page.getByText("Current price:")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Pay from account" })).toContainText("Kasikorn");
+    await page.getByRole("button", { name: "Sell", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Deposit to account" })).toContainText("Kasikorn");
+
+    const sellDefault = page.getByRole("checkbox", { name: /default account/ }).first();
+    await expect(sellDefault).toBeChecked();
+    await sellDefault.uncheck();
+    await page.reload();
+    await page.getByRole("button", { name: "Stock", exact: true }).click();
+    await page.getByPlaceholder("Symbol (e.g. AAPL)").fill("APP");
+    await page.getByRole("button", { name: "Look up" }).click();
+    await expect(page.getByText("Current price:")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Pay from account" })).toContainText("Don't link");
   });
 });

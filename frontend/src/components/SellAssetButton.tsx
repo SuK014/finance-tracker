@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { sellAsset, getAssetPrice } from "@/lib/api"
+import { getDefaultInvestAccount } from "@/lib/investDefault"
 import InvestAccountSelect, { type InvestAccount } from "@/components/InvestAccountSelect"
 
 export default function SellAssetButton({
@@ -31,10 +32,7 @@ export default function SellAssetButton({
   async function openForm() {
     setOpen(true)
     setError("")
-    try {
-      const last = localStorage.getItem("investAccountId") ?? ""
-      if (accounts.some(a => String(a.id) === last)) setAccountId(last)
-    } catch {}
+    setAccountId(getDefaultInvestAccount(accounts))
     try {
       const q = await getAssetPrice(symbol)
       setUsdthb(q.usdthb)
@@ -55,7 +53,6 @@ export default function SellAssetButton({
     try {
       const res = await sellAsset({ symbol, quantity: qty, price, ...(accountId ? { accountId: Number(accountId) } : {}) })
       if (res?.error) { setError(res.error); return }
-      try { localStorage.setItem("investAccountId", accountId) } catch {}
       setForm({ quantity: "", price: "" })
       setSellAll(false)
       setOpen(false)
