@@ -203,36 +203,34 @@ export default async function DashboardPage({
         </section>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "24px", minWidth: 0 }}>
-          {(goals.length > 0 || salary) && (
-            <section className="card" aria-labelledby="goals-h">
-              <div className="section-head">
-                <h2 id="goals-h">Goals</h2>
-                <Link href="/goals">See all</Link>
-              </div>
-              {goals.slice(0, 2).map(g => (
-                <div key={g.id} className="home-goal">
-                  <div className="budget-top">
-                    <span><span aria-hidden="true">{g.icon || "🎯"}</span> {g.name}</span>
-                    <span className="num" style={{ color: "var(--text-secondary)", fontWeight: 600 }}>{baht(g.saved)} / {baht(g.target)}</span>
-                  </div>
-                  <div className="goal-bar" role="progressbar" aria-label={`${g.name} progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={goalPercent(g)} style={{ "--p": goalPercent(g) / 100 } as React.CSSProperties}>
-                    <i />
-                  </div>
+          <section className="card" aria-labelledby="goals-h">
+            <div className="section-head">
+              <h2 id="goals-h">Goals</h2>
+              <Link href="/goals">See all</Link>
+            </div>
+            {goals.slice(0, 2).map(g => (
+              <div key={g.id} className="home-goal">
+                <div className="budget-top">
+                  <span><span aria-hidden="true">{g.icon || "🎯"}</span> {g.name}</span>
+                  <span className="num" style={{ color: "var(--text-secondary)", fontWeight: 600 }}>{baht(g.saved)} / {baht(g.target)}</span>
                 </div>
-              ))}
-              {goals.length === 0 && <p className="goal-hint" style={{ margin: 0 }}>Save part of each salary before you spend it. <Link href="/goals">Start a goal</Link></p>}
-              {goals.length > 0 && (
-                <p className="goal-hint" style={{ margin: "12px 0 0" }}>
-                  {baht(setAsideTotal)} set aside · <b className="num">{baht(totalAvailable(accounts))}</b> left to spend
-                </p>
-              )}
-              {salary && (
-                <p className="goal-hint" style={{ margin: "6px 0 0" }}>
-                  Next payday {dayMonth(salary.nextDate)} · <span className="num">{baht(salary.amount)}</span>
-                </p>
-              )}
-            </section>
-          )}
+                <div className="goal-bar" role="progressbar" aria-label={`${g.name} progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={goalPercent(g)} style={{ "--p": goalPercent(g) / 100 } as React.CSSProperties}>
+                  <i />
+                </div>
+              </div>
+            ))}
+            {goals.length === 0 && <p className="goal-hint" style={{ margin: 0 }}>Save part of each salary before you spend it. <Link href="/goals">Start a goal</Link></p>}
+            {goals.length > 0 && (
+              <p className="goal-hint" style={{ margin: "12px 0 0" }}>
+                {baht(setAsideTotal)} set aside · <b className="num">{baht(totalAvailable(accounts))}</b> left to spend
+              </p>
+            )}
+            {salary && (
+              <p className="goal-hint" style={{ margin: "6px 0 0" }}>
+                Next payday {dayMonth(salary.nextDate)} · <span className="num">{baht(salary.amount)}</span>
+              </p>
+            )}
+          </section>
 
           {categoryData.some(c => c.budget != null) && (
             <section className="card" aria-labelledby="budgets-h">
