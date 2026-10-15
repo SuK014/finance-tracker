@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { sellAsset, getAssetPrice } from "@/lib/api"
+import { getDefaultInvestAccount } from "@/lib/investDefault"
 import InvestAccountSelect, { type InvestAccount } from "@/components/InvestAccountSelect"
 
 export default function SellAssetButton({
@@ -19,6 +20,8 @@ export default function SellAssetButton({
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ quantity: "", price: "" })
+  // "Sell all" sends the exact holding (which can carry float dust like 9.06e-7), not the rounded number shown.
+  const [sellAll, setSellAll] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [accountId, setAccountId] = useState("")
   const [usdthb, setUsdthb] = useState<number | null>(null)
@@ -29,10 +32,7 @@ export default function SellAssetButton({
   async function openForm() {
     setOpen(true)
     setError("")
-    try {
-      const last = localStorage.getItem("investAccountId") ?? ""
-      if (accounts.some(a => String(a.id) === last)) setAccountId(last)
-    } catch {}
+    setAccountId(getDefaultInvestAccount(accounts))
     try {
       const q = await getAssetPrice(symbol)
       setUsdthb(q.usdthb)
@@ -42,7 +42,7 @@ export default function SellAssetButton({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const qty = Number(form.quantity)
+    const qty = sellAll ? maxShares : Number(form.quantity)
     const price = Number(form.price)
     if (qty <= 0 || qty > maxShares || price <= 0) {
       setError(qty > maxShares ? `You only hold ${maxShares.toFixed(6)} shares.` : "Enter a quantity and price above 0.")
@@ -53,8 +53,8 @@ export default function SellAssetButton({
     try {
       const res = await sellAsset({ symbol, quantity: qty, price, ...(accountId ? { accountId: Number(accountId) } : {}) })
       if (res?.error) { setError(res.error); return }
-      try { localStorage.setItem("investAccountId", accountId) } catch {}
       setForm({ quantity: "", price: "" })
+      setSellAll(false)
       setOpen(false)
       router.refresh()
     } catch {
@@ -75,15 +75,16 @@ export default function SellAssetButton({
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "flex-start", minWidth: "260px" }}>
       <input
-        type="number" step="any" min="0.000001" required
+        type="number" step="any" min="0" required
         aria-label="Quantity to sell"
         placeholder={`Qty (max ${maxShares.toFixed(6)})`}
         value={form.quantity}
-        onChange={e => setForm({ ...form, quantity: e.target.value })}
+        onChange={e => { setSellAll(false); setForm({ ...form, quantity: e.target.value }) }}
         style={{ width: "130px" }}
       />
+      <button type="button" onClick={() => { setSellAll(true); setForm(f => ({ ...f, quantity: String(Number(maxShares.toFixed(6))) })) }}>Sell all</button>
       <input
-        type="number" step="any" min="0.000001" required
+        type="number" step="any" min="0" required
         aria-label="Sell price"
         placeholder="Sell price (USD)"
         value={form.price}
@@ -98,7 +99,7 @@ export default function SellAssetButton({
             value={accountId}
             onChange={setAccountId}
             assetCurrency={currency}
-            assetAmount={Number(form.quantity) * Number(form.price)}
+            assetAmount={(sellAll ? maxShares : Number(form.quantity)) * Number(form.price)}
             usdthb={usdthb}
           />
         </div>

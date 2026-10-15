@@ -1,4 +1,5 @@
-import { getRecurring, getAccounts, getCategories } from "@/lib/serverApi"
+import { getRecurring, getAccounts, getCategories, getUsdThb } from "@/lib/serverApi"
+import { billedCurrency, toThb } from "@/lib/recurringMoney"
 import SubscriptionForm from "@/components/SubscriptionForm"
 import SubscriptionList from "@/components/SubscriptionList"
 import SectionTabs from "@/components/SectionTabs"
@@ -14,14 +15,15 @@ function perMonth(amount: number, frequency: string) {
 }
 
 export default async function SubscriptionsPage() {
-  const [items, accounts, categories] = await Promise.all([
+  const [items, accounts, categories, usdthb] = await Promise.all([
     getRecurring(),
     getAccounts(),
     getCategories(),
+    getUsdThb(),
   ])
 
   const active = items.filter((r: any) => r.active && r.type === "expense")
-  const monthly = active.reduce((sum: number, r: any) => sum + perMonth(r.amount, r.frequency), 0)
+  const monthly = active.reduce((sum: number, r: any) => sum + perMonth(toThb(r.amount, billedCurrency(r), usdthb) ?? r.amount, r.frequency), 0)
   const money = (n: number) => `฿${Math.round(n).toLocaleString()}`
 
   return (
@@ -39,10 +41,10 @@ export default async function SubscriptionsPage() {
 
       <section aria-labelledby="active-h">
         <h2 id="active-h">Active</h2>
-        <SubscriptionList items={items} accounts={accounts} categories={categories} />
+        <SubscriptionList items={items.filter((r: any) => r.type !== "income")} accounts={accounts} categories={categories} usdthb={usdthb} />
       </section>
 
-      <SubscriptionForm accounts={accounts} categories={categories} />
+      <SubscriptionForm accounts={accounts} categories={categories} usdthb={usdthb} />
     </main>
   )
 }

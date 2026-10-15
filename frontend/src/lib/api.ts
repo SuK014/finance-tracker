@@ -205,7 +205,7 @@ export async function getRecurring() {
 export async function createRecurring(data: {
     amount: number; type: string; description?: string
     accountId: number; categoryId?: number
-    frequency: string; nextDate: string
+    frequency: string; nextDate: string; currency?: string
 }) {
     const res = await fetch(`${API_URL}/api/recurring`, {
         method: "POST",
@@ -218,7 +218,7 @@ export async function createRecurring(data: {
 export async function updateRecurring(id: number, data: {
     amount?: number; type?: string; description?: string
     accountId?: number; categoryId?: number
-    frequency?: string; nextDate?: string; active?: boolean
+    frequency?: string; nextDate?: string; active?: boolean; currency?: string
 }) {
     const res = await fetch(`${API_URL}/api/recurring/${id}`, {
         method: "PUT",
@@ -276,4 +276,58 @@ export async function parseVoice(text: string, today: string, categories: Array<
         body: JSON.stringify({ text, today, categories: categories.map(c => ({ id: c.id, name: c.name, type: c.type })) }),
     })
     return res.json()
+}
+
+// Savings goals
+import type { Goal } from "@/lib/goals"
+
+export type GoalInput = { name: string; icon?: string; target: number; deadline?: string | null; ruleType?: "fixed" | "percent" | null; ruleValue?: number | null }
+
+export async function createGoal(data: GoalInput): Promise<Goal & { error?: string }> {
+    const res = await fetch(`${API_URL}/api/goals`, { method: "POST", headers: authHeaders(), body: JSON.stringify(data) })
+    return res.json()
+}
+
+export async function updateGoal(id: number, data: GoalInput): Promise<{ error?: string }> {
+    const res = await fetch(`${API_URL}/api/goals/${id}`, { method: "PUT", headers: authHeaders(), body: JSON.stringify(data) })
+    return res.json()
+}
+
+export async function deleteGoal(id: number) {
+    await fetch(`${API_URL}/api/goals/${id}`, { method: "DELETE", headers: authHeaders() })
+}
+
+export async function goalMoney(
+    id: number,
+    action: "deposit" | "withdraw" | "spend",
+    data: { accountId: number; amount: number; categoryId?: number; description?: string },
+): Promise<{ error?: string }> {
+    const res = await fetch(`${API_URL}/api/goals/${id}/${action}`, { method: "POST", headers: authHeaders(), body: JSON.stringify(data) })
+    return res.json()
+}
+
+// Payday: record a recurring salary and set money aside for goals in one step
+export async function receiveSalary(
+    id: number,
+    data: { amount: number; allocations: { goalId: number; amount: number }[] },
+): Promise<{ error?: string; setAside?: number }> {
+    const res = await fetch(`${API_URL}/api/recurring/${id}/receive`, { method: "POST", headers: authHeaders(), body: JSON.stringify(data) })
+    return res.json()
+}
+
+// Bonds
+export type BondInput = { name: string; principal: number; ratePct: number; startDate: string; maturityDate: string }
+
+export async function createBond(data: BondInput): Promise<{ error?: string }> {
+    const res = await fetch(`${API_URL}/api/bonds`, { method: "POST", headers: authHeaders(), body: JSON.stringify(data) })
+    return res.json()
+}
+
+export async function updateBond(id: number, data: BondInput): Promise<{ error?: string }> {
+    const res = await fetch(`${API_URL}/api/bonds/${id}`, { method: "PUT", headers: authHeaders(), body: JSON.stringify(data) })
+    return res.json()
+}
+
+export async function deleteBond(id: number) {
+    await fetch(`${API_URL}/api/bonds/${id}`, { method: "DELETE", headers: authHeaders() })
 }

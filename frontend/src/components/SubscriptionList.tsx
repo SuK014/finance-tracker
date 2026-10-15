@@ -8,6 +8,8 @@ import Select from "@/components/Select"
 import DatePicker from "@/components/DatePicker"
 import SubscriptionIcon from "@/components/ServiceIcon"
 import ServicePicker from "@/components/ServicePicker"
+import CurrencyToggle from "@/components/CurrencyToggle"
+import { billedCurrency, priceText, toThb } from "@/lib/recurringMoney"
 
 type Item = {
   id: number
@@ -19,7 +21,8 @@ type Item = {
   active: boolean
   accountId: number
   categoryId?: number | null
-  account: { name: string }
+  currency?: string | null
+  account: { name: string; currency?: string | null }
   category?: { name: string; color?: string | null; icon?: string | null; type?: string | null } | null
 }
 
@@ -32,10 +35,12 @@ export default function SubscriptionList({
   items,
   accounts,
   categories,
+  usdthb = null,
 }: {
   items: Item[]
   accounts: Account[]
   categories: Category[]
+  usdthb?: number | null
 }) {
   const router = useRouter()
 
@@ -51,7 +56,7 @@ export default function SubscriptionList({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       {items.map(item => (
-        <SubscriptionRow key={item.id} item={item} accounts={accounts} categories={categories} onAction={() => router.refresh()} />
+        <SubscriptionRow key={item.id} item={item} accounts={accounts} categories={categories} usdthb={usdthb} onAction={() => router.refresh()} />
       ))}
     </div>
   )
@@ -61,11 +66,13 @@ function SubscriptionRow({
   item,
   accounts,
   categories,
+  usdthb,
   onAction,
 }: {
   item: Item
   accounts: Account[]
   categories: Category[]
+  usdthb: number | null
   onAction: () => void
 }) {
   const [paying, setPaying] = useState(false)
@@ -79,7 +86,11 @@ function SubscriptionRow({
     categoryId: item.categoryId ? String(item.categoryId) : "",
     frequency: item.frequency,
     nextDate: new Date(item.nextDate).toISOString().slice(0, 10),
+    currency: billedCurrency(item),
   })
+  const billed = billedCurrency(item)
+  const accountCurrency = item.account.currency ?? "THB"
+  const approx = billed !== accountCurrency ? toThb(item.amount, billed, usdthb) : null
 
   const nextDate = new Date(item.nextDate)
   const isPast = nextDate < new Date()
@@ -121,6 +132,7 @@ function SubscriptionRow({
         categoryId: form.categoryId ? Number(form.categoryId) : undefined,
         frequency: form.frequency,
         nextDate: form.nextDate,
+        currency: form.currency,
       })
       if (res?.error) { setError(res.error); return }
       setEditing(false)
@@ -147,6 +159,7 @@ function SubscriptionRow({
         <ServicePicker description={form.description} onPick={description => setForm({ ...form, description })} />
         <input type="text" aria-label="Subscription name" placeholder="Name" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
         <input type="number" aria-label="Price" step="any" min="0.01" required value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
+        <CurrencyToggle value={form.currency} onChange={currency => setForm({ ...form, currency })} />
         <Select ariaLabel="Billing period" value={form.frequency} onChange={frequency => setForm({ ...form, frequency })} options={freqOptions} />
         <DatePicker value={form.nextDate} onChange={nextDate => setForm({ ...form, nextDate })} />
         <Select
@@ -177,7 +190,7 @@ function SubscriptionRow({
         <div className="sub-top">
           <div className="tx-title">{title}</div>
           <span className="tx-amount num" style={{ color: item.type === "expense" ? "var(--expense)" : "var(--income)" }}>
-            {item.type === "income" ? "+" : "-"}฿{item.amount.toLocaleString()}
+            {item.type === "income" ? "+" : "-"}{priceText(item.amount, billed)}
           </span>
         </div>
         <div className="tx-sub">
@@ -187,6 +200,7 @@ function SubscriptionRow({
             {isPast ? "Due " : "Renews "}{dateLabel}
           </span>
           <span className="sub-account">{" · "}{item.account.name}</span>
+          {approx !== null && <span> · about {priceText(approx, "THB")}</span>}
         </div>
         {error && <div role="alert" style={{ color: "var(--expense)", fontSize: "13px" }}>{error}</div>}
       </div>

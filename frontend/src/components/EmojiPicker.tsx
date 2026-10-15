@@ -2,9 +2,9 @@
 
 import { EMOJI_CHOICES } from "@/lib/categoryIcon"
 
-export default function EmojiPicker({ value, onChange }: { value: string; onChange: (emoji: string) => void }) {
+export default function EmojiPicker({ value, onChange, label = "Category icon" }: { value: string; onChange: (emoji: string) => void; label?: string }) {
   return (
-    <div role="group" aria-label="Category icon" className="emoji-grid">
+    <div role="group" aria-label={label} className="emoji-grid">
       {EMOJI_CHOICES.map(e => (
         <button
           key={e}

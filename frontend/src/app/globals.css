@@ -12,6 +12,7 @@
   --accent-soft: #ece9ff;
   --accent-text: #ffffff;
   --peach: #ffb59e;
+  --gold-text: #b4730a;
   --peach-soft: #ffe7de;
   --sky: #8ec9ff;
   --sky-soft: #def0ff;
@@ -43,6 +44,7 @@
   --accent-soft: #2d2b66;
   --accent-text: #14152a;
   --peach: #ffb59e;
+  --gold-text: #f2b84b;
   --peach-soft: #4a3140;
   --sky: #8ec9ff;
   --sky-soft: #243b5c;
@@ -252,7 +254,24 @@ select:disabled {
   justify-content: space-between;
   margin-bottom: 8px;
 }
-.datepicker-title { font-size: 13px; font-weight: 600; }
+.datepicker-title { font-size: 13px; font-weight: 600; display: flex; gap: 2px; align-items: center; }
+.datepicker-title-btn {
+  min-height: 0; border: none; background: transparent; padding: 4px 8px; border-radius: 8px;
+  font: inherit; color: var(--text-primary); cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.datepicker-title-btn:hover { background: var(--accent-soft); color: var(--accent); }
+.datepicker-title-btn:active { transform: scale(0.97); }
+.datepicker-choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.datepicker-choice {
+  min-height: 0; height: 52px; border: none; background: transparent; border-radius: 12px; padding: 0;
+  font-size: 13px; color: var(--text-primary); cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.datepicker-choice:hover { background: var(--accent-soft); }
+.datepicker-choice:active { transform: scale(0.97); }
+.datepicker-choice[data-today="true"] { color: var(--accent); font-weight: 600; }
+.datepicker-choice[data-selected="true"] { background: var(--accent); color: var(--accent-text); font-weight: 600; }
 .datepicker-nav {
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -267,6 +286,8 @@ select:disabled {
   cursor: pointer;
   color: var(--text-secondary);
 }
+.datepicker-nav { flex: none; }
+.datepicker-nav:focus-visible { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); border-color: var(--accent); }
 .datepicker-nav:hover { border-color: var(--text-muted); color: var(--text-primary); }
 .datepicker-weekdays {
   display: grid;
@@ -656,6 +677,9 @@ li:last-child { border-bottom: none; }
   letter-spacing: -0.02em;
   padding: 0 8px;
 }
+.brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+.brand-text small { font-size: 11px; font-weight: 500; letter-spacing: 0; color: var(--text-muted); }
+.wordmark-gold { color: var(--gold-text); }
 .sidebar-add {
   margin: 20px 0 12px;
   width: 100%;
@@ -803,6 +827,7 @@ li:last-child { border-bottom: none; }
   white-space: nowrap;
   transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
+@media (max-width: 480px) { .section-tab { padding: 8px 11px; font-size: 13px; } }
 .section-tab[aria-current="page"] {
   background: var(--surface);
   color: var(--accent);
@@ -1426,3 +1451,56 @@ li:last-child { border-bottom: none; }
 .month-btn:hover:not(:disabled) { background: var(--accent-soft); color: var(--accent); }
 .month-btn:active:not(:disabled) { transform: scale(0.94); }
 .month-btn:disabled { opacity: 0.4; box-shadow: none; cursor: not-allowed; }
+
+/* Goals */
+.goals-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.goals-head h1 { margin: 0; }
+.goals-new { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 700; }
+.goal-list { display: flex; flex-direction: column; gap: 14px; }
+.goal-card { list-style: none; padding: 18px; border: 1px solid var(--border); border-radius: 22px; background: var(--surface); box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 10px; }
+.goal-top { display: flex; align-items: center; gap: 12px; }
+.goal-icon { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-size: 22px; background: var(--accent-soft); flex-shrink: 0; }
+.goal-title { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.goal-title b { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.goal-amounts { font-size: 13px; color: var(--text-secondary); }
+.goal-pct { font-size: 18px; font-weight: 700; color: var(--accent); }
+.goal-bar { height: 10px; border-radius: 6px; background: var(--accent-soft); overflow: hidden; }
+.goal-bar > i { display: block; height: 100%; width: 100%; border-radius: 6px; background: var(--accent); transform: scaleX(var(--p, 0)); transform-origin: left; transition: transform 420ms var(--ease-out); }
+@starting-style { .goal-bar > i { transform: scaleX(0); } }
+.goal-card[data-reached="true"] .goal-bar > i { background: var(--income); }
+.goal-card[data-reached="true"] .goal-pct { color: var(--income); }
+.goal-sub { margin: 0; font-size: 13px; color: var(--text-secondary); }
+.goal-where { margin: -4px 0 0; font-size: 12px; color: var(--text-muted); }
+.goal-actions { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+.goal-primary { background: var(--accent-soft); color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); font-weight: 700; }
+.goal-money-input { display: flex; align-items: center; gap: 8px; }
+.goal-money-input span { font-size: 20px; font-weight: 700; color: var(--text-muted); }
+.goal-money-input input { flex: 1; min-width: 0; width: 100%; font-size: 20px; font-weight: 600; }
+.goal-deadline { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.goal-hint { margin: 0; font-size: 13px; color: var(--text-secondary); }
+.acct-aside { display: block; font-size: 12px; font-weight: 500; color: var(--text-muted); }
+@media (prefers-reduced-motion: reduce) { .goal-bar > i { transition: none; } }
+.home-goal + .home-goal { margin-top: 14px; }
+.home-goal .budget-top { margin-bottom: 8px; }
+.sheet-warn { margin: 0; font-size: 13px; font-weight: 600; color: var(--text-primary); background: color-mix(in srgb, var(--peach, #ffb59e) 28%, transparent); padding: 10px 12px; border-radius: 12px; }
+
+/* Payday */
+.payday-card { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 22px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border)); }
+.payday-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.payday-top > div { display: flex; flex-direction: column; min-width: 0; }
+.payday-top small { color: var(--text-secondary); font-size: 13px; }
+.payday-top b { font-size: 24px; line-height: 1.2; }
+.payday-into { font-size: 12px; color: var(--text-muted); }
+.payday-edit { align-self: flex-start; background: transparent; border: none; min-height: 0; padding: 0; color: var(--accent); font-size: 13px; font-weight: 600; }
+.alloc-list { display: flex; flex-direction: column; gap: 10px; }
+.alloc-row { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 10px; align-items: center; }
+.alloc-row label { font-size: 14px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.alloc-row .goal-money-input input { font-size: 16px; }
+.payday-keep { margin: 0; font-size: 14px; color: var(--text-secondary); text-align: center; }
+.payday-keep b { color: var(--text-primary); font-size: 18px; }
+.payday-keep[data-over="true"] b { color: var(--expense); }
+.seg-3 { grid-template-columns: repeat(3, 1fr); }
+.bond-section { margin-top: 28px; display: flex; flex-direction: column; gap: 14px; }
+.asset-section { margin-top: 20px; }
+.asset-section h2 { margin-bottom: 14px; }
+.login-mark .wordmark-gold { color: #f6c453; }

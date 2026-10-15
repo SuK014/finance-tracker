@@ -11,7 +11,7 @@ const LEFT = [
 ]
 const RIGHT = [
   { href: "/reports", label: "Reports", Icon: ReportsIcon, isActive: (p: string) => p.startsWith("/reports") },
-  { href: "/net-worth", label: "Wealth", Icon: WealthIcon, isActive: (p: string) => p.startsWith("/net-worth") || p.startsWith("/accounts") || p.startsWith("/portfolio") },
+  { href: "/net-worth", label: "Wealth", Icon: WealthIcon, isActive: (p: string) => p.startsWith("/net-worth") || p.startsWith("/accounts") || p.startsWith("/portfolio") || p.startsWith("/goals") || p.startsWith("/salary") },
 ]
 
 export default function BottomTabBar() {

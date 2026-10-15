@@ -84,6 +84,36 @@ test.describe("custom DatePicker", () => {
     expect(titleAfter).not.toBe(titleBefore);
   });
 
+  test("tapping the month opens a month list, and picking one goes to that month", async ({ page }) => {
+    await page.goto("/transactions/new");
+    await page.getByRole("button", { name: "Choose date" }).click();
+    const calendar = page.getByRole("dialog", { name: "Choose date" });
+    const year = new Date().getFullYear();
+
+    await calendar.getByRole("button", { name: /choose month/ }).click();
+    // The year sits above the list and can be stepped.
+    await expect(calendar.getByRole("button", { name: `${year}, choose year` })).toBeVisible();
+    await calendar.getByRole("button", { name: "Next year" }).click();
+    await expect(calendar.getByRole("button", { name: `${year + 1}, choose year` })).toBeVisible();
+
+    await calendar.getByRole("button", { name: "March", exact: true }).click();
+    await expect(calendar.getByRole("button", { name: "March, choose month" })).toBeVisible();
+    await expect(calendar.getByRole("button", { name: `${year + 1}, choose year` })).toBeVisible();
+    await expect(calendar.getByRole("button", { name: "Next month" })).toBeVisible();
+  });
+
+  test("tapping the year opens a year list, and picking one goes to that year", async ({ page }) => {
+    await page.goto("/transactions/new");
+    await page.getByRole("button", { name: "Choose date" }).click();
+    const calendar = page.getByRole("dialog", { name: "Choose date" });
+    const year = new Date().getFullYear();
+
+    await calendar.getByRole("button", { name: `${year}, choose year` }).click();
+    await calendar.getByRole("button", { name: `${year - 2}`, exact: true }).click();
+    await expect(calendar.getByRole("button", { name: `${year - 2}, choose year` })).toBeVisible();
+    await expect(calendar.getByRole("button", { name: "Previous month" })).toBeVisible();
+  });
+
   test("Today and Clear controls work", async ({ page }) => {
     await page.goto("/transactions/new");
 

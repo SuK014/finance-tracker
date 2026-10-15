@@ -23,10 +23,10 @@ test.describe("dashboard (redesigned home page)", () => {
 
     await page.goto("/");
 
-    // "Finance Tracker" in the sidebar is a plain <span>, not a heading — only
+    // "NgernTong" in the sidebar is a plain <span>, not a heading — only
     // the login page renders it as an <h1>. Assert on content that actually
     // exists on the dashboard.
-    await expect(page.getByText("Finance Tracker").first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText("NgernTong").first()).toBeVisible({ timeout: 15000 });
     await expect(page.locator(".hero")).toBeVisible();
     expect(errors).toEqual([]);
   });

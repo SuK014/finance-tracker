@@ -68,7 +68,7 @@ export default function LoginPage() {
       <section className="login-cover" aria-hidden="true">
         <div className="login-mark">
           <BrandMark size={28} />
-          Finance Tracker
+          <span className="wordmark">Ngern<span className="wordmark-gold">Tong</span></span>
         </div>
 
         <div className="login-cover-body">
@@ -132,7 +132,7 @@ export default function LoginPage() {
         </div>
 
         <div className="login-card">
-          <div className="login-brand">Finance Tracker</div>
+          <div className="login-brand"><span className="wordmark">Ngern<span className="wordmark-gold">Tong</span></span></div>
           <div className="login-head">
             <h1>{mode === "login" ? "Sign in to your account" : "Create your account"}</h1>
             <p>{mode === "login" ? "Pick up where you left off." : "Takes less than a minute."}</p>

@@ -13,12 +13,18 @@ router.get("/", async (req, res) => {
                     where: { deletedAt: null },
                     select: { amount: true, type: true },
                 },
+                goalEntries: {
+                    where: { deletedAt: null },
+                    select: { amount: true },
+                },
             },
         })
-        const result = accounts.map(({ transactions, ...a }) => {
+        const result = accounts.map(({ transactions, goalEntries, ...a }) => {
             const income  = transactions.filter(t => t.type === "income") .reduce((s, t) => s + t.amount, 0)
             const expense = transactions.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0)
-            return { ...a, balance: income - expense }
+            // Money set aside for goals stays in the account, so the balance is untouched; "available" is what is left to spend.
+            const setAside = Math.round(goalEntries.reduce((s, e) => s + e.amount, 0) * 100) / 100
+            return { ...a, balance: income - expense, setAside, available: income - expense - setAside }
         })
         res.json(result)
     } catch (error) {

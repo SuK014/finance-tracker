@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { getAssetPrice, createAsset } from "@/lib/api"
 import { useRouter } from "next/navigation"
+import { getDefaultInvestAccount } from "@/lib/investDefault"
 import InvestAccountSelect, { type InvestAccount } from "@/components/InvestAccountSelect"
 
 const ASSET_TYPES = [
@@ -35,10 +36,7 @@ export default function AddAssetForm({ accounts = [] }: { accounts?: InvestAccou
   const [submitError, setSubmitError] = useState("")
 
   useEffect(() => {
-    try {
-      const last = localStorage.getItem("investAccountId") ?? ""
-      if (accounts.some(a => String(a.id) === last)) setAccountId(last)
-    } catch {}
+    setAccountId(getDefaultInvestAccount(accounts))
   }, [accounts])
 
   const amountNum = Number(amount)
@@ -86,7 +84,6 @@ export default function AddAssetForm({ accounts = [] }: { accounts?: InvestAccou
     } finally {
       setSubmitting(false)
     }
-    try { localStorage.setItem("investAccountId", accountId) } catch {}
     setAssetType("")
     setSymbolInput("")
     setPriceData(null)

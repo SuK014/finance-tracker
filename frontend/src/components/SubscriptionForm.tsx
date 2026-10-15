@@ -8,11 +8,13 @@ import Select from "@/components/Select"
 import DatePicker from "@/components/DatePicker"
 import ServicePicker from "@/components/ServicePicker"
 import { currencySymbol } from "@/lib/currency"
+import { priceText, toThb } from "@/lib/recurringMoney"
+import CurrencyToggle from "@/components/CurrencyToggle"
 
 type Account = { id: number; name: string; currency?: string }
 type Category = { id: number; name: string; type?: string }
 
-export default function SubscriptionForm({ accounts, categories }: { accounts: Account[]; categories: Category[] }) {
+export default function SubscriptionForm({ accounts, categories, usdthb = null }: { accounts: Account[]; categories: Category[]; usdthb?: number | null }) {
   const router = useRouter()
   const today = new Date().toISOString().slice(0, 10)
   const blank = {
@@ -22,11 +24,15 @@ export default function SubscriptionForm({ accounts, categories }: { accounts: A
     categoryId: "",
     frequency: "monthly",
     nextDate: today,
+    currency: "",
   }
   const [form, setForm] = useState(blank)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const selectedAccount = accounts.find(a => String(a.id) === form.accountId)
+  // Until one is picked, the price is in the account's currency.
+  const currency = form.currency || (selectedAccount?.currency === "USD" ? "USD" : "THB")
+  const inThb = currency !== (selectedAccount?.currency ?? "THB") && Number(form.amount) > 0 ? toThb(Number(form.amount), currency, usdthb) : null
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -44,6 +50,7 @@ export default function SubscriptionForm({ accounts, categories }: { accounts: A
         categoryId: form.categoryId ? Number(form.categoryId) : undefined,
         frequency: form.frequency,
         nextDate: form.nextDate,
+        currency,
       })
       if (result?.error) { setError(result.error); return }
       setForm({ ...blank, accountId: String(accounts[0]?.id ?? "") })
@@ -76,7 +83,7 @@ export default function SubscriptionForm({ accounts, categories }: { accounts: A
         <label htmlFor="sub-amount" className="field-label">Price</label>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span className="num" style={{ color: "var(--text-secondary)", fontSize: "16px", flexShrink: 0 }}>
-            {currencySymbol(selectedAccount?.currency)}
+            {currencySymbol(currency)}
           </span>
           <input
             id="sub-amount"
@@ -85,6 +92,14 @@ export default function SubscriptionForm({ accounts, categories }: { accounts: A
             style={{ flex: 1 }}
           />
         </div>
+        <div style={{ marginTop: "10px" }}>
+          <CurrencyToggle value={currency} onChange={c => setForm({ ...form, currency: c })} />
+        </div>
+        {inThb !== null && (
+          <p className="goal-hint" style={{ margin: "8px 0 0" }} role="status">
+            About <b className="num">{priceText(inThb, selectedAccount?.currency ?? "THB")}</b> at today&apos;s rate. It leaves {selectedAccount?.name} in {selectedAccount?.currency ?? "THB"} when you mark it paid.
+          </p>
+        )}
       </div>
 
       <div>

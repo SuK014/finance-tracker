@@ -2,19 +2,10 @@ import { Router } from "express"
 import { prisma } from "../lib/db"
 import YahooFinance from "yahoo-finance2"
 import { cashAmount, tradeDescription } from "../lib/investing"
+import { getUsdThb } from "../lib/fx"
 
 const router = Router()
 const yf = new YahooFinance()
-
-async function getUsdThb(): Promise<number | null> {
-  try {
-    const fx = await yf.quote("USDTHB=X")
-    return fx.regularMarketPrice ?? null
-  } catch (err) {
-    console.error("[portfolio] could not fetch USDTHB:", err)
-    return null
-  }
-}
 
 // Works out the account side of a trade: an error message, or the account and amount to move
 // (account null when the trade isn't linked to an account).

@@ -6,7 +6,7 @@ import { createServer } from "node:http"
 
 const port = process.env.MOCK_API_PORT || 3055
 
-const account = { id: 1, name: "Kasikorn", type: "bank", bankName: "Kasikorn", currency: "THB", balance: 1000 }
+const account = { id: 1, name: "Kasikorn", type: "bank", bankName: "Kasikorn", currency: "THB", balance: 1000, setAside: 400, available: 600 }
 const category = { id: 1, name: "Groceries", color: "#3b62e0", type: "expense" }
 const transaction = {
   id: 1, amount: 84.2, type: "expense", date: "2026-09-12T00:00:00.000Z",
@@ -26,7 +26,26 @@ const subscriptions = [
   { id: 3, amount: 300, type: "expense", description: "Gym", frequency: "monthly", nextDate: "2026-12-10T00:00:00.000Z", active: true, accountId: 1, categoryId: null, account: { name: account.name }, category: null },
 ]
 
+// Only a user signed in with this token has a salary set up; everyone else sees the "Set up your salary" state.
+const salary = { id: 9, amount: 30000, type: "income", description: "Salary", frequency: "monthly", nextDate: "2026-12-25T00:00:00.000Z", active: true, accountId: 1, categoryId: null, account: { name: account.name }, category: null }
+
+const goals = [
+  { id: 1, name: "Japan trip", icon: "🏝", target: 1000, deadline: "2027-12-31T00:00:00.000Z", ruleType: "fixed", ruleValue: 300, saved: 400, accounts: [{ accountId: 1, amount: 400 }] },
+  { id: 2, name: "Emergency fund", icon: "🛟", target: 5000, deadline: null, ruleType: "percent", ruleValue: 10, saved: 0, accounts: [] },
+]
+
+// A subscription billed in dollars (account is in baht); only the user with this token has it.
+const dollarSub = { id: 11, amount: 20, type: "expense", description: "Claude", frequency: "monthly", nextDate: "2026-12-07T00:00:00.000Z", active: true, accountId: 1, categoryId: null, currency: "USD", account: { name: account.name, currency: "THB" }, category: null }
+
+// A matured bond keeps its value fixed, so tests do not depend on today's date:
+// 10,000 at 2.5% for 366 days (2020) = 10,250.68.
+const bonds = [
+  { id: 1, name: "Savings bond 2020", principal: 10000, ratePct: 2.5, startDate: "2020-01-01T00:00:00.000Z", maturityDate: "2021-01-01T00:00:00.000Z", currency: "THB" },
+]
+
 const FIXTURES = {
+  "/api/bonds": bonds,
+  "/api/goals": goals,
   "/api/recurring": subscriptions,
   "/api/accounts": [account],
   "/api/transactions": [transaction],
@@ -51,6 +70,28 @@ const server = createServer((req, res) => {
 
   res.setHeader("Content-Type", "application/json")
   const path = (req.url ?? "").split("?")[0]
+
+  if (path === "/api/recurring" && req.method === "GET" && req.headers.authorization === "Bearer test-salary-token") {
+    res.writeHead(200)
+    res.end(JSON.stringify([...subscriptions, salary]))
+    return
+  }
+
+  if (path === "/api/recurring" && req.method === "GET" && req.headers.authorization === "Bearer test-usd-token") {
+    res.writeHead(200)
+    res.end(JSON.stringify([...subscriptions, dollarSub]))
+    return
+  }
+
+  if (/^\/api\/recurring\/\d+\/receive$/.test(path) && req.method === "POST") {
+    let body = ""
+    req.on("data", chunk => { body += chunk })
+    req.on("end", () => {
+      res.writeHead(201)
+      res.end(JSON.stringify({ transaction: { id: 70 }, ...JSON.parse(body || "{}") }))
+    })
+    return
+  }
 
   if (path === "/api/categories") {
     if (req.method === "POST") {
@@ -98,6 +139,36 @@ const server = createServer((req, res) => {
         return
       }
       res.end(JSON.stringify({ amount: 85, type: "expense", categoryId: 1, description: "coffee", date: "2026-10-12", source: "ai" }))
+    })
+    return
+  }
+
+  if (path === "/api/goals" && req.method === "POST") {
+    let body = ""
+    req.on("data", chunk => { body += chunk })
+    req.on("end", () => {
+      res.writeHead(201)
+      res.end(JSON.stringify({ id: 50, saved: 0, accounts: [], ...JSON.parse(body || "{}") }))
+    })
+    return
+  }
+
+  if (/^\/api\/goals\/\d+\/(deposit|withdraw|spend)$/.test(path) && req.method === "POST") {
+    let body = ""
+    req.on("data", chunk => { body += chunk })
+    req.on("end", () => {
+      res.writeHead(201)
+      res.end(JSON.stringify({ id: 60, ...JSON.parse(body || "{}") }))
+    })
+    return
+  }
+
+  if ((path === "/api/bonds" && req.method === "POST") || (/^\/api\/bonds\/\d+$/.test(path) && req.method === "PUT")) {
+    let body = ""
+    req.on("data", chunk => { body += chunk })
+    req.on("end", () => {
+      res.writeHead(path === "/api/bonds" ? 201 : 200)
+      res.end(JSON.stringify({ id: 80, ...JSON.parse(body || "{}") }))
     })
     return
   }

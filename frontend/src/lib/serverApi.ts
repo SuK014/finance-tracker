@@ -58,6 +58,16 @@ export async function getUsdThb(): Promise<number | null> {
     }
 }
 
+export async function getGoals(): Promise<any[]> {
+    const res = await serverFetch(`${API_URL}/api/goals`)
+    return safeArray(res)
+}
+
+export async function getBonds(): Promise<any[]> {
+    const res = await serverFetch(`${API_URL}/api/bonds`)
+    return safeArray(res)
+}
+
 export async function getLots(): Promise<any[]> {
     const res = await serverFetch(`${API_URL}/api/portfolio/lots`)
     return safeArray(res)

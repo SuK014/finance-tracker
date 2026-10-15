@@ -25,6 +25,8 @@ const NAV_GROUPS: Array<{ label?: string; items: Array<{ href: string; label: st
       { href: "/net-worth", label: "Net worth", match: p => p.startsWith("/net-worth") },
       { href: "/accounts", label: "Accounts", match: p => p.startsWith("/accounts") },
       { href: "/portfolio", label: "Portfolio", match: p => p.startsWith("/portfolio") },
+      { href: "/goals", label: "Goals", match: p => p.startsWith("/goals") },
+      { href: "/salary", label: "Salary", match: p => p.startsWith("/salary") },
     ],
   },
   {
@@ -41,7 +43,10 @@ function Brand() {
   return (
     <span className="brand">
       <BrandMark size={32} />
-      Finance Tracker
+      <span className="brand-text">
+        <span className="wordmark">Ngern<span className="wordmark-gold">Tong</span></span>
+        <small lang="th">เงินทอง</small>
+      </span>
     </span>
   )
 }
