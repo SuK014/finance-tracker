@@ -1,5 +1,6 @@
 import { Router } from "express"
 import { prisma } from "../lib/db"
+import { parseWhen } from "../lib/tz"
 import YahooFinance from "yahoo-finance2"
 import { cashAmount, tradeDescription } from "../lib/investing"
 import { getUsdThb } from "../lib/fx"
@@ -231,7 +232,7 @@ router.put("/lots/:id", async (req, res) => {
       data: {
         quantity: Number(quantity),
         price: Number(price),
-        ...(date ? { date: new Date(date) } : {}),
+        ...(date ? { date: parseWhen(date) } : {}),
       },
     })
     // Keep the linked account transaction in step, at the exchange rate it was saved with.

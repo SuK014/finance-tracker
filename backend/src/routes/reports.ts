@@ -1,5 +1,6 @@
 import { Router } from "express"
 import { prisma } from "../lib/db"
+import { thaiMonthStart } from "../lib/tz"
 
 const router = Router()
 
@@ -11,8 +12,8 @@ router.get("/monthly", async (req, res) => {
     const months = await Promise.all(
       Array.from({ length: 12 }, async (_, i) => {
         const m = i + 1
-        const start = new Date(year, i, 1)
-        const end = new Date(year, i + 1, 1)
+        const start = thaiMonthStart(year, m)
+        const end = thaiMonthStart(year, m + 1)
         const txns = await prisma.transaction.findMany({
           where: { userId, deletedAt: null, date: { gte: start, lt: end } },
           select: { amount: true, type: true, source: true },

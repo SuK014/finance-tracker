@@ -1,3 +1,4 @@
+import { thaiJson } from "./lib/tz"
 import express from "express"
 import cors from "cors"
 import path from "path"
@@ -15,6 +16,7 @@ import authRouter from "./routes/auth"
 import { requireAuth } from "./middleware/auth"
 
 const app = express()
+app.set("json replacer", thaiJson)
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3001
 
 // Comma-separated list of allowed origins, e.g. "http://localhost:3000,https://finance-tracker.vercel.app"

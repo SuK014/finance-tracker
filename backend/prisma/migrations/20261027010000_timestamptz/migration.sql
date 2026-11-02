@@ -1,0 +1,36 @@
+-- Store every date as a real moment (timestamptz). Existing values hold Thai (UTC+7) clock time, so they are read
+-- as +07:00; exact-midnight values are plain dates and stay at midnight UTC.
+ALTER TABLE "User" ALTER COLUMN "createdAt" DROP DEFAULT;
+ALTER TABLE "Transaction" ALTER COLUMN "createdAt" DROP DEFAULT;
+ALTER TABLE "RecurringTransaction" ALTER COLUMN "createdAt" DROP DEFAULT;
+ALTER TABLE "AssetLot" ALTER COLUMN "date" DROP DEFAULT;
+ALTER TABLE "Goal" ALTER COLUMN "createdAt" DROP DEFAULT;
+ALTER TABLE "GoalEntry" ALTER COLUMN "date" DROP DEFAULT;
+ALTER TABLE "Bond" ALTER COLUMN "createdAt" DROP DEFAULT;
+ALTER TABLE "Account" ALTER COLUMN "deletedAt" TYPE TIMESTAMPTZ(3) USING CASE WHEN "deletedAt" = date_trunc('day', "deletedAt") THEN "deletedAt" AT TIME ZONE 'UTC' ELSE "deletedAt" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "Asset" ALTER COLUMN "deletedAt" TYPE TIMESTAMPTZ(3) USING CASE WHEN "deletedAt" = date_trunc('day', "deletedAt") THEN "deletedAt" AT TIME ZONE 'UTC' ELSE "deletedAt" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "AssetLot" ALTER COLUMN "date" TYPE TIMESTAMPTZ(3) USING CASE WHEN "date" = date_trunc('day', "date") THEN "date" AT TIME ZONE 'UTC' ELSE "date" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "AssetLot" ALTER COLUMN "deletedAt" TYPE TIMESTAMPTZ(3) USING CASE WHEN "deletedAt" = date_trunc('day', "deletedAt") THEN "deletedAt" AT TIME ZONE 'UTC' ELSE "deletedAt" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "Bond" ALTER COLUMN "createdAt" TYPE TIMESTAMPTZ(3) USING CASE WHEN "createdAt" = date_trunc('day', "createdAt") THEN "createdAt" AT TIME ZONE 'UTC' ELSE "createdAt" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "Bond" ALTER COLUMN "deletedAt" TYPE TIMESTAMPTZ(3) USING CASE WHEN "deletedAt" = date_trunc('day', "deletedAt") THEN "deletedAt" AT TIME ZONE 'UTC' ELSE "deletedAt" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "Bond" ALTER COLUMN "maturityDate" TYPE TIMESTAMPTZ(3) USING CASE WHEN "maturityDate" = date_trunc('day', "maturityDate") THEN "maturityDate" AT TIME ZONE 'UTC' ELSE "maturityDate" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "Bond" ALTER COLUMN "startDate" TYPE TIMESTAMPTZ(3) USING CASE WHEN "startDate" = date_trunc('day', "startDate") THEN "startDate" AT TIME ZONE 'UTC' ELSE "startDate" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "Category" ALTER COLUMN "deletedAt" TYPE TIMESTAMPTZ(3) USING CASE WHEN "deletedAt" = date_trunc('day', "deletedAt") THEN "deletedAt" AT TIME ZONE 'UTC' ELSE "deletedAt" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "Goal" ALTER COLUMN "createdAt" TYPE TIMESTAMPTZ(3) USING CASE WHEN "createdAt" = date_trunc('day', "createdAt") THEN "createdAt" AT TIME ZONE 'UTC' ELSE "createdAt" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "Goal" ALTER COLUMN "deadline" TYPE TIMESTAMPTZ(3) USING CASE WHEN "deadline" = date_trunc('day', "deadline") THEN "deadline" AT TIME ZONE 'UTC' ELSE "deadline" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "Goal" ALTER COLUMN "deletedAt" TYPE TIMESTAMPTZ(3) USING CASE WHEN "deletedAt" = date_trunc('day', "deletedAt") THEN "deletedAt" AT TIME ZONE 'UTC' ELSE "deletedAt" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "GoalEntry" ALTER COLUMN "date" TYPE TIMESTAMPTZ(3) USING CASE WHEN "date" = date_trunc('day', "date") THEN "date" AT TIME ZONE 'UTC' ELSE "date" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "GoalEntry" ALTER COLUMN "deletedAt" TYPE TIMESTAMPTZ(3) USING CASE WHEN "deletedAt" = date_trunc('day', "deletedAt") THEN "deletedAt" AT TIME ZONE 'UTC' ELSE "deletedAt" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "RecurringTransaction" ALTER COLUMN "createdAt" TYPE TIMESTAMPTZ(3) USING CASE WHEN "createdAt" = date_trunc('day', "createdAt") THEN "createdAt" AT TIME ZONE 'UTC' ELSE "createdAt" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "RecurringTransaction" ALTER COLUMN "nextDate" TYPE TIMESTAMPTZ(3) USING CASE WHEN "nextDate" = date_trunc('day', "nextDate") THEN "nextDate" AT TIME ZONE 'UTC' ELSE "nextDate" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "Transaction" ALTER COLUMN "createdAt" TYPE TIMESTAMPTZ(3) USING CASE WHEN "createdAt" = date_trunc('day', "createdAt") THEN "createdAt" AT TIME ZONE 'UTC' ELSE "createdAt" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "Transaction" ALTER COLUMN "date" TYPE TIMESTAMPTZ(3) USING CASE WHEN "date" = date_trunc('day', "date") THEN "date" AT TIME ZONE 'UTC' ELSE "date" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "Transaction" ALTER COLUMN "deletedAt" TYPE TIMESTAMPTZ(3) USING CASE WHEN "deletedAt" = date_trunc('day', "deletedAt") THEN "deletedAt" AT TIME ZONE 'UTC' ELSE "deletedAt" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "User" ALTER COLUMN "createdAt" TYPE TIMESTAMPTZ(3) USING CASE WHEN "createdAt" = date_trunc('day', "createdAt") THEN "createdAt" AT TIME ZONE 'UTC' ELSE "createdAt" AT TIME ZONE 'Asia/Bangkok' END;
+ALTER TABLE "User" ALTER COLUMN "createdAt" SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "Transaction" ALTER COLUMN "createdAt" SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "RecurringTransaction" ALTER COLUMN "createdAt" SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "AssetLot" ALTER COLUMN "date" SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "Goal" ALTER COLUMN "createdAt" SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "GoalEntry" ALTER COLUMN "date" SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "Bond" ALTER COLUMN "createdAt" SET DEFAULT CURRENT_TIMESTAMP;

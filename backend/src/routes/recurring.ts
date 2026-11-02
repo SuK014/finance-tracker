@@ -1,5 +1,6 @@
 import { Router } from "express"
 import { prisma } from "../lib/db"
+import { parseWhen } from "../lib/tz"
 import { cashAmount } from "../lib/investing"
 import { getUsdThb } from "../lib/fx"
 
@@ -39,7 +40,7 @@ router.post("/", async (req, res) => {
         categoryId: categoryId ? Number(categoryId) : null,
         frequency,
         currency: cleanCurrency(req.body.currency),
-        nextDate: new Date(nextDate),
+        nextDate: parseWhen(nextDate),
         userId,
       },
       include: { account: true, category: true },
@@ -64,7 +65,7 @@ router.put("/:id", async (req, res) => {
         categoryId: categoryId ? Number(categoryId) : null,
         frequency,
         currency: cleanCurrency(req.body.currency),
-        nextDate: new Date(nextDate),
+        nextDate: parseWhen(nextDate),
       },
     })
     if (count === 0) { res.status(404).json({ error: "Recurring transaction not found" }); return }

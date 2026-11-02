@@ -9,6 +9,7 @@ import CategorySelect from "@/components/CategorySelect"
 import Select from "@/components/Select"
 import DatePicker from "@/components/DatePicker"
 import TimePicker from "@/components/TimePicker"
+import { THAI_TZ } from "@/lib/thaiTime"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -43,12 +44,13 @@ export default function TransactionActions({
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
+  // A real moment shown in Thai time, so the form prefills in Thai time too.
   const isoDate = new Date(transaction.date)
   const [form, setForm] = useState({
     amount: String(transaction.amount),
     type: transaction.type,
-    date: isoDate.toISOString().slice(0, 10),
-    time: isoDate.toISOString().slice(11, 16),
+    date: isoDate.toLocaleDateString("en-CA", { timeZone: THAI_TZ }),
+    time: isoDate.toLocaleTimeString("en-GB", { timeZone: THAI_TZ, hour: "2-digit", minute: "2-digit" }),
     description: transaction.description ?? "",
     accountId: String(transaction.accountId),
     categoryId: transaction.categoryId ? String(transaction.categoryId) : "",
@@ -123,7 +125,7 @@ export default function TransactionActions({
         <div style={{ width: "130px" }}>
           <DatePicker value={form.date} onChange={date => setForm({ ...form, date })} />
         </div>
-        <div style={{ width: "110px" }}>
+        <div style={{ width: "230px" }}>
           <TimePicker value={form.time} onChange={time => setForm({ ...form, time })} />
         </div>
         <input
