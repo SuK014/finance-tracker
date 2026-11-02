@@ -9,6 +9,7 @@ import CategoryIcon from "@/components/CategoryIcon"
 import SubscriptionIcon from "@/components/ServiceIcon"
 import { categoryEmoji } from "@/lib/categoryIcon"
 import Link from "next/link"
+import { THAI_TZ, thaiClock, startOfThaiToday } from "@/lib/thaiTime"
 
 type CatTotal = { name: string; value: number; color?: string | null; icon?: string | null; budget?: number | null }
 
@@ -57,7 +58,7 @@ export default async function DashboardPage({
   const daysInMonth = new Date(year, month, 0).getDate()
   const dailyData = Array.from({ length: daysInMonth }, (_, i) => {
     const day = i + 1
-    const dayTxns = real.filter((t: any) => new Date(t.date).getDate() === day)
+    const dayTxns = real.filter((t: any) => thaiClock(t.date).getUTCDate() === day)
     return {
       date: String(day),
       income:  dayTxns.filter((t: any) => t.type === "income") .reduce((s: number, t: any) => s + t.amount, 0),
@@ -86,10 +87,8 @@ export default async function DashboardPage({
   const categoryData = Object.values(byCat).sort((a, b) => b.value - a.value)
 
   // Upcoming recurring (next 7 days and overdue)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const in7 = new Date(today)
-  in7.setDate(in7.getDate() + 7)
+  const today = startOfThaiToday()
+  const in7 = new Date(today.getTime() + 7 * 86400000)
   const upcomingRecurring = recurring
     .filter((r: any) => r.active && r.type !== "income" && new Date(r.nextDate) <= in7)
     .sort((a: any, b: any) => new Date(a.nextDate).getTime() - new Date(b.nextDate).getTime())
@@ -191,7 +190,7 @@ export default async function DashboardPage({
                     <div className="tx-title">{t.description || t.category?.name || "Transaction"}</div>
                     <div className="tx-sub">
                       {t.source === "investment" ? "Investment · " : t.category?.name ? `${t.category.name} · ` : ""}
-                      {new Date(t.date).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" })}
+                      {new Date(t.date).toLocaleDateString("en-GB", { timeZone: THAI_TZ, day: "numeric", month: "short" })}
                     </div>
                   </div>
                   <span className="tx-amount num" style={{ color: t.type === "income" ? "var(--income)" : "var(--expense)" }}>
@@ -282,7 +281,7 @@ export default async function DashboardPage({
                     <div className="tx-title">{r.description || r.category?.name || "Subscription"}</div>
                     <div className="tx-sub" style={{ color: isPast ? "var(--expense)" : undefined, fontWeight: isPast ? 600 : 400 }}>
                       {isPast ? "Overdue · " : ""}
-                      {d.toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" })} · {r.frequency}
+                      {d.toLocaleDateString("en-GB", { timeZone: THAI_TZ, day: "numeric", month: "short" })} · {r.frequency}
                     </div>
                   </div>
                   <span className="tx-amount num" style={{ color: r.type === "income" ? "var(--income)" : "var(--expense)" }}>

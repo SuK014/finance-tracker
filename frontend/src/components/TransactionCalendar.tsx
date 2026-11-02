@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { THAI_TZ, thaiClock } from "@/lib/thaiTime"
 
 type Transaction = {
   id: number
@@ -27,16 +28,16 @@ export default function TransactionCalendar({
 
   const byDay: Record<number, Transaction[]> = {}
   transactions.forEach(t => {
-    const d = new Date(t.date).getDate()
+    const d = thaiClock(t.date).getUTCDate()
     if (!byDay[d]) byDay[d] = []
     byDay[d].push(t)
   })
 
   const firstWeekday = new Date(year, month - 1, 1).getDay()
   const daysInMonth = new Date(year, month, 0).getDate()
-  const today = new Date()
-  const isCurrentMonth = today.getFullYear() === year && today.getMonth() + 1 === month
-  const todayDate = today.getDate()
+  const today = thaiClock()
+  const isCurrentMonth = today.getUTCFullYear() === year && today.getUTCMonth() + 1 === month
+  const todayDate = today.getUTCDate()
 
   const cells: (number | null)[] = [
     ...Array(firstWeekday).fill(null),
@@ -203,7 +204,7 @@ export default function TransactionCalendar({
                     )}
                   </div>
                   <span style={{ fontSize: "11px", color: "var(--text-muted)", flexShrink: 0 }}>
-                    {new Date(t.date).toLocaleTimeString("en-GB", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit" })}
+                    {new Date(t.date).toLocaleTimeString("en-GB", { timeZone: THAI_TZ, hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </li>
               ))}

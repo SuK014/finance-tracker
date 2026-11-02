@@ -1,5 +1,6 @@
 import { Router } from "express"
 import { prisma } from "../lib/db"
+import { parseWhen } from "../lib/tz"
 
 const router = Router()
 
@@ -208,7 +209,7 @@ router.post("/:id/spend", async (req, res) => {
       if (!category) { res.status(400).json({ error: "Invalid category" }); return }
       categoryId = category.id
     }
-    const date = req.body.date ? new Date(req.body.date) : new Date()
+    const date = req.body.date ? parseWhen(req.body.date) : new Date()
     if (Number.isNaN(date.getTime())) { res.status(400).json({ error: "That date isn't valid." }); return }
     const description = typeof req.body.description === "string" && req.body.description.trim() ? req.body.description.trim().slice(0, 200) : goal.name
 

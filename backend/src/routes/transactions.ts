@@ -4,6 +4,7 @@ import path from "path"
 import fs from "fs"
 import crypto from "crypto"
 import { prisma } from "../lib/db"
+import { parseWhen, thaiMonthStart } from "../lib/tz"
 
 const uploadsDir = path.join(process.cwd(), "uploads")
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true })
@@ -47,7 +48,7 @@ router.get("/", async (req, res) => {
         let dateFilter = {}
         if (month && typeof month === "string" && /^\d{4}-\d{2}$/.test(month)) {
             const [y, m] = month.split("-").map(Number)
-            dateFilter = { date: { gte: new Date(y, m - 1, 1), lt: new Date(y, m, 1) } }
+            dateFilter = { date: { gte: thaiMonthStart(y, m), lt: thaiMonthStart(y, m + 1) } }
         }
         const transactions = await prisma.transaction.findMany({
             where: {
@@ -78,7 +79,7 @@ router.post("/", async (req, res) => {
             if (!category) { res.status(400).json({ error: "Invalid category" }); return }
         }
         const transaction = await prisma.transaction.create({
-            data: { amount, type, date: new Date(date), description, accountId: Number(accountId), categoryId: categoryId ? Number(categoryId) : null, userId },
+            data: { amount, type, date: parseWhen(date), description, accountId: Number(accountId), categoryId: categoryId ? Number(categoryId) : null, userId },
         })
         res.status(201).json(transaction)
     } catch (error) {
@@ -101,7 +102,7 @@ router.put("/:id", async (req, res) => {
             data: {
                 amount: Number(amount),
                 type,
-                date: new Date(date),
+                date: parseWhen(date),
                 description,
                 accountId: Number(accountId),
                 categoryId: categoryId ? Number(categoryId) : null,

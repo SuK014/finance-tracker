@@ -10,6 +10,7 @@ import SubscriptionIcon from "@/components/ServiceIcon"
 import ServicePicker from "@/components/ServicePicker"
 import CurrencyToggle from "@/components/CurrencyToggle"
 import { billedCurrency, priceText, toThb } from "@/lib/recurringMoney"
+import { THAI_TZ } from "@/lib/thaiTime"
 
 type Item = {
   id: number
@@ -85,7 +86,7 @@ function SubscriptionRow({
     accountId: String(item.accountId),
     categoryId: item.categoryId ? String(item.categoryId) : "",
     frequency: item.frequency,
-    nextDate: new Date(item.nextDate).toISOString().slice(0, 10),
+    nextDate: new Date(item.nextDate).toLocaleDateString("en-CA", { timeZone: THAI_TZ }),
     currency: billedCurrency(item),
   })
   const billed = billedCurrency(item)
@@ -94,7 +95,7 @@ function SubscriptionRow({
 
   const nextDate = new Date(item.nextDate)
   const isPast = nextDate < new Date()
-  const dateLabel = nextDate.toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", day: "numeric", month: "short", year: "numeric" })
+  const dateLabel = nextDate.toLocaleDateString("en-GB", { timeZone: THAI_TZ, day: "numeric", month: "short", year: "numeric" })
   const title = item.description || item.category?.name || item.account.name
 
   async function handlePaid() {
