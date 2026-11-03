@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import {
   COACH_ENABLED, CoachError, OFFLINE_FIX, OFFLINE_REASONS, askCoach, coachErrorMessage, coachHealth,
   hasThai, resultPairs, safeUrl, toolLabel, whoAnswered,
-  type CoachReply,
+  type CoachReply, type UatMeta,
 } from "@/lib/coach"
 
 // "Ask Buddy": a floating button that opens a chat with the Budget Buddy coach running on this computer.
@@ -86,6 +86,12 @@ export default function CoachChat() {
   const [pending, setPending] = useState(false)
   const [slow, setSlow] = useState(false)
   const [draft, setDraft] = useState("")
+  const [uatMode, setUatMode] = useState(false)
+  const [uatRound, setUatRound] = useState("")
+  const [uatTester, setUatTester] = useState("")
+  const [uatTask, setUatTask] = useState("")
+
+  useEffect(() => setUatMode(new URLSearchParams(window.location.search).get("uat") === "1"), [])
 
   const fabRef = useRef<HTMLButtonElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -131,12 +137,13 @@ export default function CoachChat() {
     setMessages([])
     setPending(false)
     setSlow(false)
+    setUatTask("")
     window.setTimeout(() => inputRef.current?.focus(), 0)
   }
 
   async function send(question: string) {
     const q = question.trim()
-    if (!q || pending) return
+    if (!q || pending || (uatMode && (!uatRound || !uatTester || !uatTask))) return
     setMessages(m => [...m, { id: nextId.current++, role: "user", text: q }])
     setDraft("")
     setPending(true)
@@ -145,7 +152,12 @@ export default function CoachChat() {
     const ctl = new AbortController()
     abortRef.current = ctl
     try {
-      const reply = await askCoach(q, ctl.signal)
+      const uat: UatMeta | null = uatMode ? {
+        round: Number(uatRound) as UatMeta["round"],
+        tester_number: Number(uatTester) as UatMeta["tester_number"],
+        task_id: uatTask,
+      } : null
+      const reply = await askCoach(q, uat, ctl.signal)
       setMessages(m => [...m, { id: nextId.current++, role: "coach", text: reply.answer, reply }])
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") return
@@ -259,6 +271,26 @@ export default function CoachChat() {
               ) : null}
             </div>
 
+            {uatMode ? (
+              <div className="coach-uat" aria-label="UAT operator details">
+                <label>Round
+                  <select value={uatRound} onChange={e => setUatRound(e.target.value)} disabled={pending}>
+                    <option value="">Choose</option><option value="1">1</option><option value="2">2</option>
+                  </select>
+                </label>
+                <label>Tester number
+                  <select value={uatTester} onChange={e => setUatTester(e.target.value)} disabled={pending}>
+                    <option value="">Choose</option>{[1, 2, 3, 4].map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </label>
+                <label>Task ID
+                  <select value={uatTask} onChange={e => setUatTask(e.target.value)} disabled={pending}>
+                    <option value="">Choose</option>{Array.from({ length: 11 }, (_, i) => `UAT-${String(i + 1).padStart(2, "0")}`).map(id => <option key={id} value={id}>{id}</option>)}
+                  </select>
+                </label>
+              </div>
+            ) : null}
+
             <form
               className="coach-form"
               onSubmit={e => { e.preventDefault(); void send(draft) }}
@@ -282,7 +314,7 @@ export default function CoachChat() {
                   }
                 }}
               />
-              <button type="submit" className="coach-send" aria-label="Send question" disabled={offline || pending || !draft.trim()}>
+              <button type="submit" className="coach-send" aria-label="Send question" disabled={offline || pending || !draft.trim() || (uatMode && (!uatRound || !uatTester || !uatTask))}>
                 <SendIcon />
               </button>
             </form>

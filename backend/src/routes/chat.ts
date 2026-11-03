@@ -9,6 +9,15 @@ const router = Router()
 const MAX_QUESTION_CHARS = 500
 const ASK_TIMEOUT_MS = 240_000 // the local model can take a minute to load on a cold start
 const HEALTH_TIMEOUT_MS = 4_000
+type UatMeta = { round: 1 | 2; tester_number: 1 | 2 | 3 | 4; task_id: string }
+
+function validUat(value: unknown): value is UatMeta {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false
+  const x = value as Record<string, unknown>
+  return (x.round === 1 || x.round === 2)
+    && (x.tester_number === 1 || x.tester_number === 2 || x.tester_number === 3 || x.tester_number === 4)
+    && typeof x.task_id === "string" && /^UAT-(0[1-9]|1[01])$/.test(x.task_id)
+}
 
 const coachUrl = () => (process.env.COACH_URL ?? "http://127.0.0.1:8765").replace(/\/$/, "")
 
@@ -49,12 +58,20 @@ router.post("/", askLimiter, async (req, res) => {
     res.status(400).json({ error: "bad_question" })
     return
   }
+  const uat: UatMeta | null = req.body?.uat ?? null
+  if (uat !== null && !validUat(uat)) {
+    res.status(400).json({ error: "bad_uat_metadata" })
+    return
+  }
   const userId = (req as any).user.userId as number
+  const email = (req as any).user.email as string
+  const persona = uat && /^[a-z]+@demo\.budgetbuddy\.test$/.test(email)
+    ? email.split("@")[0].replace(/^./, c => c.toUpperCase()) : null
   try {
     const r = await fetch(`${coachUrl()}/ask`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Coach-Secret": secret },
-      body: JSON.stringify({ userId, question }),
+      body: JSON.stringify({ userId, question, uat, persona }),
       signal: AbortSignal.timeout(ASK_TIMEOUT_MS),
     })
     const body = (await r.json()) as Record<string, unknown>

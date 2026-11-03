@@ -101,8 +101,8 @@ test.describe("Ask Buddy chat", () => {
     await group.getByRole("button", { name: "Grab เรียกรถ" }).click();
     await expect(panel.getByText("เดือนกันยายนคุณใช้ค่าอาหารไป ฿6,120")).toBeVisible();
     expect(asked).toEqual([
-      { question: "Grab เดือนนี้เท่าไหร่" },
-      { question: "ค่า Grab เรียกรถ (ค่าเดินทาง) เดือนนี้เท่าไหร่" },
+      { question: "Grab เดือนนี้เท่าไหร่", uat: null },
+      { question: "ค่า Grab เรียกรถ (ค่าเดินทาง) เดือนนี้เท่าไหร่", uat: null },
     ]);
     await expect(group).toHaveCount(0); // old buttons are not left behind
   });
@@ -122,7 +122,7 @@ test.describe("Ask Buddy chat", () => {
     control.body = REPLY;
     await page.keyboard.press("Enter");
     await expect(panel.getByText("เดือนกันยายนคุณใช้ค่าอาหารไป ฿6,120")).toBeVisible();
-    expect(asked[1]).toEqual({ question: "ค่า Grab สั่งอาหาร (ค่าอาหาร) เดือนนี้เท่าไหร่" });
+    expect(asked[1]).toEqual({ question: "ค่า Grab สั่งอาหาร (ค่าอาหาร) เดือนนี้เท่าไหร่", uat: null });
   });
 
   test("renders without console errors and opens with a hint, no example chips", async ({ page }) => {
@@ -145,7 +145,7 @@ test.describe("Ask Buddy chat", () => {
     await panel.getByRole("button", { name: "Send question" }).click();
 
     await expect(panel.getByText("เดือนกันยายนคุณใช้ค่าอาหารไป ฿6,120")).toBeVisible();
-    expect(asked).toEqual([{ question: "เดือนที่แล้วค่าอาหารเท่าไหร่" }]);
+    expect(asked).toEqual([{ question: "เดือนที่แล้วค่าอาหารเท่าไหร่", uat: null }]);
 
     await panel.getByText("How I got this").click();
     await expect(panel.getByText("Food, Sep 2026")).toBeVisible();
@@ -223,6 +223,26 @@ test.describe("Ask Buddy chat", () => {
     await panel.getByRole("button", { name: "New chat" }).click();
     await expect(panel.getByText("How I got this")).toBeHidden();
     await expect(panel.getByText("Ask in Thai or English.")).toBeVisible();
+  });
+
+  test("UAT operator details are required and sent with each task", async ({ page }) => {
+    const { asked } = await mockCoach(page);
+    await page.goto("/?uat=1");
+    const panel = await open(page);
+    const details = panel.getByLabel("UAT operator details");
+    await panel.getByLabel("Your question").fill("How much food last month?");
+    await expect(panel.getByRole("button", { name: "Send question" })).toBeDisabled();
+    await details.getByLabel("Round").selectOption("2");
+    await details.getByLabel("Tester number").selectOption("3");
+    await details.getByLabel("Task ID").selectOption("UAT-01");
+    await panel.getByRole("button", { name: "Send question" }).click();
+    await expect(panel.getByText("How I got this")).toBeVisible();
+    expect(asked).toEqual([{ question: "How much food last month?", uat: {
+      round: 2, tester_number: 3, task_id: "UAT-01",
+    } }]);
+    await panel.getByRole("button", { name: "New chat" }).click();
+    await expect(details.getByLabel("Task ID")).toHaveValue("");
+    await expect(details.getByLabel("Round")).toHaveValue("2");
   });
 
   test("keyboard: button takes a visible focus ring, Escape closes and returns focus", async ({ page }) => {

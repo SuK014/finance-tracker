@@ -25,6 +25,7 @@ export type CoachReply = {
 }
 
 export type CoachHealth = { ready: boolean; reason: string }
+export type UatMeta = { round: 1 | 2; tester_number: 1 | 2 | 3 | 4; task_id: string }
 
 export class CoachError extends Error {
   constructor(public code: string) {
@@ -43,13 +44,13 @@ export async function coachHealth(signal?: AbortSignal): Promise<CoachHealth> {
   }
 }
 
-export async function askCoach(question: string, signal?: AbortSignal): Promise<CoachReply> {
+export async function askCoach(question: string, uat: UatMeta | null = null, signal?: AbortSignal): Promise<CoachReply> {
   let res: Response
   try {
     res = await fetch(`${API_URL}/api/chat`, {
       method: "POST",
       headers: authHeaders(),
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, uat }),
       signal,
     })
   } catch (e) {
