@@ -242,8 +242,16 @@ test.describe("Ask Buddy chat", () => {
     await panel.getByRole("button", { name: "Send question" }).click();
     await expect(panel.getByText("How I got this")).toBeVisible();
     expect(asked).toEqual([{ question: "How much food last month?", uat: {
-      round: 2, tester_number: 3, task_id: "UAT-01",
+      round: 2, tester_number: 3, task_id: "UAT-01", chat_id: expect.any(String), attempt: 1,
     } }]);
+    const firstChatId = (asked[0] as { uat: { chat_id: string } }).uat.chat_id;
+    expect(firstChatId).toMatch(/^[0-9a-f-]{36}$/);
+    await panel.getByLabel("Your question").fill("Could you check again?");
+    await panel.getByRole("button", { name: "Send question" }).click();
+    await expect(panel.getByText("Could you check again?")).toBeVisible();
+    expect(asked[1]).toEqual({ question: "Could you check again?", uat: {
+      round: 2, tester_number: 3, task_id: "UAT-01", chat_id: firstChatId, attempt: 2,
+    } });
     await panel.getByRole("button", { name: "New chat" }).click();
     await expect(details.getByLabel("Task ID")).toHaveValue("");
     await expect(details.getByLabel("Round")).toHaveValue("2");
@@ -251,7 +259,14 @@ test.describe("Ask Buddy chat", () => {
     await panel.getByLabel("Your question").fill("Am I over budget?");
     await expect(panel.getByRole("alert")).toContainText("UAT-08 belongs to Grace");
     await expect(panel.getByRole("button", { name: "Send question" })).toBeDisabled();
-    expect(asked).toHaveLength(1);
+    expect(asked).toHaveLength(2);
+    await details.getByLabel("Task ID").selectOption("UAT-01");
+    await panel.getByLabel("Your question").fill("Fresh question");
+    await panel.getByRole("button", { name: "Send question" }).click();
+    await expect(panel.getByText("Fresh question")).toBeVisible();
+    const fresh = (asked[2] as { uat: { chat_id: string; attempt: number } }).uat;
+    expect(fresh.chat_id).not.toBe(firstChatId);
+    expect(fresh.attempt).toBe(1);
   });
 
   test("keyboard: button takes a visible focus ring, Escape closes and returns focus", async ({ page }) => {

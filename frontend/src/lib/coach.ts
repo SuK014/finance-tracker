@@ -25,7 +25,7 @@ export type CoachReply = {
 }
 
 export type CoachHealth = { ready: boolean; reason: string; email: string | null; persona: string | null; uatPersonas: Record<string, string> }
-export type UatMeta = { round: 1 | 2; tester_number: 1 | 2 | 3 | 4; task_id: string }
+export type UatMeta = { round: 1 | 2; tester_number: 1 | 2 | 3 | 4; task_id: string; chat_id: string; attempt: number }
 
 export class CoachError extends Error {
   constructor(public code: string) {

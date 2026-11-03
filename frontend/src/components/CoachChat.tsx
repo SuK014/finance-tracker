@@ -98,6 +98,8 @@ export default function CoachChat() {
   const logRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
   const nextId = useRef(1)
+  const chatId = useRef<string | null>(null)
+  const attempts = useRef<Record<string, number>>({})
   const wasOpen = useRef(false)
 
   // Health: re-check often while the coach is down so the button recovers by itself, and slowly while it is up.
@@ -138,6 +140,8 @@ export default function CoachChat() {
     setPending(false)
     setSlow(false)
     setUatTask("")
+    chatId.current = crypto.randomUUID()
+    attempts.current = {}
     window.setTimeout(() => inputRef.current?.focus(), 0)
   }
 
@@ -157,6 +161,8 @@ export default function CoachChat() {
         round: Number(uatRound) as UatMeta["round"],
         tester_number: Number(uatTester) as UatMeta["tester_number"],
         task_id: uatTask,
+        chat_id: chatId.current ?? (chatId.current = crypto.randomUUID()),
+        attempt: (attempts.current[uatTask] = (attempts.current[uatTask] ?? 0) + 1),
       } : null
       const reply = await askCoach(q, uat, ctl.signal)
       setMessages(m => [...m, { id: nextId.current++, role: "coach", text: reply.answer, reply }])

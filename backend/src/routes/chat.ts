@@ -10,7 +10,7 @@ const router = Router()
 const MAX_QUESTION_CHARS = 500
 const ASK_TIMEOUT_MS = 240_000 // the local model can take a minute to load on a cold start
 const HEALTH_TIMEOUT_MS = 4_000
-type UatMeta = { round: 1 | 2; tester_number: 1 | 2 | 3 | 4; task_id: string }
+type UatMeta = { round: 1 | 2; tester_number: 1 | 2 | 3 | 4; task_id: string; chat_id: string; attempt: number }
 
 function validUat(value: unknown): value is UatMeta {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return false
@@ -18,6 +18,8 @@ function validUat(value: unknown): value is UatMeta {
   return (x.round === 1 || x.round === 2)
     && (x.tester_number === 1 || x.tester_number === 2 || x.tester_number === 3 || x.tester_number === 4)
     && typeof x.task_id === "string" && /^UAT-(0[1-9]|1[01])$/.test(x.task_id)
+    && typeof x.chat_id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x.chat_id)
+    && Number.isSafeInteger(x.attempt) && (x.attempt as number) >= 1
 }
 
 const coachUrl = () => (process.env.COACH_URL ?? "http://127.0.0.1:8765").replace(/\/$/, "")
