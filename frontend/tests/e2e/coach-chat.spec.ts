@@ -229,7 +229,7 @@ test.describe("Ask Buddy chat", () => {
     const { asked } = await mockCoach(page);
     await page.goto("/?uat=1");
     const panel = await open(page);
-    const details = panel.getByLabel("UAT operator details");
+    const details = panel.getByRole("group", { name: "UAT operator details" });
     await panel.getByLabel("Your question").fill("How much food last month?");
     await expect(panel.getByRole("button", { name: "Send question" })).toBeDisabled();
     await details.getByLabel("Round").selectOption("2");

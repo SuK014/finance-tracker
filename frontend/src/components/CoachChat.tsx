@@ -272,7 +272,7 @@ export default function CoachChat() {
             </div>
 
             {uatMode ? (
-              <div className="coach-uat" aria-label="UAT operator details">
+              <div className="coach-uat" role="group" aria-label="UAT operator details">
                 <label>Round
                   <select value={uatRound} onChange={e => setUatRound(e.target.value)} disabled={pending}>
                     <option value="">Choose</option><option value="1">1</option><option value="2">2</option>
