@@ -12,6 +12,7 @@ import recurringRouter from "./routes/recurring"
 import goalsRouter from "./routes/goals"
 import bondsRouter from "./routes/bonds"
 import reportsRouter from "./routes/reports"
+import chatRouter from "./routes/chat"
 import authRouter from "./routes/auth"
 import { requireAuth } from "./middleware/auth"
 
@@ -45,6 +46,7 @@ app.use("/api/recurring", recurringRouter)
 app.use("/api/goals", goalsRouter)
 app.use("/api/bonds", bondsRouter)
 app.use("/api/reports", reportsRouter)
+app.use("/api/chat", chatRouter)
 
 app.listen(PORT,() => {
     console.log(`Server running on port ${PORT}`)

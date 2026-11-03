@@ -1,6 +1,6 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
-function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
+export function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
     return {
         "Content-Type": "application/json",

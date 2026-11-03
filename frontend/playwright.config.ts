@@ -36,6 +36,7 @@ export default defineConfig({
       timeout: 120_000,
       env: {
         NEXT_PUBLIC_API_URL: "http://localhost:3055",
+        NEXT_PUBLIC_COACH_ENABLED: "true",
         PORT: "3010",
         NEXT_DIST_DIR: ".next-test",
       },

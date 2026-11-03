@@ -6,6 +6,7 @@ import LogoutButton from "@/components/LogoutButton"
 import ThemeToggle from "@/components/ThemeToggle"
 import BottomTabBar from "@/components/BottomTabBar"
 import { AddSheetProvider, useAddSheet } from "@/components/AddSheet"
+import CoachChat from "@/components/CoachChat"
 import { UserIcon } from "@/components/TabIcons"
 import BrandMark from "@/components/BrandMark"
 
@@ -102,6 +103,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <BottomTabBar />
+        <CoachChat />
       </div>
     </AddSheetProvider>
   )

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Noto_Sans_Thai, Plus_Jakarta_Sans } from "next/font/google";
 import AppShell from "@/components/AppShell";
 import "./globals.css";
 
@@ -8,6 +8,15 @@ const jakarta = Plus_Jakarta_Sans({
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-sans",
   display: "swap",
+});
+
+// Plus Jakarta Sans has no Thai glyphs; the chat shows Thai replies, so give Thai a real face.
+const notoThai = Noto_Sans_Thai({
+  subsets: ["thai"],
+  weight: ["400", "600"],
+  variable: "--font-thai",
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -41,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`h-full ${jakarta.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`h-full ${jakarta.variable} ${notoThai.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
