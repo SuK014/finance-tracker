@@ -1,5 +1,6 @@
 import { Router } from "express"
 import rateLimit from "express-rate-limit"
+import { UAT_PERSONAS, demoPersona, matchesUatPersona } from "../lib/uatPersona"
 
 // Link to the Budget Buddy coach, a separate program that runs on this computer (`python dev.py serve` in the
 // b-buddy repo). This route only checks the login and passes the question on: the user id comes from the verified
@@ -32,17 +33,19 @@ const askLimiter = rateLimit({
 })
 
 // GET /api/chat/health -> { ready: boolean, reason: string, warm: boolean }
-router.get("/health", async (_req, res) => {
+router.get("/health", async (req, res) => {
+  const email = (req as any).user.email as string
+  const identity = { email, persona: demoPersona(email), uatPersonas: UAT_PERSONAS }
   if (!process.env.COACH_SHARED_SECRET) {
-    res.json({ ready: false, reason: "not_configured", warm: false })
+    res.json({ ready: false, reason: "not_configured", warm: false, ...identity })
     return
   }
   try {
     const r = await fetch(`${coachUrl()}/health`, { signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS) })
     const body = (await r.json()) as { ready?: boolean; reason?: string; warm?: boolean }
-    res.json({ ready: !!body.ready, reason: body.reason ?? "", warm: !!body.warm })
+    res.json({ ready: !!body.ready, reason: body.reason ?? "", warm: !!body.warm, ...identity })
   } catch {
-    res.json({ ready: false, reason: "coach_not_running", warm: false })
+    res.json({ ready: false, reason: "coach_not_running", warm: false, ...identity })
   }
 })
 
@@ -65,8 +68,11 @@ router.post("/", askLimiter, async (req, res) => {
   }
   const userId = (req as any).user.userId as number
   const email = (req as any).user.email as string
-  const persona = uat && /^[a-z]+@demo\.budgetbuddy\.test$/.test(email)
-    ? email.split("@")[0].replace(/^./, c => c.toUpperCase()) : null
+  if (uat && !matchesUatPersona(uat.task_id, email)) {
+    res.status(400).json({ error: "uat_persona_mismatch" })
+    return
+  }
+  const persona = uat ? demoPersona(email) : null
   try {
     const r = await fetch(`${coachUrl()}/ask`, {
       method: "POST",

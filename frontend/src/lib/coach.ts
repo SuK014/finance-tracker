@@ -24,7 +24,7 @@ export type CoachReply = {
   options?: CoachOption[]
 }
 
-export type CoachHealth = { ready: boolean; reason: string }
+export type CoachHealth = { ready: boolean; reason: string; email: string | null; persona: string | null; uatPersonas: Record<string, string> }
 export type UatMeta = { round: 1 | 2; tester_number: 1 | 2 | 3 | 4; task_id: string }
 
 export class CoachError extends Error {
@@ -36,11 +36,14 @@ export class CoachError extends Error {
 export async function coachHealth(signal?: AbortSignal): Promise<CoachHealth> {
   try {
     const res = await fetch(`${API_URL}/api/chat/health`, { headers: authHeaders(), signal })
-    if (!res.ok) return { ready: false, reason: "coach_not_running" }
+    if (!res.ok) return { ready: false, reason: "coach_not_running", email: null, persona: null, uatPersonas: {} }
     const body = await res.json()
-    return { ready: !!body.ready, reason: String(body.reason ?? "") }
+    return { ready: !!body.ready, reason: String(body.reason ?? ""),
+      email: typeof body.email === "string" ? body.email : null,
+      persona: typeof body.persona === "string" ? body.persona : null,
+      uatPersonas: typeof body.uatPersonas === "object" && body.uatPersonas ? body.uatPersonas : {} }
   } catch {
-    return { ready: false, reason: "coach_not_running" }
+    return { ready: false, reason: "coach_not_running", email: null, persona: null, uatPersonas: {} }
   }
 }
 
@@ -90,6 +93,8 @@ export function coachErrorMessage(code: string): string {
       return "That's a lot of questions at once. Wait a moment, then try again."
     case "bad_question":
       return "Questions can be up to 500 characters."
+    case "uat_persona_mismatch":
+      return "This task belongs to another persona. Sign out and use the matching demo account."
     case "ollama_offline":
     case "coach_not_running":
     case "not_configured":

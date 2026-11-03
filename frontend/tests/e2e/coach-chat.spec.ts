@@ -38,7 +38,8 @@ const ASK_BACK = {
   ],
 };
 
-type Mock = { ready?: boolean; reason?: string; status?: number; body?: unknown; delayMs?: number };
+type Mock = { ready?: boolean; reason?: string; status?: number; body?: unknown; delayMs?: number;
+  email?: string; persona?: string; uatPersonas?: Record<string, string> };
 
 async function mockCoach(page: Page, state: Mock = {}) {
   const asked: unknown[] = [];
@@ -49,7 +50,8 @@ async function mockCoach(page: Page, state: Mock = {}) {
     if (req.url().endsWith("/health")) {
       return route.fulfill({
         status: 200, headers: CORS, contentType: "application/json",
-        body: JSON.stringify({ ready: control.ready ?? true, reason: control.reason ?? "", warm: true }),
+        body: JSON.stringify({ ready: control.ready ?? true, reason: control.reason ?? "", warm: true,
+          email: control.email, persona: control.persona, uatPersonas: control.uatPersonas }),
       });
     }
     asked.push(JSON.parse(req.postData() ?? "{}"));
@@ -226,10 +228,12 @@ test.describe("Ask Buddy chat", () => {
   });
 
   test("UAT operator details are required and sent with each task", async ({ page }) => {
-    const { asked } = await mockCoach(page);
+    const { asked } = await mockCoach(page, { email: "henry@demo.budgetbuddy.test", persona: "Henry",
+      uatPersonas: { "UAT-01": "Henry", "UAT-08": "Grace" } });
     await page.goto("/?uat=1");
     const panel = await open(page);
     const details = panel.getByRole("group", { name: "UAT operator details" });
+    await expect(details).toContainText("henry@demo.budgetbuddy.test");
     await panel.getByLabel("Your question").fill("How much food last month?");
     await expect(panel.getByRole("button", { name: "Send question" })).toBeDisabled();
     await details.getByLabel("Round").selectOption("2");
@@ -243,6 +247,11 @@ test.describe("Ask Buddy chat", () => {
     await panel.getByRole("button", { name: "New chat" }).click();
     await expect(details.getByLabel("Task ID")).toHaveValue("");
     await expect(details.getByLabel("Round")).toHaveValue("2");
+    await details.getByLabel("Task ID").selectOption("UAT-08");
+    await panel.getByLabel("Your question").fill("Am I over budget?");
+    await expect(panel.getByRole("alert")).toContainText("UAT-08 belongs to Grace");
+    await expect(panel.getByRole("button", { name: "Send question" })).toBeDisabled();
+    expect(asked).toHaveLength(1);
   });
 
   test("keyboard: button takes a visible focus ring, Escape closes and returns focus", async ({ page }) => {

@@ -1771,6 +1771,9 @@ li:last-child { border-bottom: none; }
 .coach-uat label { display: grid; gap: 5px; min-width: 0; color: var(--text-secondary); font-size: 12px; }
 .coach-uat select { width: 100%; min-width: 0; padding: 8px; color: var(--text-primary); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
 .coach-uat select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.coach-uat-identity, .coach-uat-mismatch { grid-column: 1 / -1; margin: 0; font-size: 12px; }
+.coach-uat-identity { color: var(--text-secondary); }
+.coach-uat-mismatch { color: var(--expense); }
 .coach-input {
   flex: 1;
   min-width: 0;

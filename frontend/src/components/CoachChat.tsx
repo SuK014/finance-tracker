@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import {
   COACH_ENABLED, CoachError, OFFLINE_FIX, OFFLINE_REASONS, askCoach, coachErrorMessage, coachHealth,
   hasThai, resultPairs, safeUrl, toolLabel, whoAnswered,
-  type CoachReply, type UatMeta,
+  type CoachReply, type CoachHealth, type UatMeta,
 } from "@/lib/coach"
 
 // "Ask Buddy": a floating button that opens a chat with the Budget Buddy coach running on this computer.
@@ -79,8 +79,8 @@ function Receipt({ reply }: { reply: CoachReply }) {
 export default function CoachChat() {
   const [open, setOpen] = useState(false)
   const [closing, setClosing] = useState(false)
-  const [health, setHealth] = useState<{ ready: boolean; reason: string; checked: boolean }>({
-    ready: false, reason: "", checked: false,
+  const [health, setHealth] = useState<CoachHealth & { checked: boolean }>({
+    ready: false, reason: "", checked: false, email: null, persona: null, uatPersonas: {},
   })
   const [messages, setMessages] = useState<Message[]>([])
   const [pending, setPending] = useState(false)
@@ -143,7 +143,8 @@ export default function CoachChat() {
 
   async function send(question: string) {
     const q = question.trim()
-    if (!q || pending || (uatMode && (!uatRound || !uatTester || !uatTask))) return
+    if (!q || pending || (uatMode && (!uatRound || !uatTester || !uatTask ||
+        health.uatPersonas[uatTask] !== health.persona))) return
     setMessages(m => [...m, { id: nextId.current++, role: "user", text: q }])
     setDraft("")
     setPending(true)
@@ -173,6 +174,8 @@ export default function CoachChat() {
   if (!COACH_ENABLED) return null
 
   const offline = health.checked && !health.ready
+  const uatExpectedPersona = health.uatPersonas[uatTask]
+  const uatIdentityMatches = !!uatExpectedPersona && uatExpectedPersona === health.persona
   const state = closing ? "closing" : "open"
 
   return (
@@ -273,6 +276,8 @@ export default function CoachChat() {
 
             {uatMode ? (
               <div className="coach-uat" role="group" aria-label="UAT operator details">
+                <p className="coach-uat-identity">Signed in as: {health.email ?? (health.checked
+                  ? "Unavailable — sign out and sign in again" : "Checking account…")}</p>
                 <label>Round
                   <select value={uatRound} onChange={e => setUatRound(e.target.value)} disabled={pending}>
                     <option value="">Choose</option><option value="1">1</option><option value="2">2</option>
@@ -285,9 +290,15 @@ export default function CoachChat() {
                 </label>
                 <label>Task ID
                   <select value={uatTask} onChange={e => setUatTask(e.target.value)} disabled={pending}>
-                    <option value="">Choose</option>{Array.from({ length: 11 }, (_, i) => `UAT-${String(i + 1).padStart(2, "0")}`).map(id => <option key={id} value={id}>{id}</option>)}
+                    <option value="">Choose</option>{Array.from({ length: 11 }, (_, i) => `UAT-${String(i + 1).padStart(2, "0")}`).map(id =>
+                      <option key={id} value={id}>{id}{health.uatPersonas[id] ? ` · ${health.uatPersonas[id]}` : ""}</option>) }
                   </select>
                 </label>
+                {uatTask && !uatIdentityMatches ? (
+                  <p className="coach-uat-mismatch" role="alert">{uatExpectedPersona
+                    ? `${uatTask} belongs to ${uatExpectedPersona}. Sign out and sign in as ${uatExpectedPersona}.`
+                    : "Could not verify the signed-in demo account."}</p>
+                ) : null}
               </div>
             ) : null}
 
@@ -314,7 +325,7 @@ export default function CoachChat() {
                   }
                 }}
               />
-              <button type="submit" className="coach-send" aria-label="Send question" disabled={offline || pending || !draft.trim() || (uatMode && (!uatRound || !uatTester || !uatTask))}>
+              <button type="submit" className="coach-send" aria-label="Send question" disabled={offline || pending || !draft.trim() || (uatMode && (!uatRound || !uatTester || !uatTask || !uatIdentityMatches))}>
                 <SendIcon />
               </button>
             </form>
