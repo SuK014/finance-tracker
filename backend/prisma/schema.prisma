@@ -203,6 +203,8 @@ model PendingSlip {
   imageType     String?
   // when the screenshot was taken, from the photo's metadata
   takenAt       DateTime? @db.Timestamptz(3)
+  // the bank the Shortcut said this slip came from ("kbank"), used to start on the right account
+  bank          String?
   // what the parser found; day is "YYYY-MM-DD" and time is "HH:mm", both Thai time
   amount        Float?
   type          String?

@@ -171,6 +171,30 @@ test.describe("checking slips", () => {
     await expect(page.locator(".inbox-banner")).toHaveCount(0);
   });
 
+  test("starts on the account that matches the bank the Shortcut sent", async ({ page }) => {
+    const { confirmed } = await mockInbox(page, [{ ...readSlip, duplicateOf: null, bank: "scb", suggestedAccountId: 2 }]);
+    await page.route("**/api/accounts", route => {
+      if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers: CORS });
+      return route.fulfill({
+        status: 200, headers: { ...CORS, "content-type": "application/json" },
+        body: JSON.stringify([{ id: 1, name: "Kasikorn", currency: "THB" }, { id: 2, name: "SCB Salary", currency: "THB" }]),
+      });
+    });
+    await page.goto("/inbox");
+    await expect(page.getByRole("button", { name: "Account" })).toContainText("SCB Salary");
+    await expect(page.getByText("Chosen from the bank in your Shortcut (scb)")).toBeVisible();
+    await page.getByRole("button", { name: "Confirm" }).click();
+    await expect.poll(() => confirmed.length).toBe(1);
+    expect(confirmed[0]).toMatchObject({ accountId: 2 });
+  });
+
+  test("with no matching bank it falls back to the first account and says nothing about a match", async ({ page }) => {
+    await mockInbox(page, [readSlip]);
+    await page.goto("/inbox");
+    await expect(page.getByRole("button", { name: "Account" })).toContainText("Kasikorn");
+    await expect(page.getByText(/Chosen from the bank/)).toHaveCount(0);
+  });
+
   test("the screenshot opens full size from the thumbnail", async ({ page }) => {
     await mockInbox(page, [readSlip]);
     await page.goto("/inbox");

@@ -346,6 +346,9 @@ export type InboxSlip = {
     takenAt: string | null
     createdAt: string
     hasImage: boolean
+    // the bank the Shortcut said this slip came from, and the one account that fits it (null when none or several do)
+    bank: string | null
+    suggestedAccountId: number | null
     duplicateOf: { id: number; amount: number; description: string | null; date: string } | null
 }
 

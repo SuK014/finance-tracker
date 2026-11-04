@@ -16,7 +16,10 @@ type Category = { id: number; name: string; color?: string | null; icon?: string
 // Remembered per device, like the Add transaction sheet's own last account.
 const LAST_ACCOUNT_KEY = "lastSlipAccountId"
 
-function startingAccount(accounts: Account[]): string {
+// The account matching the bank the Shortcut sent, else the one you last confirmed a slip into, else the first.
+function startingAccount(accounts: Account[], suggested: number | null): string {
+  const hinted = accounts.find(a => a.id === suggested)
+  if (hinted) return String(hinted.id)
   let last: string | null = null
   try { last = localStorage.getItem(LAST_ACCOUNT_KEY) } catch {}
   const found = accounts.find(a => String(a.id) === last) ?? accounts[0]
@@ -48,7 +51,7 @@ export default function SlipForm({
   const [description, setDescription] = useState(slip.description ?? "")
   const [date, setDate] = useState(slip.day ?? thaiClock().toISOString().slice(0, 10))
   const [time, setTime] = useState(slip.time ?? "")
-  const [accountId, setAccountId] = useState(() => startingAccount(accounts))
+  const [accountId, setAccountId] = useState(() => startingAccount(accounts, slip.suggestedAccountId))
   const [categoryId, setCategoryId] = useState("")
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -199,6 +202,11 @@ export default function SlipForm({
           ariaLabel="Account" value={accountId} onChange={setAccountId} placeholder="Select account"
           options={accounts.map(a => ({ value: String(a.id), label: a.name }))}
         />
+        {slip.suggestedAccountId != null && accountId === String(slip.suggestedAccountId) && (
+          <p className="slip-source" style={{ margin: "6px 0 0" }}>
+            Chosen from the bank in your Shortcut{slip.bank ? ` (${slip.bank})` : ""}
+          </p>
+        )}
       </div>
 
       <div>

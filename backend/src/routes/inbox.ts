@@ -5,6 +5,7 @@ import { randomBytes } from "crypto"
 import { prisma } from "../lib/db"
 import { dedupeKeyFor, hashInboxKey, parseSlipText, resolveWhen, slipMoment } from "../lib/slipText"
 import { parseWhen, thaiParts } from "../lib/tz"
+import { matchAccount } from "../lib/bankMatch"
 
 // The iPhone Shortcut reads a bank-app screenshot with Apple's OCR and drops the text (and a small copy of the
 // image) here. Slips wait in PendingSlip, outside every total, until they are confirmed in the app.
@@ -78,7 +79,8 @@ async function parseAndSave(id: number, text: string, takenAt: Date | null) {
   }
 }
 
-// POST /api/inbox/intake — multipart: text (the OCR text), taken (when the screenshot was taken, optional), image (optional)
+// POST /api/inbox/intake — multipart: text (the OCR text), taken (when the screenshot was taken, optional),
+// bank (which bank app it came from, optional), image (optional)
 intakeRouter.post("/", intakeLimiter, requireInboxKey, upload.single("image"), async (req, res) => {
   const userId = (req as any).inboxUserId as number
   const text = typeof req.body?.text === "string" ? req.body.text.trim().slice(0, 5000) : ""
@@ -90,6 +92,7 @@ intakeRouter.post("/", intakeLimiter, requireInboxKey, upload.single("image"), a
   const takenRaw = typeof req.body?.taken === "string" ? req.body.taken.trim() : ""
   const taken = takenRaw ? parseWhen(takenRaw) : null
   const takenAt = taken && !Number.isNaN(taken.getTime()) ? taken : null
+  const bank = typeof req.body?.bank === "string" && req.body.bank.trim() ? req.body.bank.trim().slice(0, 40) : null
 
   let id: number
   try {
@@ -101,6 +104,7 @@ intakeRouter.post("/", intakeLimiter, requireInboxKey, upload.single("image"), a
         image: file ? new Uint8Array(file.buffer) : null,
         imageType: file?.mimetype ?? null,
         takenAt,
+        bank,
       },
       select: { id: true },
     })
@@ -153,18 +157,22 @@ async function findDuplicate(userId: number, slip: PendingRow) {
 inboxRouter.get("/", async (req, res) => {
   try {
     const userId = (req as any).user.userId
-    const slips = await prisma.pendingSlip.findMany({
-      where: { userId, status: "pending" },
-      orderBy: { createdAt: "asc" },
-      select: {
-        id: true, rawText: true, amount: true, type: true, description: true, day: true, time: true,
-        timeSource: true, parsedBy: true, takenAt: true, createdAt: true, imageType: true,
-      },
-    })
+    const [slips, accounts] = await Promise.all([
+      prisma.pendingSlip.findMany({
+        where: { userId, status: "pending" },
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true, rawText: true, amount: true, type: true, description: true, day: true, time: true,
+          timeSource: true, parsedBy: true, takenAt: true, createdAt: true, imageType: true, bank: true,
+        },
+      }),
+      prisma.account.findMany({ where: { userId, deletedAt: null }, select: { id: true, name: true, bankName: true } }),
+    ])
     const withDuplicates = await Promise.all(
       slips.map(async ({ imageType, ...slip }) => ({
         ...slip,
         hasImage: imageType != null,
+        suggestedAccountId: matchAccount(slip.bank, accounts),
         duplicateOf: await findDuplicate(userId, slip),
       }))
     )
