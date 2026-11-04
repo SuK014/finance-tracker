@@ -11,7 +11,7 @@ model User {
   id           Int                    @id @default(autoincrement())
   email        String                 @unique
   passwordHash String
-  createdAt    DateTime               @default(now())
+  createdAt    DateTime @db.Timestamptz(3)               @default(now())
   accounts     Account[]
   categories   Category[]
   transactions Transaction[]
@@ -19,6 +19,9 @@ model User {
   assetLots    AssetLot[]
   goals        Goal[]
   bonds        Bond[]
+  // sha256 of the key the iPhone Shortcut sends to drop slips in the inbox; the key itself is shown once and never stored
+  inboxKeyHash String?                @unique
+  pendingSlips PendingSlip[]
 }
 
 model Category {
@@ -29,7 +32,7 @@ model Category {
   icon         String?
   type         String                 @default("expense")
   budget       Float?
-  deletedAt    DateTime?
+  deletedAt    DateTime? @db.Timestamptz(3)
   user         User                   @relation(fields: [userId], references: [id])
   transactions Transaction[]
   recurring    RecurringTransaction[]
@@ -44,7 +47,7 @@ model Account {
   type         String
   currency     String                 @default("THB")
   bankName     String?
-  deletedAt    DateTime?
+  deletedAt    DateTime? @db.Timestamptz(3)
   user         User                   @relation(fields: [userId], references: [id])
   transactions Transaction[]
   recurring    RecurringTransaction[]
@@ -60,14 +63,14 @@ model Transaction {
   amount      Float
   type        String
   description String?
-  date        DateTime
+  date        DateTime @db.Timestamptz(3)
   accountId   Int
   categoryId  Int?
   evidenceUrl String?
   // "investment" for the cash side of a portfolio buy/sell; kept out of spending and income totals.
   source      String?
-  createdAt   DateTime  @default(now())
-  deletedAt   DateTime?
+  createdAt   DateTime @db.Timestamptz(3)  @default(now())
+  deletedAt   DateTime? @db.Timestamptz(3)
   user        User      @relation(fields: [userId], references: [id])
   account     Account   @relation(fields: [accountId], references: [id])
   category    Category? @relation(fields: [categoryId], references: [id])
@@ -86,11 +89,11 @@ model RecurringTransaction {
   accountId   Int
   categoryId  Int?
   frequency   String
-  nextDate    DateTime
+  nextDate    DateTime @db.Timestamptz(3)
   // Currency the price is billed in ("USD" for e.g. an AI subscription). Null = the account's own currency.
   currency    String?
   active      Boolean   @default(true)
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime @db.Timestamptz(3)  @default(now())
   user        User      @relation(fields: [userId], references: [id])
   account     Account   @relation(fields: [accountId], references: [id])
   category    Category? @relation(fields: [categoryId], references: [id])
@@ -106,7 +109,7 @@ model Asset {
   name      String
   type      String     @default("stock")
   currency  String     @default("USD")
-  deletedAt DateTime?
+  deletedAt DateTime? @db.Timestamptz(3)
   lots      AssetLot[]
 }
 
@@ -117,8 +120,8 @@ model AssetLot {
   lotType   String
   quantity  Float
   price     Float
-  date      DateTime  @default(now())
-  deletedAt DateTime?
+  date      DateTime @db.Timestamptz(3)  @default(now())
+  deletedAt DateTime? @db.Timestamptz(3)
   // Optional link to the account the cash moved through, and the transaction that recorded it.
   accountId     Int?
   transactionId Int?         @unique
@@ -137,12 +140,12 @@ model Goal {
   name      String
   icon      String?
   target    Float
-  deadline  DateTime?
+  deadline  DateTime? @db.Timestamptz(3)
   // Pay-yourself-first rule applied when a salary is received: "fixed" (baht) or "percent" of the salary.
   ruleType  String?
   ruleValue Float?
-  createdAt DateTime    @default(now())
-  deletedAt DateTime?
+  createdAt DateTime @db.Timestamptz(3)    @default(now())
+  deletedAt DateTime? @db.Timestamptz(3)
   user      User        @relation(fields: [userId], references: [id])
   entries   GoalEntry[]
 
@@ -159,8 +162,8 @@ model GoalEntry {
   amount        Float
   kind          String
   transactionId Int?         @unique
-  date          DateTime     @default(now())
-  deletedAt     DateTime?
+  date          DateTime @db.Timestamptz(3)     @default(now())
+  deletedAt     DateTime? @db.Timestamptz(3)
   goal          Goal         @relation(fields: [goalId], references: [id])
   account       Account      @relation(fields: [accountId], references: [id])
   transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
@@ -177,12 +180,46 @@ model Bond {
   name         String
   principal    Float
   ratePct      Float
-  startDate    DateTime
-  maturityDate DateTime
+  startDate    DateTime @db.Timestamptz(3)
+  maturityDate DateTime @db.Timestamptz(3)
   currency     String    @default("THB")
-  createdAt    DateTime  @default(now())
-  deletedAt    DateTime?
+  createdAt    DateTime @db.Timestamptz(3)  @default(now())
+  deletedAt    DateTime? @db.Timestamptz(3)
   user         User      @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+// A bank slip the iPhone Shortcut dropped in the inbox. It stays out of every total until it is confirmed, which
+// creates a real Transaction (transactionId); rejecting keeps the row so the same screenshot is never re-added.
+model PendingSlip {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  status        String    @default("pending") // pending | confirmed | rejected
+  rawText       String
+  // sha256 of the OCR text (or of the image when the text is too short to tell slips apart)
+  dedupeKey     String
+  image         Bytes?
+  imageType     String?
+  // when the screenshot was taken, from the photo's metadata
+  takenAt       DateTime? @db.Timestamptz(3)
+  // the bank the Shortcut said this slip came from ("kbank"), used to start on the right account
+  bank          String?
+  // what the parser found; day is "YYYY-MM-DD" and time is "HH:mm", both Thai time
+  amount        Float?
+  type          String?
+  description   String?
+  day           String?
+  time          String?
+  // "slip" when the time was printed on the slip, "screenshot" when it came from takenAt, null when unknown
+  timeSource    String?
+  // "ai" or "rules"; null while the parse is still running
+  parsedBy      String?
+  transactionId Int?
+  createdAt     DateTime  @db.Timestamptz(3) @default(now())
+  decidedAt     DateTime? @db.Timestamptz(3)
+  user          User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, status])
 }

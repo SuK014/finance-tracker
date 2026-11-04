@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { changePassword } from "@/lib/api"
+import InboxKeyCard from "@/components/InboxKeyCard"
 
 export default function SettingsPage() {
   const [form, setForm] = useState({ current: "", next: "", confirm: "" })
@@ -88,6 +89,8 @@ export default function SettingsPage() {
           </button>
         </form>
       </section>
+
+      <InboxKeyCard />
     </main>
   )
 }

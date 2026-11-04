@@ -3,6 +3,7 @@
 import { useState } from "react"
 import TransactionActions from "@/components/TransactionActions"
 import { categoryEmoji } from "@/lib/categoryIcon"
+import { THAI_TZ } from "@/lib/thaiTime"
 
 type Transaction = {
   id: number
@@ -18,7 +19,7 @@ type Transaction = {
   source?: string | null
 }
 
-const TZ = "Asia/Bangkok"
+const TZ = THAI_TZ
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 const dayKey = (iso: string) => new Date(iso).toLocaleDateString("en-CA", { timeZone: TZ })

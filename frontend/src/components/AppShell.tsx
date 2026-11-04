@@ -33,6 +33,7 @@ const NAV_GROUPS: Array<{ label?: string; items: Array<{ href: string; label: st
     label: "Manage",
     items: [
       { href: "/categories", label: "Categories", match: p => p.startsWith("/categories") },
+      { href: "/inbox", label: "Slip inbox", match: p => p.startsWith("/inbox") },
       { href: "/import", label: "Import", match: p => p.startsWith("/import") },
       { href: "/settings", label: "Settings", match: p => p.startsWith("/settings") },
     ],

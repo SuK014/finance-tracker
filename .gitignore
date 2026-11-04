@@ -5,6 +5,7 @@ dist
 
 # secrets: never commit env files (any depth, any suffix)
 .env*
+!.env.example
 
 # user uploads (receipt photos)
 uploads
@@ -18,3 +19,6 @@ playwright-report/
 .claude/
 .mcp.json
 .DS_Store
+
+# reference
+reference/

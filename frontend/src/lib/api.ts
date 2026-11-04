@@ -331,3 +331,67 @@ export async function updateBond(id: number, data: BondInput): Promise<{ error?:
 export async function deleteBond(id: number) {
     await fetch(`${API_URL}/api/bonds/${id}`, { method: "DELETE", headers: authHeaders() })
 }
+
+// Slip inbox: bank-app screenshots your iPhone Shortcut sent, waiting for you to check them
+export type InboxSlip = {
+    id: number
+    rawText: string
+    amount: number | null
+    type: "income" | "expense" | null
+    description: string | null
+    day: string | null
+    time: string | null
+    timeSource: "slip" | "screenshot" | null
+    parsedBy: string | null
+    takenAt: string | null
+    createdAt: string
+    hasImage: boolean
+    // the bank the Shortcut said this slip came from, and the one account that fits it (null when none or several do)
+    bank: string | null
+    suggestedAccountId: number | null
+    duplicateOf: { id: number; amount: number; description: string | null; date: string } | null
+}
+
+export async function getInbox(): Promise<{ count: number; slips: InboxSlip[] }> {
+    const res = await fetch(`${API_URL}/api/inbox`, { headers: authHeaders() })
+    if (!res.ok) throw new Error("Couldn't load the inbox")
+    return res.json()
+}
+
+export async function confirmSlip(id: number, data: {
+    amount: number; type: string; date: string; time: string; accountId: number; categoryId?: number; description?: string
+}): Promise<{ error?: string }> {
+    const res = await fetch(`${API_URL}/api/inbox/${id}/confirm`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    })
+    return res.json()
+}
+
+export async function rejectSlip(id: number): Promise<{ error?: string }> {
+    const res = await fetch(`${API_URL}/api/inbox/${id}/reject`, { method: "POST", headers: authHeaders() })
+    return res.status === 204 ? {} : res.json()
+}
+
+// The screenshot needs the login header, so it comes back as a blob URL the caller must revoke.
+export async function getSlipImageUrl(id: number): Promise<string | null> {
+    const res = await fetch(`${API_URL}/api/inbox/${id}/image`, { headers: authHeaders() })
+    if (!res.ok) return null
+    return URL.createObjectURL(await res.blob())
+}
+
+export async function getInboxKeyStatus(): Promise<{ hasKey: boolean }> {
+    const res = await fetch(`${API_URL}/api/inbox/key`, { headers: authHeaders() })
+    return res.json()
+}
+
+export async function makeInboxKey(): Promise<{ key?: string; error?: string }> {
+    const res = await fetch(`${API_URL}/api/inbox/key`, { method: "POST", headers: authHeaders() })
+    return res.json()
+}
+
+export async function removeInboxKey(): Promise<boolean> {
+    const res = await fetch(`${API_URL}/api/inbox/key`, { method: "DELETE", headers: authHeaders() })
+    return res.ok
+}

@@ -1,6 +1,7 @@
 import { getLots } from "@/lib/serverApi"
 import Link from "next/link"
 import LotActions from "@/components/LotActions"
+import { THAI_TZ } from "@/lib/thaiTime"
 
 type Lot = {
   id: number
@@ -45,7 +46,7 @@ export default async function TransactionsPage() {
           {lots.map((lot) => (
             <tr key={lot.id}>
               <th scope="row" className="num" style={{ textAlign: "left", fontWeight: 500 }}>
-                {new Date(lot.date).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok" })}
+                {new Date(lot.date).toLocaleDateString("en-GB", { timeZone: THAI_TZ })}
               </th>
               <td style={{ color: lot.lotType === "buy" ? "var(--income)" : "var(--expense)" }}>
                 {lot.lotType.toUpperCase()}
