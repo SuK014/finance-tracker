@@ -1,9 +1,11 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 
 // A small modal in the same style as the Add transaction sheet: bottom sheet on phones, dialog on desktop.
 // Mount it to open it; it animates out before calling onClose, and puts focus back where it was.
+// It renders on <body>, so a sheet can open on top of another one (a sheet's own transform would otherwise trap it).
 export default function BottomSheet({
   title,
   onClose,
@@ -34,8 +36,9 @@ export default function BottomSheet({
   }, [])
 
   function onKeyDown(e: React.KeyboardEvent) {
+    // React events bubble through portals: keep a sheet's keys from reaching the sheet it was opened from
+    e.stopPropagation()
     if (e.key === "Escape") {
-      e.stopPropagation()
       if (!panelRef.current?.querySelector('[aria-expanded="true"]')) close()
       return
     }
@@ -51,7 +54,8 @@ export default function BottomSheet({
   }
 
   const state = closing ? "closing" : "open"
-  return (
+  if (typeof document === "undefined") return null
+  return createPortal(
     <>
       <div className="sheet-backdrop" data-state={state} onClick={close} aria-hidden="true" />
       <div
@@ -71,6 +75,7 @@ export default function BottomSheet({
         </div>
         {children}
       </div>
-    </>
+    </>,
+    document.body
   )
 }

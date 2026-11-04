@@ -51,7 +51,15 @@ export default function LoginPage() {
 
     setLoading(true)
     const fn = mode === "login" ? login : register
-    const result = await fn(email, password)
+    let result: { token?: string; email?: string; error?: string }
+    try {
+      result = await fn(email, password)
+    } catch {
+      // The request never got an answer (server asleep or unreachable, or the browser blocked it): don't spin forever
+      setLoading(false)
+      setError("Can't reach the server. It may be waking up, so try again in a minute.")
+      return
+    }
     setLoading(false)
 
     if (result.error) {

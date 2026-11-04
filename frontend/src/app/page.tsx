@@ -5,7 +5,7 @@ import DailyActivityChart from "@/components/DailyActivityChart"
 import CategoryBarChart from "@/components/CategoryBarChart"
 import TransactionCalendar from "@/components/TransactionCalendar"
 import MonthNav from "@/components/MonthNav"
-import InboxPrompt from "@/components/InboxPrompt"
+import InboxBell from "@/components/InboxBell"
 import CategoryIcon from "@/components/CategoryIcon"
 import SubscriptionIcon from "@/components/ServiceIcon"
 import { categoryEmoji } from "@/lib/categoryIcon"
@@ -114,9 +114,8 @@ export default async function DashboardPage({
       <div className="home-head">
         <h1 className="home-greeting">{greeting} 👋</h1>
         <MonthNav year={year} month={month} />
+        <InboxBell />
       </div>
-
-      <InboxPrompt />
 
       <div className="top-grid">
       <section className="hero" aria-label={`${monthLabel} summary`}>
