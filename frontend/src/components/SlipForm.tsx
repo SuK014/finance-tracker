@@ -123,6 +123,8 @@ export default function SlipForm({
 
   return (
     <form className="slip-form" onSubmit={e => { e.preventDefault(); confirm() }} noValidate>
+      {/* In the review pop-up only these fields scroll; the Confirm / Reject bar below them stays put */}
+      <div className="slip-fields">
       <section className="slip-summary" aria-label="Slip summary">
         {slip.hasImage && (
           <button type="button" className="slip-thumb" onClick={() => setZoomed(true)} aria-label="View screenshot" disabled={!imageUrl}>
@@ -219,6 +221,8 @@ export default function SlipForm({
             </button>
           ))}
         </div>
+      </div>
+
       </div>
 
       {/* Pinned to the bottom of the screen so Confirm never needs a scroll; errors sit with it so they are seen */}
