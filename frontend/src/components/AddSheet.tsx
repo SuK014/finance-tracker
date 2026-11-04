@@ -16,7 +16,7 @@ import type { VoiceParse } from "@/lib/api"
 type Account = { id: number; name: string; currency?: string; setAside?: number; available?: number }
 type Category = { id: number; name: string; color?: string | null; icon?: string | null; type?: string }
 
-const AddSheetContext = createContext<{ open: () => void }>({ open: () => {} })
+const AddSheetContext = createContext<{ open: () => void; toast: (message: string) => void }>({ open: () => {}, toast: () => {} })
 export const useAddSheet = () => useContext(AddSheetContext)
 
 const pad = (n: number) => String(n).padStart(2, "0")
@@ -63,14 +63,18 @@ export function AddSheetProvider({ children }: { children: React.ReactNode }) {
     }, 200)
   }, [])
 
+  const showToast = useCallback((message: string) => {
+    setToast(message)
+    window.setTimeout(() => setToast(null), 2400)
+  }, [])
+
   function saved() {
     close()
-    setToast("Transaction saved")
-    window.setTimeout(() => setToast(null), 2400)
+    showToast("Transaction saved")
   }
 
   return (
-    <AddSheetContext.Provider value={{ open }}>
+    <AddSheetContext.Provider value={{ open, toast: showToast }}>
       {children}
       {state !== "closed" && <Sheet closing={state === "closing"} onClose={close} onSaved={saved} />}
       <div aria-live="polite" role="status">

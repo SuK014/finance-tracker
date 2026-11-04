@@ -1504,3 +1504,70 @@ li:last-child { border-bottom: none; }
 .asset-section { margin-top: 20px; }
 .asset-section h2 { margin-bottom: 14px; }
 .login-mark .wordmark-gold { color: #f6c453; }
+
+/* ───────── Slip inbox ───────── */
+.btn-primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.btn-primary:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); filter: brightness(1.08); }
+
+.inbox-banner {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; border-radius: var(--radius);
+  background: var(--accent-soft); color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  font-weight: 700; text-decoration: none;
+  transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast) var(--ease-out);
+}
+.inbox-banner:hover { filter: brightness(0.97); }
+.inbox-banner:active { transform: scale(0.99); }
+.inbox-banner-text { flex: 1; }
+.inbox-banner-go { font-size: 20px; line-height: 1; }
+
+.inbox-ask { padding: 4px 20px 20px; display: flex; flex-direction: column; gap: 16px; }
+.inbox-ask p { margin: 0; color: var(--text-secondary); line-height: 1.5; }
+.inbox-ask-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+.inbox-ask-actions button { min-height: 50px; }
+
+.slip-page { display: flex; flex-direction: column; gap: 16px; max-width: 480px; }
+.slip-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.slip-back { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 18px; font-weight: 700; color: var(--text-primary); text-decoration: none; }
+.slip-count { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+.slip-empty { color: var(--text-secondary); line-height: 1.5; }
+.slip-empty p { margin: 0 0 4px; }
+.slip-form { display: flex; flex-direction: column; gap: 16px; }
+
+.slip-summary {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-card);
+}
+.slip-thumb {
+  flex: none; width: 64px; height: 88px; padding: 0; overflow: hidden;
+  border-radius: var(--radius-sm); background: var(--accent-soft); cursor: zoom-in;
+}
+.slip-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.slip-summary-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.slip-amount { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; color: var(--text-primary); }
+.slip-amount[data-type="expense"] { color: var(--expense); }
+.slip-amount[data-type="income"] { color: var(--income); }
+.slip-when { font-size: 14px; color: var(--text-secondary); }
+.slip-source { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.slip-source[data-state="missing"] { color: var(--gold-text); }
+.slip-raw { margin-top: 8px; font-weight: 500; }
+.slip-raw summary { cursor: pointer; }
+.slip-raw pre { margin: 8px 0 0; white-space: pre-wrap; word-break: break-word; font: inherit; font-size: 12px; color: var(--text-secondary); }
+.slip-amount[data-type="none"] { color: var(--text-muted); font-size: 22px; }
+.slip-actions {
+  position: sticky; bottom: 0; z-index: 5;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 0; background: var(--bg); border-top: 1px solid var(--border);
+}
+.slip-actions p { margin: 0; }
+.slip-actions-row { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+.slip-actions-row button { min-height: 52px; border-radius: 16px; font-size: 16px; font-weight: 700; }
+@media (max-width: 768px) {
+  /* The content area already reserves room for the bottom tab bar (96px), and sticky is measured from that edge,
+     so a small negative offset rests the buttons just above the tab bar */
+  .slip-actions { bottom: -16px; }
+}
+.slip-full { padding: 4px 20px 20px; overflow-y: auto; max-height: 70vh; }
+.slip-full img { display: block; width: 100%; height: auto; border-radius: var(--radius-sm); }

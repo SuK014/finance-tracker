@@ -4,6 +4,7 @@ import LogoutButton from "@/components/LogoutButton"
 
 const MORE_LINKS = [
   { href: "/categories", label: "Categories", hint: "Icons, colours and budgets" },
+  { href: "/inbox", label: "Slip inbox", hint: "Check slips from your iPhone" },
   { href: "/import", label: "Import", hint: "Read transactions from slips" },
   { href: "/settings", label: "Settings", hint: "Password and preferences" },
 ]
