@@ -1509,18 +1509,34 @@ li:last-child { border-bottom: none; }
 .btn-primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
 .btn-primary:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); filter: brightness(1.08); }
 
-.inbox-banner {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 16px; border-radius: var(--radius);
-  background: var(--accent-soft); color: var(--accent);
-  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
-  font-weight: 700; text-decoration: none;
-  transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast) var(--ease-out);
+/* The bell in the top right of Home: same round button as the month arrows, with the number of waiting slips on it */
+.bell-btn {
+  position: relative; order: 3; display: inline-grid; place-items: center;
+  width: 44px; height: 44px; min-height: 0; padding: 0; border-radius: 50%;
+  background: var(--surface); border: 1.5px solid color-mix(in srgb, var(--accent) 28%, var(--border));
+  color: var(--text-primary); box-shadow: 0 1px 2px rgba(35, 36, 58, 0.06);
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast);
 }
-.inbox-banner:hover { filter: brightness(0.97); }
-.inbox-banner:active { transform: scale(0.99); }
-.inbox-banner-text { flex: 1; }
-.inbox-banner-go { font-size: 20px; line-height: 1; }
+.bell-btn:hover { background: var(--accent-soft); color: var(--accent); }
+.bell-btn:active { transform: scale(0.94); }
+.bell-badge {
+  position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px;
+  border-radius: 10px; border: 2px solid var(--bg);
+  background: var(--accent); color: var(--accent-text);
+  font-size: 11px; font-weight: 800; line-height: 16px; text-align: center;
+}
+@media (max-width: 768px) {
+  /* Phones: greeting and bell share the first line, the month switcher goes below */
+  .home-head > .home-greeting { flex: 1; }
+  .home-head > .bell-btn { order: 1; }
+  .home-head > :not(.home-greeting):not(.bell-btn) { order: 2; }
+}
+
+/* The review inside the pop-up: scrolls on its own, with Confirm and Reject pinned to its bottom edge */
+.slip-modal { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 20px 0; }
+.slip-modal .slip-actions { bottom: 0; background: var(--surface); padding-bottom: 16px; }
+.slip-review { display: flex; flex-direction: column; gap: 16px; }
+.slip-review .slip-count { margin: 0; }
 
 .inbox-ask { padding: 4px 20px 20px; display: flex; flex-direction: column; gap: 16px; }
 .inbox-ask p { margin: 0; color: var(--text-secondary); line-height: 1.5; }
