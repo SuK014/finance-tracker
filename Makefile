@@ -1,4 +1,4 @@
-.PHONY: help setup env install dev dev-api dev-web build build-api build-web start lint test test-e2e check migrate
+.PHONY: help setup env install test-api dev dev-api dev-web build build-api build-web start lint test test-e2e check migrate
 
 help:
 	@echo make setup     - first-time setup: install, create .env files, apply migrations
@@ -7,7 +7,7 @@ help:
 	@echo make dev       - run API (:3001) and web (:3000) together
 	@echo make build     - production build of both
 	@echo make start     - run the production builds
-	@echo make test      - lint + typecheck + build + Playwright e2e
+	@echo make test      - typecheck + API tests + build + Playwright e2e
 	@echo make migrate   - apply Prisma migrations to DATABASE_URL
 
 # First-time setup. Fill in backend/.env (DATABASE_URL, JWT_SECRET) between `make env` and `make migrate`.
@@ -58,10 +58,13 @@ check:
 	cd backend && npx tsc --noEmit
 	cd frontend && npx tsc --noEmit
 
+test-api:
+	npm --prefix backend test
+
 test-e2e:
 	cd frontend && npx playwright test
 
-test: check build test-e2e
+test: check test-api build test-e2e
 
 migrate:
 	cd backend && npx prisma migrate deploy && npx prisma generate
