@@ -5,6 +5,7 @@ import { confirmSlip, getSlipImageUrl, rejectSlip, type InboxSlip } from "@/lib/
 import { currencySymbol } from "@/lib/currency"
 import { thaiClock } from "@/lib/thaiTime"
 import BottomSheet from "@/components/BottomSheet"
+import NoteInput from "@/components/NoteInput"
 import CategoryIcon from "@/components/CategoryIcon"
 import DatePicker from "@/components/DatePicker"
 import Select from "@/components/Select"
@@ -184,7 +185,7 @@ export default function SlipForm({
 
       <div>
         <label className="field-label" htmlFor="slip-note">Note</label>
-        <input id="slip-note" type="text" className="field-input" placeholder="e.g. Coffee shop" value={description} onChange={e => setDescription(e.target.value)} />
+        <NoteInput id="slip-note" placeholder="e.g. Coffee shop" value={description} onChange={setDescription} />
       </div>
 
       <div className="when-row">

@@ -123,6 +123,34 @@ test.describe("slip inbox on Home", () => {
     await expect(page.getByRole("button", { name: "Slips to check, 1 waiting" })).toBeVisible();
   });
 
+  test("note suggestions in the pop-up fit inside it, clear of the Confirm bar", async ({ page }) => {
+    await mockInbox(page, [readSlip]);
+    const history = ["Grab", "Card", "france fried", "KFC", "Water", "Tea"].map((description, i) => ({
+      id: i + 1, amount: 50, type: "expense", description, date: `2026-11-0${i + 1}T12:00:00.000+07:00`, accountId: 1, categoryId: 1,
+    }));
+    await page.route("**/api/transactions", route => {
+      const method = route.request().method();
+      if (method === "OPTIONS") return route.fulfill({ status: 204, headers: CORS });
+      if (method !== "GET") return route.continue();
+      return route.fulfill({ status: 200, headers: { ...CORS, "content-type": "application/json" }, body: JSON.stringify(history) });
+    });
+    await page.goto("/");
+    await page.getByRole("dialog", { name: "1 slip is waiting" }).getByRole("button", { name: "Review now" }).click();
+    const review = page.getByRole("dialog", { name: "Slips to check" });
+    const note = review.getByRole("combobox", { name: "Note" });
+    await note.fill("");
+    await note.focus();
+    const list = review.getByRole("listbox", { name: "Notes you used before" });
+    await expect(list.getByRole("option")).toHaveCount(6);
+    const [listBox, fieldsBox, actionsBox] = await Promise.all([
+      list.boundingBox(),
+      review.locator(".slip-fields").boundingBox(),
+      review.locator(".slip-actions").boundingBox(),
+    ]);
+    expect(listBox!.y).toBeGreaterThanOrEqual(fieldsBox!.y - 1);
+    expect(listBox!.y + listBox!.height).toBeLessThanOrEqual(actionsBox!.y + 1);
+  });
+
   test("tapping the bell opens the review as a pop-up, and the screenshot opens on top of it", async ({ page }) => {
     await mockInbox(page, [readSlip]);
     await page.goto("/");
@@ -181,7 +209,7 @@ test.describe("checking slips", () => {
     await expect(summary).toContainText("2:32 PM");
     await expect(summary).toContainText("Time read from the slip");
     await expect(page.getByRole("status").filter({ hasText: "Looks like a duplicate of Coffee" })).toContainText("You can still confirm it.");
-    await expect(page.getByRole("textbox", { name: "Note" })).toHaveValue("Coffee shop");
+    await expect(page.getByRole("combobox", { name: "Note" })).toHaveValue("Coffee shop");
     // The account starts on the first account
     await expect(page.getByRole("button", { name: "Account" })).toContainText("Kasikorn");
 

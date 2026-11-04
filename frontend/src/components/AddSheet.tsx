@@ -6,6 +6,7 @@ import { createCategory, createTransaction, extractSlips, getAccounts, getCatego
 import { currencySymbol } from "@/lib/currency"
 import { categoryEmoji } from "@/lib/categoryIcon"
 import Select from "@/components/Select"
+import NoteInput from "@/components/NoteInput"
 import DatePicker from "@/components/DatePicker"
 import TimePicker from "@/components/TimePicker"
 import EmojiPicker from "@/components/EmojiPicker"
@@ -419,14 +420,7 @@ function Sheet({ closing, onClose, onSaved }: { closing: boolean; onClose: () =>
 
           <div>
             <label className="field-label" htmlFor="sheet-note">Note</label>
-            <input
-              id="sheet-note"
-              type="text"
-              className="field-input"
-              placeholder="e.g. Groceries at Big C"
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-            />
+            <NoteInput id="sheet-note" placeholder="e.g. Groceries at Big C" value={description} onChange={setDescription} />
           </div>
 
           <div className="when-row">

@@ -38,7 +38,7 @@ test.describe("voice add (Say it)", () => {
 
     await expect(dialog.getByRole("textbox", { name: "Amount" })).toHaveValue("85");
     await expect(dialog.getByRole("button", { name: /Groceries/ })).toHaveAttribute("aria-pressed", "true");
-    await expect(dialog.getByRole("textbox", { name: "Note" })).toHaveValue("coffee");
+    await expect(dialog.getByRole("combobox", { name: "Note" })).toHaveValue("coffee");
     await expect(dialog.getByRole("status").filter({ hasText: "Heard" })).toContainText("coffee 85 yesterday");
     expect(posted).toBe(false);
 
