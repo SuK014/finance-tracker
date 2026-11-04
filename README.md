@@ -32,6 +32,8 @@ To open it from a phone on the same Wi-Fi, set `NEXT_PUBLIC_API_URL` in `fronten
 
 ## Coach practice during UAT
 
+The full two-repository Mac setup is in the [Budget Buddy UAT guide](https://github.com/Zurusfig/b-buddy/blob/feat/routed-coach-personas/docs/UAT_SETUP_MAC.md).
+
 With Budget Buddy connected, sign in to a demo persona and open `http://localhost:3000/?uat=1`.
 Open **Ask Buddy** and choose **Practice** to try prompts against that account's real transactions.
 The chat shows the normal reply and **How I got this** receipt. Practice questions are logged with
