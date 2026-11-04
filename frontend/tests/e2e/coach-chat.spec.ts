@@ -236,12 +236,15 @@ test.describe("Ask Buddy chat", () => {
     await expect(details).toContainText("henry@demo.budgetbuddy.test");
     await panel.getByLabel("Your question").fill("How much food last month?");
     await expect(panel.getByRole("button", { name: "Send question" })).toBeDisabled();
-    await details.getByLabel("Round").selectOption("2");
-    await details.getByLabel("Tester number").selectOption("3");
-    await expect(details.getByLabel("Persona")).toHaveValue("Henry");
-    await expect(details.getByLabel("Task")).toContainText("UAT-01 · Food last month");
-    await expect(details.getByLabel("Task").locator('option[value="UAT-08"]')).toHaveCount(0);
-    await details.getByLabel("Task").selectOption("UAT-01");
+    await details.getByRole("button", { name: "Round" }).click();
+    await details.getByRole("option", { name: "2" }).click();
+    await details.getByRole("button", { name: "Tester number" }).click();
+    await details.getByRole("option", { name: "3" }).click();
+    await expect(details.getByRole("button", { name: "Persona" })).toContainText("Henry");
+    await details.getByRole("button", { name: "Task" }).click();
+    await expect(details.getByRole("option", { name: "UAT-01 · Food last month" })).toBeVisible();
+    await expect(details.getByRole("option", { name: /UAT-08/ })).toHaveCount(0);
+    await details.getByRole("option", { name: "UAT-01 · Food last month" }).click();
     await panel.getByRole("button", { name: "Send question" }).click();
     await expect(panel.getByText("How I got this")).toBeVisible();
     expect(asked).toEqual([{ question: "How much food last month?", uat: {
@@ -256,16 +259,18 @@ test.describe("Ask Buddy chat", () => {
       round: 2, tester_number: 3, task_id: "UAT-01", chat_id: firstChatId, attempt: 2,
     } });
     await panel.getByRole("button", { name: "New chat" }).click();
-    await expect(details.getByLabel("Task")).toHaveValue("");
-    await expect(details.getByLabel("Round")).toHaveValue("2");
-    await details.getByLabel("Task").selectOption("UAT-01");
+    await expect(details.getByRole("button", { name: "Task" })).toContainText("Choose a task for Henry");
+    await expect(details.getByRole("button", { name: "Round" })).toContainText("2");
+    await details.getByRole("button", { name: "Task" }).click();
+    await details.getByRole("option", { name: "UAT-01 · Food last month" }).click();
     await panel.getByLabel("Your question").fill("Fresh question");
     await panel.getByRole("button", { name: "Send question" }).click();
     await expect(panel.getByText("Fresh question")).toBeVisible();
     const fresh = (asked[2] as { uat: { chat_id: string; attempt: number } }).uat;
     expect(fresh.chat_id).not.toBe(firstChatId);
     expect(fresh.attempt).toBe(1);
-    await details.getByLabel("Persona").selectOption("Grace");
+    await details.getByRole("button", { name: "Persona" }).click();
+    await details.getByRole("option", { name: "Grace" }).click();
     await expect(page).toHaveURL(/\/login\?uatPersona=Grace$/);
     await expect(page.getByLabel("Email")).toHaveValue("grace@demo.budgetbuddy.test");
     await page.route("**/api/auth/login", route => route.fulfill({

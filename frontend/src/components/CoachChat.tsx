@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { logout } from "@/lib/api"
+import Select from "@/components/Select"
 import {
   COACH_ENABLED, CoachError, OFFLINE_FIX, OFFLINE_REASONS, askCoach, coachErrorMessage, coachHealth,
   hasThai, resultPairs, safeUrl, toolLabel, whoAnswered,
@@ -304,30 +305,27 @@ export default function CoachChat() {
                   <strong>UAT setup</strong>
                   <span>{health.email ?? (health.checked ? "Account unavailable" : "Checking account…")}</span>
                 </div>
-                <label className="coach-uat-persona">Persona
-                  <select value={health.persona ?? ""} onChange={e => switchPersona(e.target.value)} disabled={pending}
-                    aria-describedby="coach-uat-switch-help">
-                    <option value="">Choose a demo account</option>
-                    {UAT_PERSONAS.map(name => <option key={name} value={name}>{name}</option>)}
-                  </select>
-                </label>
+                <div className="coach-uat-field coach-uat-persona"><span>Persona</span>
+                  <Select ariaLabel="Persona" value={health.persona ?? ""} onChange={switchPersona}
+                    options={UAT_PERSONAS.map(name => ({ value: name, label: name }))}
+                    placeholder="Choose a demo account" disabled={pending} />
+                </div>
                 <p id="coach-uat-switch-help" className="coach-uat-help">Changing persona opens sign-in for that account.</p>
-                <label>Round
-                  <select value={uatRound} onChange={e => setUatRound(e.target.value)} disabled={pending}>
-                    <option value="">Choose</option><option value="1">1</option><option value="2">2</option>
-                  </select>
-                </label>
-                <label>Tester number
-                  <select value={uatTester} onChange={e => setUatTester(e.target.value)} disabled={pending}>
-                    <option value="">Choose</option>{[1, 2, 3, 4].map(n => <option key={n} value={n}>{n}</option>)}
-                  </select>
-                </label>
-                <label className="coach-uat-task">Task
-                  <select value={uatTask} onChange={e => setUatTask(e.target.value)} disabled={pending}>
-                    <option value="">Choose a task for {health.persona ?? "this account"}</option>
-                    {uatAvailableTasks.map(([id, label]) => <option key={id} value={id}>{id} · {label}</option>)}
-                  </select>
-                </label>
+                <div className="coach-uat-field"><span>Round</span>
+                  <Select ariaLabel="Round" value={uatRound} onChange={setUatRound}
+                    options={[{ value: "1", label: "1" }, { value: "2", label: "2" }]}
+                    placeholder="Choose" disabled={pending} />
+                </div>
+                <div className="coach-uat-field"><span>Tester number</span>
+                  <Select ariaLabel="Tester number" value={uatTester} onChange={setUatTester}
+                    options={[1, 2, 3, 4].map(n => ({ value: String(n), label: String(n) }))}
+                    placeholder="Choose" disabled={pending} />
+                </div>
+                <div className="coach-uat-field coach-uat-task"><span>Task</span>
+                  <Select ariaLabel="Task" value={uatTask} onChange={setUatTask}
+                    options={uatAvailableTasks.map(([id, label]) => ({ value: id, label: `${id} · ${label}` }))}
+                    placeholder={`Choose a task for ${health.persona ?? "this account"}`} disabled={pending} />
+                </div>
                 {uatTask && !uatIdentityMatches ? (
                   <p className="coach-uat-mismatch" role="alert">{uatExpectedPersona
                     ? `${uatTask} belongs to ${uatExpectedPersona}. Choose that persona above to sign in.`
