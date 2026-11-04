@@ -154,6 +154,44 @@ test.describe("scan a slip", () => {
   });
 });
 
+test.describe("scan a slip with no printed time", () => {
+  // A File whose lastModified is set, handed to the slip input the way the photo picker does
+  async function pickPhoto(page: import("@playwright/test").Page, lastModified: number) {
+    await page.evaluate(lm => {
+      const input = document.querySelector<HTMLInputElement>('input[type="file"][accept^="image"]')!
+      const png = Uint8Array.from(atob("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="), c => c.charCodeAt(0))
+      const dt = new DataTransfer()
+      dt.items.add(new File([png], "notime.png", { type: "image/png", lastModified: lm }))
+      input.files = dt.files
+      input.dispatchEvent(new Event("change", { bubbles: true }))
+    }, lastModified)
+  }
+
+  test("uses the time the photo was taken when it is the same day as the slip", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Add transaction" }).click();
+    const dialog = page.getByRole("dialog", { name: "Add transaction" });
+
+    await pickPhoto(page, new Date(2026, 9, 13, 18, 45).getTime());
+
+    await expect(dialog.getByRole("status")).toContainText("the time is when the photo was taken");
+    await expect(dialog.getByRole("textbox", { name: "Amount" })).toHaveValue("90");
+    await expect(dialog.getByRole("button", { name: "Choose time" })).toContainText("6:45 PM");
+  });
+
+  test("ignores the photo's time when it was taken on a different day", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Add transaction" }).click();
+    const dialog = page.getByRole("dialog", { name: "Add transaction" });
+
+    await pickPhoto(page, new Date(2026, 9, 20, 18, 45).getTime());
+
+    await expect(dialog.getByRole("status")).toContainText("Filled in from your slip");
+    await expect(dialog.getByRole("status")).not.toContainText("when the photo was taken");
+    await expect(dialog.getByRole("button", { name: "Choose time" })).not.toContainText("6:45 PM");
+  });
+});
+
 test.describe("scan failure (390px)", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 

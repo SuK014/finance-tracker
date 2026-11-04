@@ -120,6 +120,10 @@ const server = createServer((req, res) => {
         res.end(JSON.stringify([{ filename: "limit.png", success: false, error: "Error: Gemini request failed (429): RESOURCE_EXHAUSTED" }]))
         return
       }
+      if (raw.includes("notime.png")) {
+        res.end(JSON.stringify([{ filename: "notime.png", success: true, data: { amount: 90, type: "expense", date: "2026-10-13", description: "Taxi" } }]))
+        return
+      }
       res.end(JSON.stringify([{
         filename: "slip.png", success: true,
         data: { amount: 250, type: "expense", date: "2026-10-13T12:30", description: "7-Eleven" },
