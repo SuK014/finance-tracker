@@ -238,7 +238,10 @@ test.describe("Ask Buddy chat", () => {
     await expect(panel.getByRole("button", { name: "Send question" })).toBeDisabled();
     await details.getByLabel("Round").selectOption("2");
     await details.getByLabel("Tester number").selectOption("3");
-    await details.getByLabel("Task ID").selectOption("UAT-01");
+    await expect(details.getByLabel("Persona")).toHaveValue("Henry");
+    await expect(details.getByLabel("Task")).toContainText("UAT-01 · Food last month");
+    await expect(details.getByLabel("Task").locator('option[value="UAT-08"]')).toHaveCount(0);
+    await details.getByLabel("Task").selectOption("UAT-01");
     await panel.getByRole("button", { name: "Send question" }).click();
     await expect(panel.getByText("How I got this")).toBeVisible();
     expect(asked).toEqual([{ question: "How much food last month?", uat: {
@@ -253,20 +256,24 @@ test.describe("Ask Buddy chat", () => {
       round: 2, tester_number: 3, task_id: "UAT-01", chat_id: firstChatId, attempt: 2,
     } });
     await panel.getByRole("button", { name: "New chat" }).click();
-    await expect(details.getByLabel("Task ID")).toHaveValue("");
+    await expect(details.getByLabel("Task")).toHaveValue("");
     await expect(details.getByLabel("Round")).toHaveValue("2");
-    await details.getByLabel("Task ID").selectOption("UAT-08");
-    await panel.getByLabel("Your question").fill("Am I over budget?");
-    await expect(panel.getByRole("alert")).toContainText("UAT-08 belongs to Grace");
-    await expect(panel.getByRole("button", { name: "Send question" })).toBeDisabled();
-    expect(asked).toHaveLength(2);
-    await details.getByLabel("Task ID").selectOption("UAT-01");
+    await details.getByLabel("Task").selectOption("UAT-01");
     await panel.getByLabel("Your question").fill("Fresh question");
     await panel.getByRole("button", { name: "Send question" }).click();
     await expect(panel.getByText("Fresh question")).toBeVisible();
     const fresh = (asked[2] as { uat: { chat_id: string; attempt: number } }).uat;
     expect(fresh.chat_id).not.toBe(firstChatId);
     expect(fresh.attempt).toBe(1);
+    await details.getByLabel("Persona").selectOption("Grace");
+    await expect(page).toHaveURL(/\/login\?uatPersona=Grace$/);
+    await expect(page.getByLabel("Email")).toHaveValue("grace@demo.budgetbuddy.test");
+    await page.route("**/api/auth/login", route => route.fulfill({
+      status: 200, headers: CORS, contentType: "application/json", body: JSON.stringify({ token: "grace-test-token" }),
+    }));
+    await page.getByLabel("Password").fill("test-password");
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await expect(page).toHaveURL(/\/\?uat=1$/);
   });
 
   test("keyboard: button takes a visible focus ring, Escape closes and returns focus", async ({ page }) => {

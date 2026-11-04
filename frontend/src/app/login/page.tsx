@@ -1,18 +1,27 @@
 "use client"
 
-import { useLayoutEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { login, register, saveToken } from "@/lib/api"
 import ThemeToggle from "@/components/ThemeToggle"
 import BrandMark from "@/components/BrandMark"
 
+function uatPersonaFromUrl(): string | null {
+  const persona = new URLSearchParams(window.location.search).get("uatPersona")
+  return persona && ["Henry", "Diana", "Grace"].includes(persona) ? persona : null
+}
+
 export default function LoginPage() {
   const [mode, setMode] = useState<"login" | "register">("login")
-  const [email, setEmail] = useState("")
+  const emailRef = useRef<HTMLInputElement>(null)
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  useEffect(() => {
+    const persona = uatPersonaFromUrl()
+    if (persona && emailRef.current) emailRef.current.value = `${persona.toLowerCase()}@demo.budgetbuddy.test`
+  }, [])
 
   const loginTabRef = useRef<HTMLButtonElement>(null)
   const registerTabRef = useRef<HTMLButtonElement>(null)
@@ -51,7 +60,7 @@ export default function LoginPage() {
 
     setLoading(true)
     const fn = mode === "login" ? login : register
-    const result = await fn(email, password)
+    const result = await fn(emailRef.current?.value ?? "", password)
     setLoading(false)
 
     if (result.error) {
@@ -60,7 +69,7 @@ export default function LoginPage() {
     }
 
     saveToken(result.token!)
-    window.location.href = "/"
+    window.location.href = uatPersonaFromUrl() ? "/?uat=1" : "/"
   }
 
   return (
@@ -169,8 +178,7 @@ export default function LoginPage() {
               <input
                 id="email"
                 type="email" placeholder="you@example.com" required autoComplete="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+                ref={emailRef}
               />
             </div>
             <div className="login-field">

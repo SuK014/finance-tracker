@@ -1,6 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
+import { logout } from "@/lib/api"
 import {
   COACH_ENABLED, CoachError, OFFLINE_FIX, OFFLINE_REASONS, askCoach, coachErrorMessage, coachHealth,
   hasThai, resultPairs, safeUrl, toolLabel, whoAnswered,
@@ -20,6 +22,13 @@ const SLOW_AFTER_MS = 15_000
 const POLL_OFFLINE_MS = 5_000
 const POLL_READY_MS = 30_000
 const CLOSE_MS = 180
+const UAT_PERSONAS = ["Henry", "Diana", "Grace"]
+const UAT_TASKS: Record<string, string> = {
+  "UAT-01": "Food last month", "UAT-02": "Over budget this month", "UAT-03": "Advice to last the month",
+  "UAT-04": "ค่าอาหารเดือนที่แล้ว", "UAT-05": "ค่าวินเดือนสิงหา", "UAT-06": "Food + transport last month",
+  "UAT-07": "April: no data", "UAT-08": "No budgets set", "UAT-09": "Gold or crypto refusal",
+  "UAT-10": "Other user's data refusal", "UAT-11": "Did July hurt?",
+}
 
 function ChatIcon() {
   return (
@@ -77,6 +86,7 @@ function Receipt({ reply }: { reply: CoachReply }) {
 }
 
 export default function CoachChat() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [closing, setClosing] = useState(false)
   const [health, setHealth] = useState<CoachHealth & { checked: boolean }>({
@@ -145,6 +155,13 @@ export default function CoachChat() {
     window.setTimeout(() => inputRef.current?.focus(), 0)
   }
 
+  function switchPersona(persona: string) {
+    if (!UAT_PERSONAS.includes(persona) || persona === health.persona) return
+    abortRef.current?.abort()
+    logout()
+    router.push(`/login?uatPersona=${encodeURIComponent(persona)}`)
+  }
+
   async function send(question: string) {
     const q = question.trim()
     if (!q || pending || (uatMode && (!uatRound || !uatTester || !uatTask ||
@@ -182,6 +199,7 @@ export default function CoachChat() {
   const offline = health.checked && !health.ready
   const uatExpectedPersona = health.uatPersonas[uatTask]
   const uatIdentityMatches = !!uatExpectedPersona && uatExpectedPersona === health.persona
+  const uatAvailableTasks = Object.entries(UAT_TASKS).filter(([id]) => health.uatPersonas[id] === health.persona)
   const state = closing ? "closing" : "open"
 
   return (
@@ -282,8 +300,18 @@ export default function CoachChat() {
 
             {uatMode ? (
               <div className="coach-uat" role="group" aria-label="UAT operator details">
-                <p className="coach-uat-identity">Signed in as: {health.email ?? (health.checked
-                  ? "Unavailable — sign out and sign in again" : "Checking account…")}</p>
+                <div className="coach-uat-heading">
+                  <strong>UAT setup</strong>
+                  <span>{health.email ?? (health.checked ? "Account unavailable" : "Checking account…")}</span>
+                </div>
+                <label className="coach-uat-persona">Persona
+                  <select value={health.persona ?? ""} onChange={e => switchPersona(e.target.value)} disabled={pending}
+                    aria-describedby="coach-uat-switch-help">
+                    <option value="">Choose a demo account</option>
+                    {UAT_PERSONAS.map(name => <option key={name} value={name}>{name}</option>)}
+                  </select>
+                </label>
+                <p id="coach-uat-switch-help" className="coach-uat-help">Changing persona opens sign-in for that account.</p>
                 <label>Round
                   <select value={uatRound} onChange={e => setUatRound(e.target.value)} disabled={pending}>
                     <option value="">Choose</option><option value="1">1</option><option value="2">2</option>
@@ -294,15 +322,15 @@ export default function CoachChat() {
                     <option value="">Choose</option>{[1, 2, 3, 4].map(n => <option key={n} value={n}>{n}</option>)}
                   </select>
                 </label>
-                <label>Task ID
+                <label className="coach-uat-task">Task
                   <select value={uatTask} onChange={e => setUatTask(e.target.value)} disabled={pending}>
-                    <option value="">Choose</option>{Array.from({ length: 11 }, (_, i) => `UAT-${String(i + 1).padStart(2, "0")}`).map(id =>
-                      <option key={id} value={id}>{id}{health.uatPersonas[id] ? ` · ${health.uatPersonas[id]}` : ""}</option>) }
+                    <option value="">Choose a task for {health.persona ?? "this account"}</option>
+                    {uatAvailableTasks.map(([id, label]) => <option key={id} value={id}>{id} · {label}</option>)}
                   </select>
                 </label>
                 {uatTask && !uatIdentityMatches ? (
                   <p className="coach-uat-mismatch" role="alert">{uatExpectedPersona
-                    ? `${uatTask} belongs to ${uatExpectedPersona}. Sign out and sign in as ${uatExpectedPersona}.`
+                    ? `${uatTask} belongs to ${uatExpectedPersona}. Choose that persona above to sign in.`
                     : "Could not verify the signed-in demo account."}</p>
                 ) : null}
               </div>
