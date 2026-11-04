@@ -30,6 +30,15 @@ Open http://localhost:3000 and sign up. Each account only sees its own data.
 To open it from a phone on the same Wi-Fi, set `NEXT_PUBLIC_API_URL` in `frontend/.env.local` to
 `http://<computer-LAN-IP>:3001` and add `http://<computer-LAN-IP>:3000` to `CORS_ORIGIN` in `backend/.env`.
 
+## Coach practice during UAT
+
+With Budget Buddy connected, sign in to a demo persona and open `http://localhost:3000/?uat=1`.
+Open **Ask Buddy** and choose **Practice** to try prompts against that account's real transactions.
+The chat shows the normal reply and **How I got this** receipt. Practice questions are logged with
+the authenticated persona but no UAT task ID. They appear as **Free question** in the report's Run
+explorer and do not count toward its grades or recorded UAT statistics. Switch to **Recorded UAT**
+for official tasks; choosing a mode starts a fresh chat and clears the selected task.
+
 ## Commands
 
 | Command | What it does |

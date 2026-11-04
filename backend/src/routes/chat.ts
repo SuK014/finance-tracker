@@ -74,7 +74,8 @@ router.post("/", askLimiter, async (req, res) => {
     res.status(400).json({ error: "uat_persona_mismatch" })
     return
   }
-  const persona = uat ? demoPersona(email) : null
+  // Practice questions have no task ID, but the log can still show the authenticated demo persona.
+  const persona = demoPersona(email)
   try {
     const r = await fetch(`${coachUrl()}/ask`, {
       method: "POST",

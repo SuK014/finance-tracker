@@ -101,6 +101,7 @@ export default function CoachChat() {
   const [uatRound, setUatRound] = useState("")
   const [uatTester, setUatTester] = useState("")
   const [uatTask, setUatTask] = useState("")
+  const [practice, setPractice] = useState(false)
 
   useEffect(() => setUatMode(new URLSearchParams(window.location.search).get("uat") === "1"), [])
 
@@ -163,9 +164,15 @@ export default function CoachChat() {
     router.push(`/login?uatPersona=${encodeURIComponent(persona)}`)
   }
 
+  function switchChatMode(nextPractice: boolean) {
+    if (nextPractice === practice || pending) return
+    newChat()
+    setPractice(nextPractice)
+  }
+
   async function send(question: string) {
     const q = question.trim()
-    if (!q || pending || (uatMode && (!uatRound || !uatTester || !uatTask ||
+    if (!q || pending || (uatMode && !practice && (!uatRound || !uatTester || !uatTask ||
         health.uatPersonas[uatTask] !== health.persona))) return
     setMessages(m => [...m, { id: nextId.current++, role: "user", text: q }])
     setDraft("")
@@ -175,7 +182,7 @@ export default function CoachChat() {
     const ctl = new AbortController()
     abortRef.current = ctl
     try {
-      const uat: UatMeta | null = uatMode ? {
+      const uat: UatMeta | null = uatMode && !practice ? {
         round: Number(uatRound) as UatMeta["round"],
         tester_number: Number(uatTester) as UatMeta["tester_number"],
         task_id: uatTask,
@@ -301,8 +308,14 @@ export default function CoachChat() {
 
             {uatMode ? (
               <div className="coach-uat" role="group" aria-label="UAT operator details">
+                <div className="coach-uat-mode" role="group" aria-label="Chat mode">
+                  <button type="button" aria-pressed={!practice} disabled={pending}
+                    onClick={() => switchChatMode(false)}>Recorded UAT</button>
+                  <button type="button" aria-pressed={practice} disabled={pending}
+                    onClick={() => switchChatMode(true)}>Practice</button>
+                </div>
                 <div className="coach-uat-heading">
-                  <strong>UAT setup</strong>
+                  <strong>{practice ? "Practice with the real coach" : "UAT setup"}</strong>
                   <span>{health.email ?? (health.checked ? "Account unavailable" : "Checking account…")}</span>
                 </div>
                 <div className="coach-uat-field coach-uat-persona"><span>Persona</span>
@@ -311,26 +324,35 @@ export default function CoachChat() {
                     placeholder="Choose a demo account" disabled={pending} />
                 </div>
                 <p id="coach-uat-switch-help" className="coach-uat-help">Changing persona opens sign-in for that account.</p>
-                <div className="coach-uat-field"><span>Round</span>
-                  <Select ariaLabel="Round" value={uatRound} onChange={setUatRound}
-                    options={[{ value: "1", label: "1" }, { value: "2", label: "2" }]}
-                    placeholder="Choose" disabled={pending} />
-                </div>
-                <div className="coach-uat-field"><span>Tester number</span>
-                  <Select ariaLabel="Tester number" value={uatTester} onChange={setUatTester}
-                    options={[1, 2, 3, 4].map(n => ({ value: String(n), label: String(n) }))}
-                    placeholder="Choose" disabled={pending} />
-                </div>
-                <div className="coach-uat-field coach-uat-task"><span>Task</span>
-                  <Select ariaLabel="Task" value={uatTask} onChange={setUatTask}
-                    options={uatAvailableTasks.map(([id, label]) => ({ value: id, label: `${id} · ${label}` }))}
-                    placeholder={`Choose a task for ${health.persona ?? "this account"}`} disabled={pending} />
-                </div>
-                {uatTask && !uatIdentityMatches ? (
-                  <p className="coach-uat-mismatch" role="alert">{uatExpectedPersona
-                    ? `${uatTask} belongs to ${uatExpectedPersona}. Choose that persona above to sign in.`
-                    : "Could not verify the signed-in demo account."}</p>
-                ) : null}
+                {practice ? (
+                  <p className="coach-uat-practice" role="status">
+                    Ask anything about this account. Buddy uses its real transactions and shows the normal answer and
+                    “How I got this” receipt. The question is logged as a Free question in the UAT report, outside grades.
+                  </p>
+                ) : (
+                  <>
+                    <div className="coach-uat-field"><span>Round</span>
+                      <Select ariaLabel="Round" value={uatRound} onChange={setUatRound}
+                        options={[{ value: "1", label: "1" }, { value: "2", label: "2" }]}
+                        placeholder="Choose" disabled={pending} />
+                    </div>
+                    <div className="coach-uat-field"><span>Tester number</span>
+                      <Select ariaLabel="Tester number" value={uatTester} onChange={setUatTester}
+                        options={[1, 2, 3, 4].map(n => ({ value: String(n), label: String(n) }))}
+                        placeholder="Choose" disabled={pending} />
+                    </div>
+                    <div className="coach-uat-field coach-uat-task"><span>Task</span>
+                      <Select ariaLabel="Task" value={uatTask} onChange={setUatTask}
+                        options={uatAvailableTasks.map(([id, label]) => ({ value: id, label: `${id} · ${label}` }))}
+                        placeholder={`Choose a task for ${health.persona ?? "this account"}`} disabled={pending} />
+                    </div>
+                    {uatTask && !uatIdentityMatches ? (
+                      <p className="coach-uat-mismatch" role="alert">{uatExpectedPersona
+                        ? `${uatTask} belongs to ${uatExpectedPersona}. Choose that persona above to sign in.`
+                        : "Could not verify the signed-in demo account."}</p>
+                    ) : null}
+                  </>
+                )}
               </div>
             ) : null}
 
@@ -357,7 +379,7 @@ export default function CoachChat() {
                   }
                 }}
               />
-              <button type="submit" className="coach-send" aria-label="Send question" disabled={offline || pending || !draft.trim() || (uatMode && (!uatRound || !uatTester || !uatTask || !uatIdentityMatches))}>
+              <button type="submit" className="coach-send" aria-label="Send question" disabled={offline || pending || !draft.trim() || (uatMode && !practice && (!uatRound || !uatTester || !uatTask || !uatIdentityMatches))}>
                 <SendIcon />
               </button>
             </form>

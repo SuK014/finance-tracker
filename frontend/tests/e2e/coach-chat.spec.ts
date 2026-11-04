@@ -281,6 +281,41 @@ test.describe("Ask Buddy chat", () => {
     await expect(page).toHaveURL(/\/\?uat=1$/);
   });
 
+  test("practice asks the real chat path without adding a graded UAT task", async ({ page }) => {
+    const { asked } = await mockCoach(page, { email: "henry@demo.budgetbuddy.test", persona: "Henry",
+      uatPersonas: { "UAT-01": "Henry" } });
+    await page.goto("/?uat=1");
+    const panel = await open(page);
+    const details = panel.getByRole("group", { name: "UAT operator details" });
+
+    await details.getByRole("button", { name: "Practice", exact: true }).click();
+    await expect(details.getByText("Practice with the real coach")).toBeVisible();
+    await expect(details.getByText(/logged as a Free question/)).toBeVisible();
+    await expect(details.getByRole("button", { name: "Task" })).toHaveCount(0);
+    await panel.getByLabel("Your question").fill("Does this prompt work?");
+    await panel.getByRole("button", { name: "Send question" }).click();
+    await expect(panel.getByText("How I got this")).toBeVisible();
+    expect(asked[0]).toEqual({ question: "Does this prompt work?", uat: null });
+
+    await details.getByRole("button", { name: "Recorded UAT" }).click();
+    await details.getByRole("button", { name: "Round" }).click();
+    await details.getByRole("option", { name: "1" }).click();
+    await details.getByRole("button", { name: "Tester number" }).click();
+    await details.getByRole("option", { name: "2" }).click();
+    await details.getByRole("button", { name: "Task" }).click();
+    await details.getByRole("option", { name: "UAT-01 · Food last month" }).click();
+    await panel.getByLabel("Your question").fill("Food last month?");
+    await panel.getByRole("button", { name: "Send question" }).click();
+    await expect(panel.getByText("How I got this")).toBeVisible();
+    expect((asked[1] as { uat: { task_id: string } }).uat.task_id).toBe("UAT-01");
+
+    await details.getByRole("button", { name: "Practice", exact: true }).click();
+    await details.getByRole("button", { name: "Recorded UAT" }).click();
+    await expect(details.getByRole("button", { name: "Task" })).toContainText("Choose a task for Henry");
+    await panel.getByLabel("Your question").fill("Another question");
+    await expect(panel.getByRole("button", { name: "Send question" })).toBeDisabled();
+  });
+
   test("keyboard: button takes a visible focus ring, Escape closes and returns focus", async ({ page }) => {
     await mockCoach(page);
     await page.goto("/");
