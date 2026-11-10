@@ -7,6 +7,7 @@ import { baht, dayMonth, ruleDefault, type Goal, type GoalAccount, type Salary }
 import BottomSheet from "@/components/BottomSheet"
 import DatePicker from "@/components/DatePicker"
 import Select from "@/components/Select"
+import { TargetIcon } from "@/components/Icons"
 
 type Sheet = "setup" | "edit" | "receive" | null
 
@@ -157,7 +158,7 @@ function ReceiveSheet({ salary, goals, onClose, onDone }: { salary: Salary; goal
               <div className="alloc-list">
                 {goals.map(g => (
                   <div key={g.id} className="alloc-row">
-                    <label htmlFor={`alloc-${g.id}`}><span aria-hidden="true">{g.icon || "🎯"}</span> {g.name}</label>
+                    <label htmlFor={`alloc-${g.id}`}><span aria-hidden="true" className="goal-glyph">{g.icon || <TargetIcon />}</span> {g.name}</label>
                     <div className="goal-money-input">
                       <span aria-hidden="true">฿</span>
                       <input

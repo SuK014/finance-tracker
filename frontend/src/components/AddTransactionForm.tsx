@@ -8,6 +8,7 @@ import Select from "@/components/Select"
 import DatePicker from "@/components/DatePicker"
 import TimePicker from "@/components/TimePicker"
 import { currencySymbol } from "@/lib/currency"
+import { PaperclipIcon } from "@/components/Icons"
 
 type Category = { id: number; name: string; color?: string; type?: string }
 
@@ -139,7 +140,7 @@ export default function AddTransactionForm({
           onChange={e => setEvidenceFile(e.target.files?.[0] ?? null)}
         />
         <button type="button" onClick={() => fileRef.current?.click()} style={{ width: "100%" }}>
-          {evidenceFile ? `📎 ${evidenceFile.name}` : "Attach evidence image (optional)"}
+          {evidenceFile ? <><PaperclipIcon /> {evidenceFile.name}</> : "Attach evidence image (optional)"}
         </button>
         {evidenceFile && (
           <img
@@ -152,7 +153,7 @@ export default function AddTransactionForm({
 
       {error && <p style={{ color: "var(--expense)", fontSize: "13px", margin: 0 }}>{error}</p>}
       <button type="submit" disabled={submitting}>
-        {submitting ? "Saving..." : "Add Transaction"}
+        {submitting ? "Saving" : "Add transaction"}
       </button>
     </form>
   )

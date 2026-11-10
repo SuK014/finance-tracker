@@ -12,6 +12,7 @@ import EmojiPicker from "@/components/EmojiPicker"
 import CategoryIcon from "@/components/CategoryIcon"
 import VoiceInput from "@/components/VoiceInput"
 import type { VoiceParse } from "@/lib/api"
+import { CameraIcon, CloseIcon, PaperclipIcon } from "@/components/Icons"
 
 type Account = { id: number; name: string; currency?: string; setAside?: number; available?: number }
 type Category = { id: number; name: string; color?: string | null; icon?: string | null; type?: string }
@@ -225,7 +226,7 @@ function Sheet({ closing, onClose, onSaved }: { closing: boolean; onClose: () =>
     if (!newName.trim()) return
     setError(null)
     try {
-      const result = await createCategory({ name: newName.trim(), type, icon: newIcon || undefined, color: "#6a5ae0" })
+      const result = await createCategory({ name: newName.trim(), type, icon: newIcon || undefined, color: "#2c4bd0" })
       if (result?.error) { setError(result.error); return }
       setCategories(c => [...c, result])
       setCategoryId(String(result.id))
@@ -282,7 +283,7 @@ function Sheet({ closing, onClose, onSaved }: { closing: boolean; onClose: () =>
         <div className="sheet-grab" aria-hidden="true" />
         <div className="sheet-head">
           <h2 id="sheet-title">Add transaction</h2>
-          <button type="button" className="sheet-close" onClick={onClose} aria-label="Close">✕</button>
+          <button type="button" className="sheet-close" onClick={onClose} aria-label="Close"><CloseIcon /></button>
         </div>
 
         <form className="sheet-form" onSubmit={save}>
@@ -296,7 +297,7 @@ function Sheet({ closing, onClose, onSaved }: { closing: boolean; onClose: () =>
             onChange={e => scanSlip(e.target.files?.[0])}
           />
           <button type="button" className="scan-btn" onClick={() => scanRef.current?.click()} disabled={scanning}>
-            <span aria-hidden="true">📷</span> {scanning ? "Reading receipt…" : "Scan a receipt"}
+            <CameraIcon /> {scanning ? "Reading receipt" : "Scan a receipt"}
           </button>
           <VoiceInput categories={categories} onResult={applyVoice} />
           {scanNote && <p className="sheet-note" role="status">{scanNote}</p>}
@@ -434,7 +435,7 @@ function Sheet({ closing, onClose, onSaved }: { closing: boolean; onClose: () =>
               onChange={e => setEvidence(e.target.files?.[0] ?? null)}
             />
             <button type="button" onClick={() => fileRef.current?.click()} style={{ width: "100%" }}>
-              {evidence ? `📎 ${evidence.name}` : "Attach a receipt photo"}
+              {evidence ? <><PaperclipIcon /> {evidence.name}</> : "Attach a receipt photo"}
             </button>
           </div>
           </div>

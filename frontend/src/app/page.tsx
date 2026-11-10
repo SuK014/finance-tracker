@@ -10,6 +10,7 @@ import SubscriptionIcon from "@/components/ServiceIcon"
 import { categoryEmoji } from "@/lib/categoryIcon"
 import Link from "next/link"
 import { THAI_TZ, thaiClock, startOfThaiToday } from "@/lib/thaiTime"
+import { ReceiptIcon, TargetIcon } from "@/components/Icons"
 
 type CatTotal = { name: string; value: number; color?: string | null; icon?: string | null; budget?: number | null }
 
@@ -104,14 +105,13 @@ export default async function DashboardPage({
   const heroOver = heroBase > 0 && heroSpent > heroBase
   const monthLabel = new Date(year, month - 1, 1).toLocaleString("en-GB", { month: "long" })
   const hour = Number(new Date().toLocaleString("en-GB", { timeZone: "Asia/Bangkok", hour: "2-digit", hour12: false }))
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"
   const topCats = categoryData.filter(c => c.value > 0).slice(0, 3)
   const money = (n: number) => `฿${Math.round(n).toLocaleString()}`
 
   return (
     <main style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       <div className="home-head">
-        <h1 className="home-greeting">{greeting} 👋</h1>
+        <h1 className="home-greeting">Overview</h1>
         <MonthNav year={year} month={month} />
       </div>
 
@@ -178,7 +178,7 @@ export default async function DashboardPage({
           </div>
           {transactions.length === 0 ? (
             <div className="empty-state">
-              <span className="big" aria-hidden="true">🧾</span>
+              <span className="big" aria-hidden="true"><ReceiptIcon size={28} /></span>
               Nothing logged in {monthLabel} yet. Tap + to add your first transaction.
             </div>
           ) : (
@@ -211,7 +211,7 @@ export default async function DashboardPage({
             {goals.slice(0, 2).map(g => (
               <div key={g.id} className="home-goal">
                 <div className="budget-top">
-                  <span><span aria-hidden="true">{g.icon || "🎯"}</span> {g.name}</span>
+                  <span><span aria-hidden="true" className="goal-glyph">{g.icon || <TargetIcon />}</span> {g.name}</span>
                   <span className="num" style={{ color: "var(--text-secondary)", fontWeight: 600 }}>{baht(g.saved)} / {baht(g.target)}</span>
                 </div>
                 <div className="goal-bar" role="progressbar" aria-label={`${g.name} progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={goalPercent(g)} style={{ "--p": goalPercent(g) / 100 } as React.CSSProperties}>

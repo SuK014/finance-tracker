@@ -9,6 +9,7 @@ import EmojiPicker from "@/components/EmojiPicker"
 import DatePicker from "@/components/DatePicker"
 import Select from "@/components/Select"
 import RowActionsMenu from "@/components/RowActionsMenu"
+import { TargetIcon } from "@/components/Icons"
 
 type Category = { id: number; name: string; type?: string }
 type Mode = { kind: "new" } | { kind: "edit"; goal: Goal } | { kind: "deposit" | "withdraw" | "spend"; goal: Goal }
@@ -42,7 +43,7 @@ export default function GoalsView({
 
       {goals.length === 0 ? (
         <div className="card empty-state">
-          <span className="big" aria-hidden="true">🎯</span>
+          <span className="big" aria-hidden="true"><TargetIcon size={28} /></span>
           No goals yet. Name something you&apos;re saving for, set a target, and put money aside as you go.
         </div>
       ) : (
@@ -82,7 +83,7 @@ function GoalCard({
   return (
     <li className="goal-card" data-reached={reached} aria-label={g.name}>
       <div className="goal-top">
-        <span className="goal-icon" aria-hidden="true">{g.icon || "🎯"}</span>
+        <span className="goal-icon" aria-hidden="true">{g.icon || <TargetIcon />}</span>
         <div className="goal-title">
           <b>{g.name}</b>
           <span className="goal-amounts num">{baht(g.saved)} of {baht(g.target)}</span>
@@ -104,7 +105,7 @@ function GoalCard({
 
       <p className="goal-sub">
         {reached
-          ? "Goal reached 🎉"
+          ? "Goal reached"
           : monthly !== null
             ? `Save ${baht(monthly)} a month to finish by ${monthYear(g.deadline as string)}`
             : g.deadline

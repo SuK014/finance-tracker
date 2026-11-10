@@ -4,6 +4,7 @@ import { useLayoutEffect, useRef, useState } from "react"
 import { login, register, saveToken } from "@/lib/api"
 import ThemeToggle from "@/components/ThemeToggle"
 import BrandMark from "@/components/BrandMark"
+import { EyeIcon, EyeOffIcon } from "@/components/Icons"
 
 export default function LoginPage() {
   const [mode, setMode] = useState<"login" | "register">("login")
@@ -191,7 +192,7 @@ export default function LoginPage() {
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   aria-pressed={showPassword}
                 >
-                  {showPassword ? "🙈" : "👁"}
+                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
               </div>
             </div>
@@ -210,7 +211,7 @@ export default function LoginPage() {
             )}
             {error && <p className="login-field-error">{error}</p>}
             <button type="submit" disabled={loading} style={{ marginTop: "4px" }}>
-              {loading ? "Please wait..." : mode === "login" ? "Sign in" : "Create account"}
+              {loading ? "Please wait" : mode === "login" ? "Sign in" : "Create account"}
             </button>
           </form>
 

@@ -65,7 +65,7 @@ export default function AddAccountForm() {
         />
       </div>
       {error && <p style={{ color: "var(--expense)", fontSize: "13px", margin: 0 }}>{error}</p>}
-      <button type="submit" disabled={submitting}>{submitting ? "Adding..." : "Add Account"}</button>
+      <button type="submit" disabled={submitting}>{submitting ? "Adding" : "Add account"}</button>
     </form>
   )
 }

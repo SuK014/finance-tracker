@@ -105,7 +105,7 @@ export default function SellAssetButton({
         </div>
       )}
       {error && <p role="alert" style={{ color: "var(--expense)", margin: 0, flexBasis: "100%" }}>{error}</p>}
-      <button type="submit" disabled={submitting}>{submitting ? "..." : "Confirm"}</button>
+      <button type="submit" disabled={submitting}>{submitting ? "Selling" : "Confirm"}</button>
       <button type="button" onClick={() => setOpen(false)}>Cancel</button>
     </form>
   )

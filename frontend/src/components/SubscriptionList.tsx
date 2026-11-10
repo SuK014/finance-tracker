@@ -11,6 +11,7 @@ import ServicePicker from "@/components/ServicePicker"
 import CurrencyToggle from "@/components/CurrencyToggle"
 import { billedCurrency, priceText, toThb } from "@/lib/recurringMoney"
 import { THAI_TZ } from "@/lib/thaiTime"
+import { TvIcon } from "@/components/Icons"
 
 type Item = {
   id: number
@@ -48,7 +49,7 @@ export default function SubscriptionList({
   if (items.length === 0) {
     return (
       <div className="card empty-state">
-        <span className="big" aria-hidden="true">📺</span>
+        <span className="big" aria-hidden="true"><TvIcon size={28} /></span>
         No subscriptions yet. Add Netflix, Spotify or anything else that renews, and it will show up here with a reminder.
       </div>
     )

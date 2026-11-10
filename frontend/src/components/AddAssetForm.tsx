@@ -119,7 +119,7 @@ export default function AddAssetForm({ accounts = [] }: { accounts?: InvestAccou
             onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleLookup() } }}
           />
           <button type="button" onClick={handleLookup} disabled={looking}>
-            {looking ? "..." : "Look up"}
+            {looking ? "Looking" : "Look up"}
           </button>
         </div>
       )}
@@ -168,7 +168,7 @@ export default function AddAssetForm({ accounts = [] }: { accounts?: InvestAccou
           {submitError && <p role="alert" style={{ color: "var(--expense)", margin: 0 }}>{submitError}</p>}
 
           <button type="submit" disabled={submitting || shares <= 0}>
-            {submitting ? "Adding..." : "Add to Portfolio"}
+            {submitting ? "Adding" : "Add to portfolio"}
           </button>
         </>
       )}

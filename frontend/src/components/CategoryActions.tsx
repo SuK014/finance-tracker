@@ -14,7 +14,7 @@ export default function CategoryActions({ category }: { category: Category }) {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({
     name: category.name,
-    color: category.color ?? "#6a5ae0",
+    color: category.color ?? "#2c4bd0",
     icon: category.icon ?? "",
     type: category.type ?? "expense",
     budget: category.budget != null ? String(category.budget) : "",

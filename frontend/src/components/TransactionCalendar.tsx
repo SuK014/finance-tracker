@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { THAI_TZ, thaiClock } from "@/lib/thaiTime"
+import { CloseIcon } from "@/components/Icons"
 
 type Transaction = {
   id: number
@@ -166,7 +167,7 @@ export default function TransactionCalendar({
                 onClick={() => setSelectedDay(null)}
                 style={{ background: "none", border: "none", fontSize: "18px", cursor: "pointer", color: "var(--text-muted)", padding: "4px" }}
               >
-                ✕
+                <CloseIcon />
               </button>
             </div>
 

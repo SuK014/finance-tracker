@@ -4,6 +4,7 @@ import { useState } from "react"
 import TransactionActions from "@/components/TransactionActions"
 import { categoryEmoji } from "@/lib/categoryIcon"
 import { THAI_TZ } from "@/lib/thaiTime"
+import { TrendIcon } from "@/components/Icons"
 
 type Transaction = {
   id: number
@@ -124,7 +125,7 @@ export default function TransactionList({
                 <span className="row-meta">
                   {t.source === "investment" && (
                     <span className="category-pill">
-                      <span aria-hidden="true">📈</span>
+                      <TrendIcon size={14} />
                       Investment
                     </span>
                   )}

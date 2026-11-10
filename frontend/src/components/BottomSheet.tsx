@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { CloseIcon } from "@/components/Icons"
 
 // A small modal in the same style as the Add transaction sheet: bottom sheet on phones, dialog on desktop.
 // Mount it to open it; it animates out before calling onClose, and puts focus back where it was.
@@ -67,7 +68,7 @@ export default function BottomSheet({
         <div className="sheet-grab" aria-hidden="true" />
         <div className="sheet-head">
           <h2>{title}</h2>
-          <button type="button" className="sheet-close" onClick={close} aria-label="Close">✕</button>
+          <button type="button" className="sheet-close" onClick={close} aria-label="Close"><CloseIcon /></button>
         </div>
         {children}
       </div>

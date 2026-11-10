@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { parseVoice, type VoiceParse } from "@/lib/api"
+import { MicIcon, StopIcon } from "@/components/Icons"
 
 type Cat = { id: number; name: string; type?: string }
 
@@ -133,7 +134,7 @@ export default function VoiceInput({
       {supported && (
         <div className="voice-row">
           <button type="button" className="voice-btn" data-listening={listening} onClick={toggle} disabled={busy}>
-            <span aria-hidden="true">{listening ? "■" : "🎤"}</span>{" "}
+            {listening ? <StopIcon /> : <MicIcon />}{" "}
             {listening ? "Stop" : busy ? "Understanding…" : "Say it"}
           </button>
           <div className="seg voice-lang" role="group" aria-label="Spoken language">

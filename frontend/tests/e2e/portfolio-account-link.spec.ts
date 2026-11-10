@@ -82,7 +82,7 @@ test.describe("linking portfolio trades to an account", () => {
     await page.getByRole("option", { name: /Kasikorn/ }).click();
     await expect(page.getByRole("status").filter({ hasText: "Takes about" })).toContainText("฿7,800.00");
 
-    await page.getByRole("button", { name: "Add to Portfolio" }).click();
+    await page.getByRole("button", { name: "Add to portfolio" }).click();
     await expect.poll(() => buys.length).toBe(1);
     expect(buys[0]).toMatchObject({ symbol: "APP", accountId: 1 });
     expect(Number(buys[0].quantity)).toBeCloseTo(1, 6);

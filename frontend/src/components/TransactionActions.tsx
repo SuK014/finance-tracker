@@ -10,6 +10,7 @@ import Select from "@/components/Select"
 import DatePicker from "@/components/DatePicker"
 import TimePicker from "@/components/TimePicker"
 import { THAI_TZ } from "@/lib/thaiTime"
+import { PaperclipIcon } from "@/components/Icons"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -141,7 +142,7 @@ export default function TransactionActions({
           onChange={e => setEvidenceFile(e.target.files?.[0] ?? null)}
         />
         <button type="button" onClick={() => fileRef.current?.click()}>
-          {evidenceFile ? `📎 ${evidenceFile.name}` : transaction.evidenceUrl ? "Replace image" : "Add image"}
+          {evidenceFile ? <><PaperclipIcon /> {evidenceFile.name}</> : transaction.evidenceUrl ? "Replace image" : "Add image"}
         </button>
         {error && <span style={{ color: "var(--expense)", fontSize: "12px" }}>{error}</span>}
         <button type="submit" disabled={saving}>{saving ? "Saving…" : "Save"}</button>
@@ -161,7 +162,7 @@ export default function TransactionActions({
       <span className="row-actions-inline">
         {transaction.evidenceUrl && (
           <button type="button" onClick={() => setShowImage(v => !v)} title="View evidence">
-            📎
+            <PaperclipIcon />
           </button>
         )}
         <button type="button" onClick={() => setEditing(true)}>Edit</button>
