@@ -797,13 +797,13 @@ li:last-child { border-bottom: none; }
   margin-top: -26px;
   border-radius: 20px;
   border: 4px solid var(--surface);
-  background: var(--peach);
-  color: #1f1b16;
+  background: var(--accent);
+  color: var(--accent-text);
   display: grid;
   place-items: center;
   box-shadow: 0 8px 18px rgba(31, 27, 22, 0.2);
 }
-.fab:hover:not(:disabled) { background: var(--peach); filter: brightness(1.05); border-color: var(--surface); }
+.fab:hover:not(:disabled) { background: var(--accent); filter: brightness(1.05); border-color: var(--surface); }
 .fab:active:not(:disabled) { transform: scale(0.94); }
 .fab svg { width: 26px; height: 26px; }
 
@@ -1463,7 +1463,7 @@ li:last-child { border-bottom: none; }
 @media (prefers-reduced-motion: reduce) { .goal-bar > i { transition: none; } }
 .home-goal + .home-goal { margin-top: 14px; }
 .home-goal .budget-top { margin-bottom: 8px; }
-.sheet-warn { margin: 0; font-size: 13px; font-weight: 600; color: var(--text-primary); background: color-mix(in srgb, var(--peach, #ffb59e) 28%, transparent); padding: 10px 12px; border-radius: 12px; }
+.sheet-warn { margin: 0; font-size: 13px; font-weight: 600; color: var(--text-primary); background: color-mix(in srgb, var(--peach, #f0b36b) 28%, transparent); padding: 10px 12px; border-radius: 12px; }
 
 /* Payday */
 .payday-card { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 22px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border)); }
