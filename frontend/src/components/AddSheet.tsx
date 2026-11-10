@@ -16,12 +16,13 @@ import type { VoiceParse } from "@/lib/api"
 type Account = { id: number; name: string; currency?: string; setAside?: number; available?: number }
 type Category = { id: number; name: string; color?: string | null; icon?: string | null; type?: string }
 
-const AddSheetContext = createContext<{ open: () => void }>({ open: () => {} })
+const AddSheetContext = createContext<{ open: () => void; toast: (message: string) => void }>({ open: () => {}, toast: () => {} })
 export const useAddSheet = () => useContext(AddSheetContext)
+
+const pad = (n: number) => String(n).padStart(2, "0")
 
 function nowParts() {
   const d = new Date()
-  const pad = (n: number) => String(n).padStart(2, "0")
   return {
     date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
     time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
@@ -62,14 +63,18 @@ export function AddSheetProvider({ children }: { children: React.ReactNode }) {
     }, 200)
   }, [])
 
+  const showToast = useCallback((message: string) => {
+    setToast(message)
+    window.setTimeout(() => setToast(null), 2400)
+  }, [])
+
   function saved() {
     close()
-    setToast("Transaction saved")
-    window.setTimeout(() => setToast(null), 2400)
+    showToast("Transaction saved")
   }
 
   return (
-    <AddSheetContext.Provider value={{ open }}>
+    <AddSheetContext.Provider value={{ open, toast: showToast }}>
       {children}
       {state !== "closed" && <Sheet closing={state === "closing"} onClose={close} onSaved={saved} />}
       <div aria-live="polite" role="status">
@@ -192,13 +197,25 @@ function Sheet({ closing, onClose, onSaved }: { closing: boolean; onClose: () =>
       if (d.amount != null) setAmount(String(Math.abs(Number(d.amount))))
       if (d.type === "income" || d.type === "expense") { setType(d.type); setCategoryId("") }
       if (d.description) setDescription(d.description)
+      let timeFromPhoto = false
       if (d.date && /^\d{4}-\d{2}-\d{2}/.test(d.date)) {
         const day = d.date.slice(0, 10)
         const clock = /T\d{2}:\d{2}/.test(d.date) ? d.date.slice(11, 16) : ""
-        setWhen(w => ({ date: day, time: clock || w.time }))
+        // A slip with no printed time: when the photo was taken is the next best thing, if it is the same day
+        const shot = new Date(file.lastModified)
+        const shotDay = `${shot.getFullYear()}-${pad(shot.getMonth() + 1)}-${pad(shot.getDate())}`
+        const shotClock = file.lastModified && shotDay === day ? `${pad(shot.getHours())}:${pad(shot.getMinutes())}` : ""
+        timeFromPhoto = !clock && !!shotClock
+        setWhen(w => ({ date: day, time: clock || shotClock || w.time }))
       }
       setEvidence(file)
-      setScanNote(d.amount != null ? "Filled in from your slip. Check the details, then save." : "Couldn't find an amount on that slip. Fill it in below.")
+      setScanNote(
+        d.amount == null
+          ? "Couldn't find an amount on that slip. Fill it in below."
+          : timeFromPhoto
+            ? "Filled in from your slip. The slip shows no time, so the time is when the photo was taken. Check the details, then save."
+            : "Filled in from your slip. Check the details, then save."
+      )
     } catch {
       setError("Couldn't scan the slip. Check your connection and try again.")
     } finally {

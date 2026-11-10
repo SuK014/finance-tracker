@@ -28,3 +28,9 @@ export function thaiJson(_key: string, value: unknown): unknown {
   }
   return value
 }
+
+// The Thai calendar day ("2026-10-26") and clock time ("14:52") of a moment.
+export function thaiParts(moment: Date): { day: string; time: string } {
+  const iso = new Date(moment.getTime() + THAI_OFFSET_MS).toISOString()
+  return { day: iso.slice(0, 10), time: iso.slice(11, 16) }
+}
