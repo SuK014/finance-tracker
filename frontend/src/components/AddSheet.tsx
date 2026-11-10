@@ -226,7 +226,7 @@ function Sheet({ closing, onClose, onSaved }: { closing: boolean; onClose: () =>
     if (!newName.trim()) return
     setError(null)
     try {
-      const result = await createCategory({ name: newName.trim(), type, icon: newIcon || undefined, color: "#2c4bd0" })
+      const result = await createCategory({ name: newName.trim(), type, icon: newIcon || undefined, color: "#c2570c" })
       if (result?.error) { setError(result.error); return }
       setCategories(c => [...c, result])
       setCategoryId(String(result.id))

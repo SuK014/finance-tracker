@@ -7,12 +7,12 @@ import EmojiPicker from "@/components/EmojiPicker"
 
 export default function AddCategoryForm() {
   const router = useRouter()
-  const [form, setForm] = useState({ name: "", color: "#2c4bd0", icon: "", type: "expense" })
+  const [form, setForm] = useState({ name: "", color: "#c2570c", icon: "", type: "expense" })
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     await createCategory({ name: form.name, color: form.color, icon: form.icon || undefined, type: form.type })
-    setForm({ name: "", color: "#2c4bd0", icon: "", type: "expense" })
+    setForm({ name: "", color: "#c2570c", icon: "", type: "expense" })
     router.refresh()
   }
 

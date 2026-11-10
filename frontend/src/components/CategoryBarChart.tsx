@@ -2,7 +2,7 @@
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts"
 
-const PALETTE = ["#2c4bd0", "#ff9a7d", "#5cb8f0", "#2fb585", "#f2c14e", "#c76bd1", "#8d9bff", "#ef6f6c"]
+const PALETTE = ["#c2570c", "#3b6fd1", "#5cb8f0", "#2fb585", "#f2c14e", "#c76bd1", "#8d9bff", "#ef6f6c"]
 
 type CategoryData = { name: string; value: number }
 
