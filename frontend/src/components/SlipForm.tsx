@@ -5,6 +5,7 @@ import { confirmSlip, getSlipImageUrl, rejectSlip, type InboxSlip } from "@/lib/
 import { currencySymbol } from "@/lib/currency"
 import { thaiClock } from "@/lib/thaiTime"
 import BottomSheet from "@/components/BottomSheet"
+import NoteInput from "@/components/NoteInput"
 import CategoryIcon from "@/components/CategoryIcon"
 import DatePicker from "@/components/DatePicker"
 import Select from "@/components/Select"
@@ -123,6 +124,8 @@ export default function SlipForm({
 
   return (
     <form className="slip-form" onSubmit={e => { e.preventDefault(); confirm() }} noValidate>
+      {/* In the review pop-up only these fields scroll; the Confirm / Reject bar below them stays put */}
+      <div className="slip-fields">
       <section className="slip-summary" aria-label="Slip summary">
         {slip.hasImage && (
           <button type="button" className="slip-thumb" onClick={() => setZoomed(true)} aria-label="View screenshot" disabled={!imageUrl}>
@@ -182,7 +185,7 @@ export default function SlipForm({
 
       <div>
         <label className="field-label" htmlFor="slip-note">Note</label>
-        <input id="slip-note" type="text" className="field-input" placeholder="e.g. Coffee shop" value={description} onChange={e => setDescription(e.target.value)} />
+        <NoteInput id="slip-note" placeholder="e.g. Coffee shop" value={description} onChange={setDescription} />
       </div>
 
       <div className="when-row">
@@ -219,6 +222,8 @@ export default function SlipForm({
             </button>
           ))}
         </div>
+      </div>
+
       </div>
 
       {/* Pinned to the bottom of the screen so Confirm never needs a scroll; errors sit with it so they are seen */}

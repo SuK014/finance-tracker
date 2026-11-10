@@ -58,19 +58,39 @@ async function mockInbox(page: Page, slips: Array<Record<string, unknown>>) {
 }
 
 test.describe("slip inbox on Home", () => {
-  test("shows nothing when no slips are waiting", async ({ page }) => {
+  test("no slips waiting: the bell has no count and opens an empty list", async ({ page }) => {
+    await mockInbox(page, []);
     await page.goto("/");
-    await expect(page.locator(".hero")).toBeVisible({ timeout: 15000 });
-    await expect(page.locator(".inbox-banner")).toHaveCount(0);
+    const bell = page.getByRole("button", { name: "Slips to check" });
+    await expect(bell).toBeVisible({ timeout: 15000 });
+    await expect(page.locator(".bell-badge")).toHaveCount(0);
     await expect(page.getByRole("dialog", { name: /waiting/ })).toHaveCount(0);
+    await bell.click();
+    await expect(page.getByRole("dialog", { name: "Slips to check" }).getByText("No slips to check.")).toBeVisible();
   });
 
-  test("a banner and a pop-up ask you to check waiting slips; Later hides the pop-up for this visit only", async ({ page }) => {
+  test("the bell sits in the top right of the header with the number of waiting slips", async ({ page }) => {
+    await mockInbox(page, [readSlip, unreadSlip]);
+    await page.goto("/");
+    const bell = page.getByRole("button", { name: "Slips to check, 2 waiting" });
+    await expect(bell).toBeVisible({ timeout: 15000 });
+    await expect(bell.locator(".bell-badge")).toHaveText("2");
+    const [bellBox, greetingBox, viewport] = await Promise.all([
+      bell.boundingBox(),
+      page.locator(".home-greeting").boundingBox(),
+      page.viewportSize(),
+    ]);
+    expect(bellBox!.x).toBeGreaterThan(greetingBox!.x + greetingBox!.width); // to the right of the greeting
+    expect(bellBox!.y).toBeLessThan(120); // in the header, not further down the page
+    expect(bellBox!.x + bellBox!.width).toBeLessThanOrEqual(viewport!.width);
+  });
+
+  test("a pop-up asks you to check waiting slips; Later hides it for this visit only", async ({ page }) => {
     await mockInbox(page, [readSlip, unreadSlip]);
     await page.goto("/");
 
-    const banner = page.getByRole("link", { name: /2 slips to check/ });
-    await expect(banner).toBeVisible({ timeout: 15000 });
+    const bell = page.getByRole("button", { name: /2 waiting/ });
+    await expect(bell).toBeVisible({ timeout: 15000 });
     const popup = page.getByRole("dialog", { name: "2 slips are waiting" });
     await expect(popup).toBeVisible();
     await expect(popup).toContainText("Check them before they count in your totals.");
@@ -79,11 +99,11 @@ test.describe("slip inbox on Home", () => {
 
     await popup.getByRole("button", { name: "Later" }).click();
     await expect(popup).toHaveCount(0);
-    await expect(banner).toBeVisible();
+    await expect(bell).toBeVisible();
 
-    // Same visit: coming back to Home does not ask again, but the banner is still there
+    // Same visit: coming back to Home does not ask again, but the bell still shows the count
     await page.reload();
-    await expect(banner).toBeVisible();
+    await expect(bell).toBeVisible();
     await expect(page.getByRole("dialog", { name: /waiting/ })).toHaveCount(0);
 
     // A new visit (a fresh tab, so no session memory) asks again
@@ -100,7 +120,65 @@ test.describe("slip inbox on Home", () => {
     await expect(popup).toBeVisible({ timeout: 15000 });
     await page.keyboard.press("Escape");
     await expect(popup).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "1 slip to check" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Slips to check, 1 waiting" })).toBeVisible();
+  });
+
+  test("note suggestions in the pop-up fit inside it, clear of the Confirm bar", async ({ page }) => {
+    await mockInbox(page, [readSlip]);
+    const history = ["Grab", "Card", "france fried", "KFC", "Water", "Tea"].map((description, i) => ({
+      id: i + 1, amount: 50, type: "expense", description, date: `2026-11-0${i + 1}T12:00:00.000+07:00`, accountId: 1, categoryId: 1,
+    }));
+    await page.route("**/api/transactions", route => {
+      const method = route.request().method();
+      if (method === "OPTIONS") return route.fulfill({ status: 204, headers: CORS });
+      if (method !== "GET") return route.continue();
+      return route.fulfill({ status: 200, headers: { ...CORS, "content-type": "application/json" }, body: JSON.stringify(history) });
+    });
+    await page.goto("/");
+    await page.getByRole("dialog", { name: "1 slip is waiting" }).getByRole("button", { name: "Review now" }).click();
+    const review = page.getByRole("dialog", { name: "Slips to check" });
+    const note = review.getByRole("combobox", { name: "Note" });
+    await note.fill("");
+    await note.focus();
+    const list = review.getByRole("listbox", { name: "Notes you used before" });
+    await expect(list.getByRole("option")).toHaveCount(6);
+    const [listBox, fieldsBox, actionsBox] = await Promise.all([
+      list.boundingBox(),
+      review.locator(".slip-fields").boundingBox(),
+      review.locator(".slip-actions").boundingBox(),
+    ]);
+    expect(listBox!.y).toBeGreaterThanOrEqual(fieldsBox!.y - 1);
+    expect(listBox!.y + listBox!.height).toBeLessThanOrEqual(actionsBox!.y + 1);
+  });
+
+  test("tapping the bell opens the review as a pop-up, and the screenshot opens on top of it", async ({ page }) => {
+    await mockInbox(page, [readSlip]);
+    await page.goto("/");
+    await page.getByRole("dialog", { name: "1 slip is waiting" }).getByRole("button", { name: "Later" }).click();
+    await page.getByRole("button", { name: "Slips to check, 1 waiting" }).click();
+
+    const review = page.getByRole("dialog", { name: "Slips to check" });
+    await expect(review.getByLabel("Slip summary")).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
+
+    // A second pop-up on top of the first one, then back to the review
+    await review.getByRole("button", { name: "View screenshot" }).click();
+    const shot = page.getByRole("dialog", { name: "Screenshot" });
+    await expect(shot.getByRole("img", { name: /bank app screenshot/ })).toBeVisible();
+    // It is not trapped inside the first pop-up: it hangs off <body> and sits fully on screen
+    expect(await shot.evaluate(el => el.parentElement === document.body)).toBe(true);
+    const box = await shot.boundingBox();
+    const viewport = page.viewportSize()!;
+    expect(box!.y).toBeGreaterThanOrEqual(0);
+    expect(box!.y + box!.height).toBeLessThanOrEqual(viewport.height + 1);
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width + 1);
+    await page.keyboard.press("Escape");
+    await expect(shot).toHaveCount(0);
+    await expect(review).toBeVisible();
+
+    await page.keyboard.press("Escape");
+    await expect(review).toHaveCount(0);
   });
 });
 
@@ -120,7 +198,9 @@ test.describe("checking slips", () => {
     const { confirmed, rejected } = await mockInbox(page, [readSlip, unreadSlip]);
     await page.goto("/");
     await page.getByRole("dialog", { name: "2 slips are waiting" }).getByRole("button", { name: "Review now" }).click();
-    await expect(page).toHaveURL(/\/inbox$/);
+    const review = page.getByRole("dialog", { name: "Slips to check" });
+    await expect(review).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
 
     // First slip: what was read, where the time came from, and the duplicate warning
     await expect(page.getByText("1 of 2")).toBeVisible();
@@ -129,7 +209,7 @@ test.describe("checking slips", () => {
     await expect(summary).toContainText("2:32 PM");
     await expect(summary).toContainText("Time read from the slip");
     await expect(page.getByRole("status").filter({ hasText: "Looks like a duplicate of Coffee" })).toContainText("You can still confirm it.");
-    await expect(page.getByRole("textbox", { name: "Note" })).toHaveValue("Coffee shop");
+    await expect(page.getByRole("combobox", { name: "Note" })).toHaveValue("Coffee shop");
     // The account starts on the first account
     await expect(page.getByRole("button", { name: "Account" })).toContainText("Kasikorn");
 
@@ -165,10 +245,10 @@ test.describe("checking slips", () => {
     await page.getByRole("button", { name: "Reject" }).click();
     await expect.poll(() => rejected).toEqual([2]);
 
-    // Last one handled: back on Home with a short message, and the banner is gone
-    await expect(page).toHaveURL(/\/$/);
+    // Last one handled: the pop-up closes with a short message, and the bell has no count left
+    await expect(review).toHaveCount(0);
     await expect(page.getByText("All checked")).toBeVisible();
-    await expect(page.locator(".inbox-banner")).toHaveCount(0);
+    await expect(page.locator(".bell-badge")).toHaveCount(0);
   });
 
   test("starts on the account that matches the bank the Shortcut sent", async ({ page }) => {
@@ -257,6 +337,23 @@ test.describe("checking slips", () => {
     await expect(confirm).toBeFocused();
     const ring = await confirm.evaluate(el => getComputedStyle(el).boxShadow);
     expect(ring).not.toBe("none");
+  });
+});
+
+test.describe("review pop-up on a phone", () => {
+  test("390px: the bell is in view, Confirm stays on screen inside the pop-up, nothing overflows sideways", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mockInbox(page, [readSlip]);
+    await page.goto("/");
+    await page.getByRole("dialog", { name: "1 slip is waiting" }).getByRole("button", { name: "Review now" }).click();
+    const review = page.getByRole("dialog", { name: "Slips to check" });
+    await expect(review.getByLabel("Slip summary")).toBeVisible({ timeout: 15000 });
+    await expect(review.getByRole("button", { name: "Confirm" })).toBeInViewport();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+    await page.keyboard.press("Escape");
+    await expect(review).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Slips to check, 1 waiting" })).toBeInViewport();
   });
 });
 
