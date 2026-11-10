@@ -18,3 +18,5 @@ playwright-report/
 .claude/
 .mcp.json
 .DS_Store
+
+reference/
